@@ -32,9 +32,9 @@ app.init = function() {
 function Physics() {
   this.constants = {};
   this.constants.DAMPING = 1;
-  this.constants.GRAVITY_CONSTANT = 200;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
-  this.constants.ORIGINAL_GRAVITY_CONSTANT = 200; // helps us get back to a base-state.
-  this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(200 / this.constants.GRAVITY_CONSTANT),
+  this.constants.GRAVITY_CONSTANT = 1 / 200.;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
+  this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 200.; // helps us get back to a base-state.
+  this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(this.constants.GRAVITY_CONSTANT / (1/200.)),
   this.constants.JUPITER_MASS = 1,
   this.constants.EARTH_MASS = 1 / 317,
   this.constants.ASTRONOMICAL_UNIT = 50,  // astronomical unit / ie, 1 Earth distance from the sun.
@@ -162,7 +162,7 @@ Particle.prototype.integrate = function() {
       dy = curr.y - this.y,
       distance = dx * dx + dy * dy;
 
-      grav = (curr.mass) / (app.physics.constants.GRAVITY_CONSTANT * distance);
+      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / distance;
 
       if(distance > 0) {
         gravVector.x += grav * dx;
@@ -300,7 +300,7 @@ ViewPort.prototype.frame = function() {
     // app.ctx.fillText("Vy: " + (app.particles[app.FOLLOW].newY - app.particles[app.FOLLOW].oldY) * 100, 5, 165);
     // app.ctx.fillText("Gx: " + (app.particles[app.FOLLOW].gravVector.x) * 100, 5, 185);    
     // app.ctx.fillText("Gy: " + (app.particles[app.FOLLOW].gravVector.y) * 100, 5, 205);    
-    app.ctx.fillText("G: " + Math.floor(app.physics.constants.GRAVITY_CONSTANT), 5, 225);
+    app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
 
     var viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT,
       unit = ' AU';
@@ -318,7 +318,7 @@ ViewPort.prototype.frame = function() {
 
 
   if(app.physics.variables.TIME_STEP != 1) {
-    app.physics.constants.GRAVITY_CONSTANT *= app.physics.variables.TIME_STEP;
+    app.physics.constants.GRAVITY_CONSTANT /= app.physics.variables.TIME_STEP;
   }
 
   for (var i = 0; i < app.particles.length; i++) {
@@ -424,7 +424,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWSHIFT.x -= 3;
     }
     if(e.keyCode === 80) {    // 'P'
-      app.physics.variables.TIME_STEP = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT / app.physics.constants.GRAVITY_CONSTANT;
+      app.physics.variables.TIME_STEP = app.physics.constants.GRAVITY_CONSTANT / app.physics.constants.ORIGINAL_GRAVITY_CONSTANT;
       if(app.GO === false) {
         app.GO = true;
         requestAnimationFrame(app.viewPort.frame);
@@ -446,7 +446,7 @@ Response.prototype.onKeyDown = function(e) {
       }
     } 
     if(e.keyCode === 88) {    // 'X'
-      if(app.physics.constants.GRAVITY_CONSTANT > 60) {
+      if(app.physics.constants.GRAVITY_CONSTANT < 1/60.) {
         app.physics.variables.TIME_STEP = app.physics.variables.TIME_STEP / 2;
       }
     }
@@ -465,7 +465,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWANGLE = .75;
       app.FOLLOW = 0;
       app.VIEWSHIFT.zoom = 0;
-      app.physics.variables.TIME_STEP = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT / app.physics.constants.GRAVITY_CONSTANT;
+      app.physics.variables.TIME_STEP = app.physics.constants.GRAVITY_CONSTANT / app.physics.constants.ORIGINAL_GRAVITY_CONSTANT;
     }  
 };
 
