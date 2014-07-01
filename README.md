@@ -12,11 +12,11 @@ It also has a bunch of random celestial bodies, like comets and asteriods, and a
 It supports various viewports.  
 
 Spacebar - toggles 'tracing' on or off.  with this on, you can make some awesome spyrographs.
-'<' and '>' - zoom in and out.  
-'h' - returns the viewport to the home zoom level centered on the sun.
-'f' - shifts which celestial body is fixed as the center of the view. 
-'c' - gives you some metadata, like the size of your viewport, the time per tick, and how long it's been running.
-'z' / 'x' - modulate time step size.  'z' lets you slow things down.
+* '<' and '>' - zoom in and out.  
+* 'h' - returns the viewport to the home zoom level centered on the sun.
+* 'f' - shifts which celestial body is fixed as the center of the view. 
+* 'c' - gives you some metadata, like the size of your viewport, the time per tick, and how long it's been running.
+* 'z' / 'x' - modulate time step size.  'z' lets you slow things down.
 
 
 There are more, but those are the big ones.....
