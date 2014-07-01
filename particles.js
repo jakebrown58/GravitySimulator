@@ -32,9 +32,9 @@ app.init = function() {
 function Physics() {
   this.constants = {};
   this.constants.DAMPING = 1;
-  this.constants.GRAVITY_CONSTANT = 1 / 200.;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
-  this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 200.; // helps us get back to a base-state.
-  this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(this.constants.GRAVITY_CONSTANT / (1/200.)),
+  this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 4.; // helps us get back to a base-state.
+  this.constants.GRAVITY_CONSTANT = this.constants.ORIGINAL_GRAVITY_CONSTANT;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
+  this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(this.constants.GRAVITY_CONSTANT / this.constants.ORIGINAL_GRAVITY_CONSTANT),
   this.constants.JUPITER_MASS = 1,
   this.constants.EARTH_MASS = 1 / 317,
   this.constants.ASTRONOMICAL_UNIT = 50,  // astronomical unit / ie, 1 Earth distance from the sun.
@@ -143,7 +143,9 @@ Particle.prototype.integrate = function() {
   var velocityX = (this.x - this.oldX),
     velocityY = (this.y - this.oldY),
     curr,
+    GM,
     gravVector,
+    energy,
     dx,
     dy,
     distance,
@@ -153,23 +155,26 @@ Particle.prototype.integrate = function() {
     velocityX = velocityX / Math.sqrt(app.physics.variables.TIME_STEP);
     velocityY = velocityY / Math.sqrt( app.physics.variables.TIME_STEP);
   }
-
+  energy = (0.5)*(velocityX*velocityX + velocityY*velocityY);
   gravVector = {x: 0.000, y: 0.000};
   for (var i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if(curr.id !== this.id ) { //&& !this.remove) {
       dx = curr.x - this.x,
       dy = curr.y - this.y,
-      distance = dx * dx + dy * dy;
+      d2 = dx * dx + dy * dy;
+      d1 = Math.sqrt(d2);
+      d3 = d1*d2;  
 
-      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / distance;
+      GM = curr.mass * app.physics.constants.GRAVITY_CONSTANT;
 
-      if(distance > 0) {
-        gravVector.x += grav * dx;
-        gravVector.y += grav * dy;
+      if(d2 > 0) {
+        gravVector.x += GM * dx / d3;
+        gravVector.y += GM * dy / d3;
+        energy += -GM/d1;
       } else {
-        gravVector.x += 0;
-        gravVector.y += 0;
+        //gravVector.x += 0;
+        //gravVector.y += 0;
       }
     }
   }
@@ -301,7 +306,7 @@ ViewPort.prototype.frame = function() {
     // app.ctx.fillText("Gx: " + (app.particles[app.FOLLOW].gravVector.x) * 100, 5, 185);    
     // app.ctx.fillText("Gy: " + (app.particles[app.FOLLOW].gravVector.y) * 100, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
-
+    //app.ctx.fillText("Jupiter Energy " + )
     var viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT,
       unit = ' AU';
     if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
