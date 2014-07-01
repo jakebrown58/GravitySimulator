@@ -32,7 +32,7 @@ app.init = function() {
 function Physics() {
   this.constants = {};
   this.constants.DAMPING = 1;
-  this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 4.; // helps us get back to a base-state.
+  this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 200; // helps us get back to a base-state.
   this.constants.GRAVITY_CONSTANT = this.constants.ORIGINAL_GRAVITY_CONSTANT;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
   this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(this.constants.GRAVITY_CONSTANT / this.constants.ORIGINAL_GRAVITY_CONSTANT),
   this.constants.JUPITER_MASS = 1,
@@ -61,28 +61,33 @@ Particles.prototype.buildInitialParticles = function() {
     particles = app.particles,
     jupiterMass = 1,
     earthMass = 1/317,
+    solarMass = jupiterMass*1047,
+    GMsun = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT*solarMass,
     aU = 50,
     initalObjects = {},
     cfg = {};
 
   initialObjects = [
     {name: 'Sun', mass: jupiterMass * 1047, radius: 0, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
-    {name: 'Mercury', mass: earthMass * .055, radius: aU * .387098, orbitalVelocity: 2.18, drawSize: .5},
-    {name: 'Venus', mass: earthMass * .815, radius: aU * .72, orbitalVelocity: 2.19, drawSize: 1},
-    {name: 'Earth', mass: earthMass, radius: aU, orbitalVelocity: 2.2, drawSize: 1, color: {r: 180, g: 200, b: 255}},
-    {name: 'Mars', mass: earthMass * .107, radius: aU * 1.38, orbitalVelocity: 2.23, drawSize: .6, color: {r: 255, g: 160, b: 160}},
-    {name: 'Jupiter', mass: jupiterMass, radius: aU * 5.2, arc: Math.PI, orbitalVelocity: 2.32, drawSize: 1.4},    
-    {name: 'Saturn', mass: jupiterMass * .30, radius: aU * 9.5, orbitalVelocity: 2.28, drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
-    {name: 'Neptune', mass: earthMass * 17.147, radius: aU * 30, orbitalVelocity: 2.28, drawSize: 1, color: {r: 150, g: 160, b: 215}},
-    {name: 'Ganymede', mass: earthMass * .025, radius: aU * 5.21, arc: Math.PI, orbitalVelocity: 2.32 + .0665, drawSize: .6}
+    {name: 'Mercury', mass: earthMass * .055, radius: aU * .387098, orbitalVelocity: 0, drawSize: .5},
+    {name: 'Venus', mass: earthMass * .815, radius: aU * .72, orbitalVelocity: 0, drawSize: 1},
+    {name: 'Earth', mass: earthMass, radius: aU, orbitalVelocity: 0, drawSize: 1, color: {r: 180, g: 200, b: 255}},
+    {name: 'Mars', mass: earthMass * .107, radius: aU * 1.38, orbitalVelocity: 0, drawSize: .6, color: {r: 255, g: 160, b: 160}},
+    {name: 'Jupiter', mass: jupiterMass, radius: aU * 5.2, arc: Math.PI, orbitalVelocity: 0, drawSize: 1.4},    
+    {name: 'Saturn', mass: jupiterMass * .30, radius: aU * 9.5, orbitalVelocity: 0, drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
+    {name: 'Neptune', mass: earthMass * 17.147, radius: aU * 30, orbitalVelocity: 0, drawSize: 1, color: {r: 150, g: 160, b: 215}},
+    {name: 'Ganymede', mass: earthMass * .025, radius: aU * 5.21, arc: Math.PI, orbitalVelocity: 0, drawSize: .6}
   ];
 
+  initialObjects[0].orbitalVelocity = 0;
+  this.buildParticle(initialObjects.shift());
   while(initialObjects.length > 0) {
+    initialObjects[0].orbitalVelocity = Math.sqrt(GMsun/(initialObjects[0].radius));
     this.buildParticle(initialObjects.shift());
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
-    this.buildParticle({name: 'Asteroid', mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 1.5 + aU * (Math.random() * 3.5), orbitalVelocity: 2.32, drawSize: .1});
+    this.buildParticle({name: 'Asteroid', mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 1.5 + aU * (Math.random() * 3.5), orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)), drawSize: .1});
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
@@ -90,7 +95,7 @@ Particles.prototype.buildInitialParticles = function() {
   }  
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
-    this.buildParticle({name: 'Jupiter Cloud', mass: earthMass / (8000 + Math.random() * 32000), radius: aU * 5.2 + Math.random() * .5, arc: Math.PI, orbitalVelocity: 2.323 + Math.random() * .09, drawSize: .03});
+    this.buildParticle({name: 'Jupiter Cloud', mass: earthMass / (8000 + Math.random() * 32000), radius: aU * 5.2 + Math.random() * .5, arc: Math.PI, orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)) + Math.random() * .09, drawSize: .03});
   }
 
   //this.buildParticle({name: 'LIGHTYEAR EXPRESS', mass: 1 / 500000000000000, radius: app.physics.constants.LIGHTYEAR, arc: 0, orbitalVelocity: .300, drawSize: 1});
@@ -168,10 +173,10 @@ Particle.prototype.integrate = function() {
 
       GM = curr.mass * app.physics.constants.GRAVITY_CONSTANT;
 
-      if(d2 > 0) {
+      if(d2 > 0.0) {
         gravVector.x += GM * dx / d3;
         gravVector.y += GM * dy / d3;
-        energy += -GM/d1;
+        //energy += -GM/d1;
       } else {
         //gravVector.x += 0;
         //gravVector.y += 0;
