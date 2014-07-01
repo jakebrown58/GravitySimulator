@@ -33,7 +33,7 @@ function Physics() {
   this.constants = {};
   this.constants.DAMPING = 1;
   this.constants.GRAVITY_CONSTANT = 200;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
-  this.constants.ORIGINAL_GRAVITY_CONSTANT = 200;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
+  this.constants.ORIGINAL_GRAVITY_CONSTANT = 200; // helps us get back to a base-state.
   this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(200 / this.constants.GRAVITY_CONSTANT),
   this.constants.JUPITER_MASS = 1,
   this.constants.EARTH_MASS = 1 / 317,
@@ -160,8 +160,7 @@ Particle.prototype.integrate = function() {
     if(curr.id !== this.id ) { //&& !this.remove) {
       dx = curr.x - this.x,
       dy = curr.y - this.y,
-      distance = Math.sqrt(dx * dx + dy * dy);
-      distance = distance * distance;
+      distance = dx * dx + dy * dy;
 
       grav = (curr.mass) / (app.physics.constants.GRAVITY_CONSTANT * distance);
 
@@ -176,7 +175,7 @@ Particle.prototype.integrate = function() {
   }
 
   this.newX = this.x + velocityX + gravVector.x;
-  this.newY = this.y + velocityY + gravVector.y
+  this.newY = this.y + velocityY + gravVector.y;
   this.oldX = this.x;
   this.oldY = this.y;
 };
