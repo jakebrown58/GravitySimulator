@@ -31,10 +31,10 @@ app.init = function() {
 function Physics() {
   this.constants = {};
   this.constants.DAMPING = 1;
-  this.constants.GRAVITY_CONSTANT = 200;
+  this.constants.GRAVITY_CONSTANT = 1 / 200.;
   this.constants.JUPITER_MASS = 1,
   this.constants.EARTH_MASS = 1 / 317,
-  this.constants.ASTRONOMICAL_UNIT = 50,  // astronomical unit / ie, 1 Earth distance from the sun.
+  this.constants.ASTRONOMICAL_UNIT = 50, // astronomical unit / ie, 1 Earth distance from the sun.
   this.constants.LIGHTYEAR = this.constants.ASTRONOMICAL_UNIT * 63239.72;
 }
 
@@ -146,12 +146,11 @@ Particle.prototype.integrate = function() {
     if(curr.id !== this.id ) { //&& !this.remove) {
       dx = curr.x - this.x,
       dy = curr.y - this.y,
-      distance = Math.sqrt(dx * dx + dy * dy);
-      distance = distance * distance;
+      distance_sq = dx * dx + dy * dy;
+      
+      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / distance_sq;
 
-      grav = (curr.mass) / (app.physics.constants.GRAVITY_CONSTANT * distance);
-
-      if(distance > 0) {
+      if(distance_sq > 0) {
         gravVector.x += grav * dx;
         gravVector.y += grav * dy;
       } else {
