@@ -68,17 +68,17 @@ Particles.prototype.buildInitialParticles = function() {
     cfg = {};
 
   initialObjects = [
-    {name: 'Sun', mass: jupiterMass * 1047, radius: 0, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
-    {name: 'Mercury', mass: earthMass * .055, radius: aU * .387098, orbitalVelocity: 0, drawSize: .5},
-    {name: 'Venus', mass: earthMass * .815, radius: aU * .72, orbitalVelocity: 0, drawSize: 1},
-    {name: 'Earth', mass: earthMass, radius: aU, orbitalVelocity: 0, drawSize: 1, color: {r: 180, g: 200, b: 255}},
-    {name: 'Mars', mass: earthMass * .107, radius: aU * 1.38, orbitalVelocity: 0, drawSize: .6, color: {r: 255, g: 160, b: 160}},
-    {name: 'Jupiter', mass: jupiterMass, radius: aU * 5.2, arc: Math.PI, orbitalVelocity: 0, drawSize: 1.4},    
-    {name: 'Saturn', mass: jupiterMass * .30, radius: aU * 9.5, orbitalVelocity: 0, drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
-    {name: 'Neptune', mass: earthMass * 17.147, radius: aU * 30, orbitalVelocity: 0, drawSize: 1, color: {r: 150, g: 160, b: 215}},
-    {name: 'Ganymede', mass: earthMass * .025, radius: aU * 5.21, arc: Math.PI, orbitalVelocity: 0, drawSize: .6}
+    {name: 'Sun', mass: jupiterMass * 1047, radius: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
+    {name: 'Mercury', mass: earthMass * .055, radius: aU * .387098, drawSize: .5},
+    {name: 'Venus', mass: earthMass * .815, radius: aU * .72, drawSize: 1},
+    {name: 'Earth', mass: earthMass, radius: aU, drawSize: 1, color: {r: 180, g: 200, b: 255}},
+    {name: 'Mars', mass: earthMass * .107, radius: aU * 1.38, drawSize: .6, color: {r: 255, g: 160, b: 160}},
+    {name: 'Jupiter', mass: jupiterMass, radius: aU * 5.2, arc: Math.PI, drawSize: 1.4},    
+    {name: 'Saturn', mass: jupiterMass * .30, radius: aU * 9.5, drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
+    {name: 'Neptune', mass: earthMass * 17.147, radius: aU * 30, drawSize: 1, color: {r: 150, g: 160, b: 215}},
+    {name: 'Ganymede', mass: earthMass * .025, radius: aU * 5.21, arc: Math.PI, drawSize: .6}
   ];
-
+  //The yellow one in the middle is the sun!
   initialObjects[0].orbitalVelocity = 0;
   this.buildParticle(initialObjects.shift());
   while(initialObjects.length > 0) {
@@ -131,6 +131,7 @@ function Particle(id, x, y) {
   this.id = id; 
   this.x = this.oldX = x;
   this.y = this.oldY = y;
+  this.energy = 0.0
   this.remove = false;
 
   this.oldX = x + Math.random() * 8 - 4;
@@ -176,14 +177,14 @@ Particle.prototype.integrate = function() {
       if(d2 > 0.0) {
         gravVector.x += GM * dx / d3;
         gravVector.y += GM * dy / d3;
-        //energy += -GM/d1;
+        energy += -GM/d1;
       } else {
         //gravVector.x += 0;
         //gravVector.y += 0;
       }
     }
   }
-
+  this.energy = energy;
   this.newX = this.x + velocityX + gravVector.x;
   this.newY = this.y + velocityY + gravVector.y;
   this.oldX = this.x;
@@ -311,7 +312,7 @@ ViewPort.prototype.frame = function() {
     // app.ctx.fillText("Gx: " + (app.particles[app.FOLLOW].gravVector.x) * 100, 5, 185);    
     // app.ctx.fillText("Gy: " + (app.particles[app.FOLLOW].gravVector.y) * 100, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
-    //app.ctx.fillText("Jupiter Energy " + )
+    app.ctx.fillText("Focus Mechanical Energy " + Number(app.particles[app.FOLLOW].energy).toPrecision(6), 5, 255);
     var viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT,
       unit = ' AU';
     if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
