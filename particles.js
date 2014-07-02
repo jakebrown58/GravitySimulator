@@ -73,7 +73,7 @@ Particles.prototype.buildInitialParticles = function() {
     {name: 'Venus', mass: earthMass * .815, radius: aU * .72, drawSize: 1},
     {name: 'Earth', mass: earthMass, radius: aU, drawSize: 1, color: {r: 180, g: 200, b: 255}},
     {name: 'Mars', mass: earthMass * .107, radius: aU * 1.38, drawSize: .6, color: {r: 255, g: 160, b: 160}},
-    {name: 'Jupiter', mass: jupiterMass, radius: aU * 5.2, arc: Math.PI, drawSize: 1.4},    
+    {name: 'Jupiter', mass: jupiterMass, radius: aU * 5.2, arc: Math.PI+0.001, drawSize: 1.4},    
     {name: 'Saturn', mass: jupiterMass * .30, radius: aU * 9.5, drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
     {name: 'Neptune', mass: earthMass * 17.147, radius: aU * 30, drawSize: 1, color: {r: 150, g: 160, b: 215}},
     {name: 'Ganymede', mass: earthMass * .025, radius: aU * 5.21, arc: Math.PI, drawSize: .6}
@@ -87,7 +87,7 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
-    this.buildParticle({name: 'Asteroid', mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 1.5 + aU * (Math.random() * 3.5), orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)), drawSize: .1});
+    this.buildParticle({name: 'Asteroid', mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 1.5 + aU * (Math.random() * 3.5), orbitalVelocity: Math.sqrt(GMsun/(aU * 1.5)), drawSize: .1});
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
@@ -95,7 +95,7 @@ Particles.prototype.buildInitialParticles = function() {
   }  
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
-    this.buildParticle({name: 'Jupiter Cloud', mass: earthMass / (8000 + Math.random() * 32000), radius: aU * 5.2 + Math.random() * .5, arc: Math.PI, orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)) + Math.random() * .09, drawSize: .03});
+    this.buildParticle({name: 'Jupiter Cloud', mass: earthMass / (8000 + Math.random() * 32000), radius: aU * 5.2 *(1 + (Math.random()-.5) * .01), arc: Math.PI*(1+(Math.random()-0.5)/180.), orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)) * (1+ (Math.random()-.5) * .09), drawSize: .03});
   }
 
   //this.buildParticle({name: 'LIGHTYEAR EXPRESS', mass: 1 / 500000000000000, radius: app.physics.constants.LIGHTYEAR, arc: 0, orbitalVelocity: .300, drawSize: 1});
