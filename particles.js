@@ -31,16 +31,19 @@ app.init = function() {
 
 function Physics() {
   this.constants = {};
-  this.constants.DAMPING = 1;
-  this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 200; // helps us get back to a base-state.
+  this.constants.ASTRONOMICAL_UNIT = 1.;  // astronomical unit / ie, 1 Earth distance from the sun.
+  this.constants.timeinterval = 1.; //Day
+  this.constants.JUPITER_MASS = 1.;
+  this.constants.EARTH_MASS = 1 / 317;
+  //Here is Newton's G, in units of AU, Days, and Jupiter's Mass.
+  this.constants.ORIGINAL_GRAVITY_CONSTANT = 0.037378111; // helps us get back to a base-state.
   this.constants.GRAVITY_CONSTANT = this.constants.ORIGINAL_GRAVITY_CONSTANT;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
   this.constants.ORIGINAL_VELOCITY_FACTOR = Math.sqrt(this.constants.GRAVITY_CONSTANT / this.constants.ORIGINAL_GRAVITY_CONSTANT),
-  this.constants.JUPITER_MASS = 1,
-  this.constants.EARTH_MASS = 1 / 317,
-  this.constants.ASTRONOMICAL_UNIT = 50,  // astronomical unit / ie, 1 Earth distance from the sun.
+
   this.constants.MILES_PER_AU = 92560000;
   this.constants.LIGHTYEAR_PER_AU = 63239.72;
   this.constants.LIGHTYEAR = this.constants.ASTRONOMICAL_UNIT * this.constants.LIGHTYEAR_PER_AU;
+  this.constants.DAMPING = 1;
 
 
   this.variables = {};
@@ -95,7 +98,7 @@ Particles.prototype.buildInitialParticles = function() {
   }  
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
-    this.buildParticle({name: 'Jupiter Cloud', mass: earthMass / (8000 + Math.random() * 32000), radius: aU * 5.2 *(1 + (Math.random()-.5) * .01), arc: Math.PI*(1+(Math.random()-0.5)/180.), orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)) * (1+ (Math.random()-.5) * .09), drawSize: .03});
+    this.buildParticle({name: 'Jupiter Cloud', mass: earthMass / (8000 + Math.random() * 32000), radius: aU * 5.2 *(1 + (Math.random()-.5) * .03), arc: Math.PI*(1+(Math.random()-0.5)/60.), orbitalVelocity: Math.sqrt(GMsun/(aU * 5.2)) * (1+ (Math.random()-.5) * .1), drawSize: .03});
   }
 
   //this.buildParticle({name: 'LIGHTYEAR EXPRESS', mass: 1 / 500000000000000, radius: app.physics.constants.LIGHTYEAR, arc: 0, orbitalVelocity: .300, drawSize: 1});
@@ -159,7 +162,7 @@ Particle.prototype.integrate = function() {
 
   if(app.physics.variables.TIME_STEP != 1) {
     velocityX = velocityX / Math.sqrt(app.physics.variables.TIME_STEP);
-    velocityY = velocityY / Math.sqrt( app.physics.variables.TIME_STEP);
+    velocityY = velocityY / Math.sqrt(app.physics.variables.TIME_STEP);
   }
   energy = (0.5)*(velocityX*velocityX + velocityY*velocityY);
   gravVector = {x: 0.000, y: 0.000};
@@ -312,7 +315,7 @@ ViewPort.prototype.frame = function() {
     // app.ctx.fillText("Gx: " + (app.particles[app.FOLLOW].gravVector.x) * 100, 5, 185);    
     // app.ctx.fillText("Gy: " + (app.particles[app.FOLLOW].gravVector.y) * 100, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
-    app.ctx.fillText("Focus Mechanical Energy " + Number(app.particles[app.FOLLOW].energy).toPrecision(6), 5, 255);
+    app.ctx.fillText("Focus Mechanical Energy: " + Number(app.particles[app.FOLLOW].energy).toPrecision(6), 5, 265);
     var viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT,
       unit = ' AU';
     if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
@@ -457,7 +460,7 @@ Response.prototype.onKeyDown = function(e) {
       }
     } 
     if(e.keyCode === 88) {    // 'X'
-      if(app.physics.constants.GRAVITY_CONSTANT < 1/60.) {
+      if(app.physics.constants.GRAVITY_CONSTANT < app.physics.constans.ORIGINAL_GRAVITY_CONSTANT * 100.) {
         app.physics.variables.TIME_STEP = app.physics.variables.TIME_STEP / 2;
       }
     }
