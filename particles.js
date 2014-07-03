@@ -224,6 +224,7 @@ Particle.prototype.configure = function(config) {
   particle.oldX = particle.x - config.orbitalVelocity * Math.sin(config.arc);
   particle.oldY = particle.y - config.orbitalVelocity * -Math.cos(config.arc);
   particle.size = config.drawSize;    
+  particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
 };
 
 Particle.prototype.draw = function() {
@@ -240,7 +241,7 @@ Particle.prototype.draw = function() {
   }
 
 
-  ctx.strokeStyle = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
+  ctx.strokeStyle = this.drawColor;
   ctx.lineWidth = this.size;
   ctx.beginPath();
   ctx.arc(obj.x, obj.y, ctx.lineWidth, 0, 2 * Math.PI, false);
@@ -382,7 +383,7 @@ ViewPort.prototype.adjustZoom = function(direction) {
 
 function Response() {
   app.display.addEventListener('mousemove', this.onMousemove);
-  app.display.addEventListener('click', this.onClick);
+  //app.display.addEventListener('click', this.onClick);
   app.display.addEventListener('keydown', this.onKeyDown);
 }
 
@@ -469,24 +470,24 @@ Response.prototype.onKeyDown = function(e) {
     }  
 };
 
-Response.prototype.onClick = function(e) {
-    //app.TRACE = !app.TRACE;
+// Response.prototype.onClick = function(e) {
+//     //app.TRACE = !app.TRACE;
 
-    //app.particles.push(new Particle(particles.length - 1, Math.random() * width, Math.random() * height));
+//     //app.particles.push(new Particle(particles.length - 1, Math.random() * width, Math.random() * height));
 
-    //for(var j = 0; j < app.particles.length; j++ ) {
-    //  if(app.particles[j].id === 0){
+//     //for(var j = 0; j < app.particles.length; j++ ) {
+//     //  if(app.particles[j].id === 0){
           
-        //particles[j].x = e.clientX;
-        //particles[j].y = e.clientY;
-    //  }
+//         //particles[j].x = e.clientX;
+//         //particles[j].y = e.clientY;
+//     //  }
 
-      //particles[j].explode();
-    //}
-    // for (var i = 0; i < particles.length; i++) {
-    //   particles[i].explode();
-    // }
-};
+//       //particles[j].explode();
+//     //}
+//     // for (var i = 0; i < particles.length; i++) {
+//     //   particles[i].explode();
+//     // }
+// };
 
 
 app.init();
