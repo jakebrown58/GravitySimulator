@@ -93,7 +93,15 @@ Particles.prototype.buildInitialParticles = function() {
   }  
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
-    this.buildParticle({name: 'Jupiter Cloud', arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80, mass: earthMass / (8000 + Math.random() * 32000), orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, eccentric: 'little', radius: aU * .01 + aU * Math.random() * .08}], drawSize: .03});
+    this.buildParticle({
+      name: 'Jupiter Cloud', 
+      arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80, 
+      mass: earthMass / (8000 + Math.random() * 32000), 
+      orbits: [
+        {mass: sunMass, radius: aU * 5.2}, 
+        {mass: jupiterMass, eccentric: 'little', radius: aU * .01 + aU * Math.random() * .08}], 
+      drawSize: .03
+    });
   }
 
   //this.buildParticle({name: 'LIGHTYEAR EXPRESS', mass: 1 / 500000000000000, radius: app.physics.constants.LIGHTYEAR, arc: 0, orbitalVelocity: .300, drawSize: 1});
