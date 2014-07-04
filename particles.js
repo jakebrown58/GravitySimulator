@@ -116,13 +116,18 @@ Particles.prototype.finalize = function() {
     
   for (var i = 0; i < particles.length; i++) {
       var me = particles[i];
-      px += me.mass * (me.x - me.oldX);
-      py += me.mass * (me.y - me.oldY);
+      px += me.mass * me.velx;
+      py += me.mass * me.vely;
   }
   //Give the Sun a little kick to zero out the system's momentum:
   var sun = app.particles[0];
-  sun.oldX += px / sun.mass;
-  sun.oldY += py / sun.mass;
+  sun.velx += -px / sun.mass;
+  sun.vely += -py / sun.mass;
+
+  //This has to be done once before integration can occur. Prime The Pump!
+  for (var i = 0; i < app.particles.length; i++) {
+    app.particles[i].calcAcceleration();
+  }
 
   app.PARTICLECOUNT = particles.length -1;
 };
@@ -150,48 +155,52 @@ function Particle(id, x, y) {
     b:  Math.floor(Math.random() * 100 + 155)};
 }
 
-Particle.prototype.integrate = function() {
-  var velocityX = (this.x - this.oldX),
-    velocityY = (this.y - this.oldY),
-    curr,
-    gravVector,
+Particle.prototype.calcAcceleration = function(){
+ var curr,
     dx,
     dy,
-    distance,
     grav;
 
-  if(app.physics.variables.TIME_STEP != 1) {
-    velocityX = velocityX / Math.sqrt(app.physics.variables.TIME_STEP);
-    velocityY = velocityY / Math.sqrt( app.physics.variables.TIME_STEP);
-  }
+    this.oldaccx = this.accx
+    this.oldaccy = this.accy
 
-  gravVector = {x: 0.000, y: 0.000};
 
-  for (var i = 0; i < app.particles.length; i++) {
+    this.accx = 0.0;
+    this.accy = 0.0;
+
+    for (var i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
-    if(curr.id !== this.id ) { //&& !this.remove) {
+    if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
-      var d1 = dx * dx + dy * dy;
-      distance = Math.sqrt(d1) * d1;
+      var d2 = dx * dx + dy * dy;
+      var d3 = Math.sqrt(d2) * d2;
 
-      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / distance;
+      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
 
-      if(distance > 0) {
-        gravVector.x += grav * dx;
-        gravVector.y += grav * dy;
-      } else {
-        gravVector.x += 0;
-        gravVector.y += 0;
+      if(d2 > 0) {
+        this.accx += grav * dx;
+        this.accy += grav * dy;
+      }else{
+        //whoodeedoo.
       }
     }
   }
+}
 
-  this.newX = this.x + velocityX + gravVector.x;
-  this.newY = this.y + velocityY + gravVector.y;
-  this.oldX = this.x;
-  this.oldY = this.y;
+Particle.prototype.updatePosition = function() {
+  var dt = 1; //dummy, to hook up to real dt later.
+  this.x = this.x + this.velx * dt + 0.5 *this.accx * dt*dt;
+  this.y = this.y + this.vely * dt + 0.5 *this.accy * dt*dt;
 };
+
+Particle.prototype.updateVelocity = function() {
+  var dt = 1; //dummy, to hook up to real dt later.
+  this.velx = this.velx + 0.5 * (this.oldaccx + this.accx) * dt;
+  this.vely = this.vely + 0.5 * (this.oldaccy + this.accy) * dt;
+};
+
+
 
 Particle.prototype.checkClock = function() {
     return this.x > app.halfWidth && this.y < app.halfHeight && this.newY > app.halfHeight;
@@ -250,8 +259,13 @@ Particle.prototype.configure = function(config) {
   particle.mass = config.mass;
   particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
   particle.y = app.halfHeight - localRadius * Math.sin(config.arc);
-  particle.oldX = particle.x - localOrbitalVelocity * Math.sin(config.arc);
-  particle.oldY = particle.y - localOrbitalVelocity * -Math.cos(config.arc);
+
+  particle.velx = localOrbitalVelocity * Math.sin(config.arc);
+  particle.vely = localOrbitalVelocity * -Math.cos(config.arc);
+
+  particle.accx = 0.0;
+  particle.accy = 0.0;
+
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
 };
@@ -352,8 +366,15 @@ ViewPort.prototype.frame = function() {
   }
 
   for (var i = 0; i < app.particles.length; i++) {
-    app.particles[i].integrate();
+    app.particles[i].updatePosition();
   }
+  for (var i = 0; i < app.particles.length; i++) {
+    app.particles[i].calcAcceleration();
+  }
+  for (var i = 0; i < app.particles.length; i++) {
+    app.particles[i].updateVelocity();
+  }
+
 
   app.CLOCK.ticks += 1;
   app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
@@ -361,10 +382,7 @@ ViewPort.prototype.frame = function() {
   app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
 
   for (i = 0; i < app.particles.length; i++) {
-    current = app.particles[i];
-    current.x = current.newX;
-    current.y = current.newY;
-    current.draw();
+    app.particles[i].draw();
   }
 
   if(app.physics.variables.TIME_STEP != 1) {
