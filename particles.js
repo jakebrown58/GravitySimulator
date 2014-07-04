@@ -1,13 +1,10 @@
 var app = {};
 
 app.init = function() {
-
+  app.physics = new Physics();
   app.display = document.getElementById('display');
   app.ctx = display.getContext('2d');
   app.particles = [];
-  app.viewPort = new ViewPort();
-  app.physics = new Physics();
-  app.response = new Response();
   app.width = display.width = window.innerWidth;
   app.height = display.height = window.innerHeight;
   app.size = (app.width + app.height) / 2;
@@ -25,6 +22,8 @@ app.init = function() {
   app.realTime = Date();
 
   app.display.focus();
+  app.viewPort = new ViewPort();
+  app.response = new Response();
 
   var x = new Particles().buildInitialParticles();
 };
@@ -295,6 +294,8 @@ Particle.prototype.draw = function() {
 function ViewPort(){
   this.frameCount = 0;
   this.draw = true;
+  this.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
+  this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
 }
 
 ViewPort.prototype.project = function(flatX, flatY, flatZ) {
@@ -327,9 +328,6 @@ ViewPort.prototype.frame = function() {
   if(!app.TRACE) {
     app.ctx.clearRect(0, 0, app.width, app.height);
   }
-
-  app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
-  app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
 
   if(app.SHOWCLOCK) {
     app.ctx.fillText("Earth time:" + app.CLOCK.e, 5, 25);
@@ -386,9 +384,6 @@ ViewPort.prototype.frame = function() {
   }
 };
 
-// ViewPort.prototype.adjustView = function(direction) {
-// };
-
 ViewPort.prototype.adjustZoom = function(direction) {
     if( app.VIEWSHIFT.zoom < .0001 && app.VIEWSHIFT.zoom > -.0001) {
       app.VIEWSHIFT.zoom = 0;
@@ -420,6 +415,10 @@ ViewPort.prototype.adjustZoom = function(direction) {
     if(app.VIEWSHIFT.zoom <= -1) {
       app.VIEWSHIFT.zoom = -.9995;
     } 
+
+    app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
+    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
+
 };
 
 /* ******************* RESPONSE ******************************************************* */
