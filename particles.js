@@ -49,9 +49,9 @@ function Physics() {
 
 function Particles() {
   this.objects = {};
-  this.objects.COMETS = 30;
-  this.objects.ASTEROIDS = 300;
-  this.objects.JUPITERCLOUD = 300;
+  this.objects.COMETS = 3;
+  this.objects.ASTEROIDS = 1;
+  this.objects.JUPITERCLOUD = 0;
   this.objects.PARTICLECOUNT = 1;  
 }
 
@@ -85,16 +85,16 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
-    this.buildParticle({name: 'Asteroid', mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: .1});
+    this.buildParticle({name: 'Asteroid ' + i, mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: .1});
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
-    this.buildParticle({name: 'COMET', mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 7 + aU * (Math.random() * 40), orbitalVelocity: -.14 + Math.random() * 3.02, drawSize: .1});
+    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 7 + aU * (Math.random() * 40), orbitalVelocity: -.14 + Math.random() * 3.02, drawSize: .1});
   }  
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
     this.buildParticle({
-      name: 'Jupiter Cloud', 
+      name: 'Jupiter Cloud' + i, 
       arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80, 
       mass: earthMass / (8000 + Math.random() * 32000), 
       orbits: [
@@ -247,6 +247,7 @@ Particle.prototype.configure = function(config) {
     localOrbitalVelocity = config.orbitalVelocity * app.physics.constants.ORIGINAL_VELOCITY_FACTOR;
   }
 
+  particle.name = config.name;
   particle.mass = config.mass;
   particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
   particle.y = app.halfHeight - localRadius * Math.sin(config.arc);
@@ -326,10 +327,10 @@ ViewPort.prototype.frame = function() {
     app.ctx.fillText("Started:" + app.realTime, 5, 85);
     app.ctx.fillText("Now:" + Date(), 5, 105);
     app.ctx.fillText("Ticks: " + app.CLOCK.ticks, 5, 125);
-    // app.ctx.fillText("Vx: " + (app.particles[app.FOLLOW].newX - app.particles[app.FOLLOW].oldX) * 100, 5, 145);
-    // app.ctx.fillText("Vy: " + (app.particles[app.FOLLOW].newY - app.particles[app.FOLLOW].oldY) * 100, 5, 165);
-    // app.ctx.fillText("Gx: " + (app.particles[app.FOLLOW].gravVector.x) * 100, 5, 185);    
-    // app.ctx.fillText("Gy: " + (app.particles[app.FOLLOW].gravVector.y) * 100, 5, 205);    
+    app.ctx.fillText("Vx: " + (app.particles[app.FOLLOW].newX - app.particles[app.FOLLOW].oldX) * 100, 5, 145);
+    app.ctx.fillText("Vy: " + (app.particles[app.FOLLOW].newY - app.particles[app.FOLLOW].oldY) * 100, 5, 165);
+    app.ctx.fillText("Mass: " + app.particles[app.FOLLOW].mass, 5, 185);    
+    app.ctx.fillText("Name: " + app.particles[app.FOLLOW].name, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
 
     var viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT,
