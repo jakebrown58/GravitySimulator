@@ -189,13 +189,13 @@ Particle.prototype.calcAcceleration = function(){
 }
 
 Particle.prototype.updatePosition = function() {
-  var dt = 1; //dummy, to hook up to real dt later.
+  var dt = app.physics.variables.TIME_STEP; //dummy, to hook up to real dt later.
   this.x = this.x + this.velx * dt + 0.5 *this.accx * dt*dt;
   this.y = this.y + this.vely * dt + 0.5 *this.accy * dt*dt;
 };
 
 Particle.prototype.updateVelocity = function() {
-  var dt = 1; //dummy, to hook up to real dt later.
+  var dt = app.physics.variables.TIME_STEP; //dummy, to hook up to real dt later.
   this.velx = this.velx + 0.5 * (this.oldaccx + this.accx) * dt;
   this.vely = this.vely + 0.5 * (this.oldaccy + this.accy) * dt;
 };
@@ -361,10 +361,6 @@ ViewPort.prototype.frame = function() {
   }
 
 
-  if(app.physics.variables.TIME_STEP != 1) {
-    app.physics.constants.GRAVITY_CONSTANT /= app.physics.variables.TIME_STEP;
-  }
-
   for (var i = 0; i < app.particles.length; i++) {
     app.particles[i].updatePosition();
   }
@@ -383,10 +379,6 @@ ViewPort.prototype.frame = function() {
 
   for (i = 0; i < app.particles.length; i++) {
     app.particles[i].draw();
-  }
-
-  if(app.physics.variables.TIME_STEP != 1) {
-    app.physics.variables.TIME_STEP = 1;
   }
 };
 
@@ -472,7 +464,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWSHIFT.x -= 3;
     }
     if(e.keyCode === 80) {    // 'P'
-      app.physics.variables.TIME_STEP = app.physics.constants.GRAVITY_CONSTANT / app.physics.constants.ORIGINAL_GRAVITY_CONSTANT;
+      app.physics.variables.TIME_STEP = 1;
       if(app.GO === false) {
         app.GO = true;
         requestAnimationFrame(app.viewPort.frame);
@@ -494,12 +486,12 @@ Response.prototype.onKeyDown = function(e) {
       }
     } 
     if(e.keyCode === 88) {    // 'X'
-      if(app.physics.constants.GRAVITY_CONSTANT < .16) {
-        app.physics.variables.TIME_STEP = app.physics.variables.TIME_STEP / 2;
+      if(app.physics.variables.TIME_STEP < 100) {
+        app.physics.variables.TIME_STEP *= 1.5;
       }
     }
     if(e.keyCode === 90) {    // 'Z'
-      app.physics.variables.TIME_STEP *= 1.5;
+      app.physics.variables.TIME_STEP /= 1.5;
     }
     if(e.keyCode === 188) {    // '<'
       app.viewPort.adjustZoom('out');
@@ -513,7 +505,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWANGLE = .75;
       app.FOLLOW = 0;
       app.VIEWSHIFT.zoom = 0;
-      app.physics.variables.TIME_STEP = app.physics.constants.GRAVITY_CONSTANT / app.physics.constants.ORIGINAL_GRAVITY_CONSTANT;
+      app.physics.variables.TIME_STEP = 1;
     }  
 };
 
