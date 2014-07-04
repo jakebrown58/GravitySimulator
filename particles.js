@@ -263,7 +263,7 @@ Particle.prototype.draw = function() {
   var ctx = app.ctx,
     obj,
     drawSize = this.size,
-    center = {x: (app.particles[app.FOLLOW].x - app.width / 2), y: (app.particles[app.FOLLOW].y - app.height / 2)};
+    center = {x: (app.particles[app.FOLLOW].x - app.halfWidth), y: (app.particles[app.FOLLOW].y - app.halfHeight)};
 
   if(app.DRAWSTATE === 0) {
     obj = app.viewPort.project(this.x, this.y, 0);
@@ -273,9 +273,14 @@ Particle.prototype.draw = function() {
     obj.y = (this.y - center.y) + (this.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
   }
 
+  if(this.radius > 1) {
+    drawSize = app.physics.constants.ASTRONOMICAL_UNIT * this.radius / app.viewPort.viewPortSizeInKm;
+    drawSize = drawSize > this.size ? drawSize : this.size;
+  }
+
 
   ctx.strokeStyle = this.drawColor;
-  ctx.lineWidth = this.size;
+  ctx.lineWidth = drawSize;
   ctx.beginPath();
   ctx.arc(obj.x, obj.y, ctx.lineWidth, 0, 2 * Math.PI, false);
   ctx.fillStyle = ctx.strokeStyle;
@@ -323,6 +328,9 @@ ViewPort.prototype.frame = function() {
     app.ctx.clearRect(0, 0, app.width, app.height);
   }
 
+  app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
+  app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
+
   if(app.SHOWCLOCK) {
     app.ctx.fillText("Earth time:" + app.CLOCK.e, 5, 25);
     app.ctx.fillText("Jupiter time:" + app.CLOCK.j, 5, 45);
@@ -336,7 +344,8 @@ ViewPort.prototype.frame = function() {
     app.ctx.fillText("Name: " + app.particles[app.FOLLOW].name, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
 
-    var viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT,
+
+    var viewPortSize = app.viewPort.viewPortSize,
       unit = ' AU';
     if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
       viewPortSize = viewPortSize / app.physics.constants.LIGHTYEAR_PER_AU;
@@ -348,6 +357,7 @@ ViewPort.prototype.frame = function() {
       viewPortSize = Math.floor(viewPortSize);
     }
     app.ctx.fillText("Viewport size: " + viewPortSize + unit, 5, 245);
+
   }
 
 
