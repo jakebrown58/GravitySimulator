@@ -90,7 +90,7 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
-    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000), radius: aU * 7 + aU * (Math.random() * 40), orbitalVelocity: -.14 + Math.random() * 3.02, drawSize: .1});
+    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 7 + aU * (Math.random() * 40), orbitalVelocity: -.14 + Math.random() * 3.02, drawSize: .1});
   }  
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
@@ -221,7 +221,7 @@ Particle.prototype.explode = function(x, y) {
 Particle.prototype.configure = function(config) {
   var particle = this,
     localOrbitalVelocity = 0,
-    localRadius = 0;
+    localRadius = config.distance || 0;
 
   if(config.arc === undefined) {
     config.arc = Math.random() * 6.28;
