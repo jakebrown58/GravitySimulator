@@ -39,6 +39,7 @@ function Physics() {
   this.constants.EARTH_MASS = 1 / 317,
   this.constants.ASTRONOMICAL_UNIT = 50,  // astronomical unit / ie, 1 Earth distance from the sun.
   this.constants.MILES_PER_AU = 92560000;
+  this.constants.KM_PER_AU = 149586761;
   this.constants.LIGHTYEAR_PER_AU = 63239.72;
   this.constants.LIGHTYEAR = this.constants.ASTRONOMICAL_UNIT * this.constants.LIGHTYEAR_PER_AU;
 
@@ -69,12 +70,12 @@ Particles.prototype.buildInitialParticles = function() {
     cfg = {};
 
   initialObjects = [
-    {name: 'Sun', mass: jupiterMass * 1047, radius: 0, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
+    {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
     {name: 'Mercury', mass: earthMass * .055, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
     {name: 'Venus', mass: earthMass * .815, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
     {name: 'Earth', mass: earthMass, orbits: [{mass: sunMass, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
     {name: 'Mars', mass: earthMass * .107, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
-    {name: 'Jupiter', mass: jupiterMass, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
+    {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
     {name: 'Saturn', mass: jupiterMass * .30, orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
     {name: 'Neptune', mass: earthMass * 17.147, orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
     {name: 'Ganymede', mass: earthMass * .025, orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6}
@@ -220,7 +221,7 @@ Particle.prototype.explode = function(x, y) {
 Particle.prototype.configure = function(config) {
   var particle = this,
     localOrbitalVelocity = 0,
-    localRadius = config.radius || 0;
+    localRadius = 0;
 
   if(config.arc === undefined) {
     config.arc = Math.random() * 6.28;
@@ -247,6 +248,7 @@ Particle.prototype.configure = function(config) {
     localOrbitalVelocity = config.orbitalVelocity * app.physics.constants.ORIGINAL_VELOCITY_FACTOR;
   }
 
+  particle.radius = config.radius || 1;
   particle.name = config.name;
   particle.mass = config.mass;
   particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
@@ -260,6 +262,7 @@ Particle.prototype.configure = function(config) {
 Particle.prototype.draw = function() {
   var ctx = app.ctx,
     obj,
+    drawSize = this.size,
     center = {x: (app.particles[app.FOLLOW].x - app.width / 2), y: (app.particles[app.FOLLOW].y - app.height / 2)};
 
   if(app.DRAWSTATE === 0) {
