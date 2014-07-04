@@ -493,6 +493,11 @@ Response.prototype.onKeyDown = function(e) {
     if(e.keyCode === 90) {    // 'Z'
       app.physics.variables.TIME_STEP /= 1.5;
     }
+
+    if(e.keyCode === 82) {    // 'R'
+      app.physics.variables.TIME_STEP *= -1;
+    }
+
     if(e.keyCode === 188) {    // '<'
       app.viewPort.adjustZoom('out');
     }
