@@ -189,18 +189,29 @@ Particle.prototype.calcAcceleration = function(){
 }
 
 Particle.prototype.updatePosition = function() {
-  var dt = app.physics.variables.TIME_STEP; //dummy, to hook up to real dt later.
-  this.x = this.x + this.velx * dt + 0.5 *this.accx * dt*dt;
-  this.y = this.y + this.vely * dt + 0.5 *this.accy * dt*dt;
+  var dt = app.physics.variables.TIME_STEP;
+  this.x += (this.velx + 0.5 * this.accx * dt) * dt;
+  this.y += (this.vely + 0.5 * this.accy * dt) * dt;
 };
 
 Particle.prototype.updateVelocity = function() {
-  var dt = app.physics.variables.TIME_STEP; //dummy, to hook up to real dt later.
-  this.velx = this.velx + 0.5 * (this.oldaccx + this.accx) * dt;
-  this.vely = this.vely + 0.5 * (this.oldaccy + this.accy) * dt;
+  var dt = app.physics.variables.TIME_STEP;
+  this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
+  this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
 };
 
+Particle.prototype.isBoundTo(p2){
+  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
+  var velx = this.velx - p2.velx;
+  var vely = this.vely - p2.vely;
+  var dx = this.x - p2.x;
+  var dy = this.y - p2.y;
 
+
+
+  
+
+}
 
 Particle.prototype.checkClock = function() {
     return this.x > app.halfWidth && this.y < app.halfHeight && this.newY > app.halfHeight;
