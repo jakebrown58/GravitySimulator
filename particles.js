@@ -20,6 +20,7 @@ app.init = function() {
   app.CLOCK = {j:0, e:0, n:0, ticks: 0};
   app.SHOWCLOCK = false;
   app.realTime = Date();
+  app.splitTime = Date();
 
   app.display.focus();
   app.viewPort = new ViewPort();
@@ -49,9 +50,9 @@ function Physics() {
 
 function Particles() {
   this.objects = {};
-  this.objects.COMETS = 3;
-  this.objects.ASTEROIDS = 1;
-  this.objects.JUPITERCLOUD = 0;
+  this.objects.COMETS = 20;
+  this.objects.ASTEROIDS = 300;
+  this.objects.JUPITERCLOUD = 180;
   this.objects.PARTICLECOUNT = 1;  
 }
 
@@ -143,12 +144,13 @@ function Particle(id, x, y) {
   //this.oldY = y + Math.random() * 8 - 4;
 
   this.mass = 2;
-
+  this.obj = {x: this.x, y: this.y}
+  this.center = {};
   this.damping = 1;
   this.color = {r: Math.floor(Math.random() * 100 + 155), 
     g:  Math.floor(Math.random() * 200 + 145), 
     b:  Math.floor(Math.random() * 100 + 155)};
-}
+};
 
 Particle.prototype.integrate = function() {
   var velocityX = (this.x - this.oldX),
@@ -165,7 +167,7 @@ Particle.prototype.integrate = function() {
     velocityY = velocityY / Math.sqrt( app.physics.variables.TIME_STEP);
   }
 
-  gravVector = {x: 0.000, y: 0.000};
+  gravVector = {x: 0, y: 0};
 
   for (var i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
@@ -174,9 +176,8 @@ Particle.prototype.integrate = function() {
       dy = curr.y - this.y;
       var d1 = dx * dx + dy * dy;
       distance = Math.sqrt(d1) * d1;
-
       grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / distance;
-
+        
       if(distance > 0) {
         gravVector.x += grav * dx;
         gravVector.y += grav * dy;
@@ -259,17 +260,15 @@ Particle.prototype.configure = function(config) {
 };
 
 Particle.prototype.draw = function() {
-  var ctx = app.ctx,
-    obj,
-    drawSize = this.size,
-    center = {x: (app.particles[app.FOLLOW].x - app.halfWidth), y: (app.particles[app.FOLLOW].y - app.halfHeight)};
+  var obj,
+    drawSize = this.size;
 
   if(app.DRAWSTATE === 0) {
     obj = app.viewPort.project(this.x, this.y, 0);
   } else {
     obj = {x: this.x, y: this.y};
-    obj.x = (this.x - center.x) + (this.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-    obj.y = (this.y - center.y) + (this.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+    obj.x = (this.x - app.viewPort.center.x) + (this.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+    obj.y = (this.y - app.viewPort.center.y) + (this.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
   }
 
   if(this.radius > 1) {
@@ -278,15 +277,19 @@ Particle.prototype.draw = function() {
   }
 
 
-  ctx.strokeStyle = this.drawColor;
-  ctx.lineWidth = drawSize;
-  ctx.beginPath();
-  ctx.arc(obj.x, obj.y, ctx.lineWidth, 0, 2 * Math.PI, false);
-  ctx.fillStyle = ctx.strokeStyle;
-  ctx.fill();
-  ////ctx.moveTo(this.oldX, this.oldY);
-  //ctx.lineTo(this.x + 1, this.y + 1);
-  ctx.stroke();
+  app.ctx.strokeStyle = this.drawColor;
+  app.ctx.lineWidth = drawSize;
+  app.ctx.beginPath();
+  app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);  
+
+  if(drawSize >= 1) {
+    app.ctx.fillStyle = app.ctx.strokeStyle;
+    app.ctx.fill();
+  }
+
+  app.ctx.stroke();
+  ////app.ctx.moveTo(this.oldX, this.oldY);
+  //app.ctx.lineTo(this.x + 1, this.y + 1);
 };
 
 /* ******************* VIEWPORT ******************************************************* */
@@ -325,10 +328,22 @@ ViewPort.prototype.frame = function() {
   if(app.GO) {
     requestAnimationFrame(app.viewPort.frame);
   }
+
   if(!app.TRACE) {
     app.ctx.clearRect(0, 0, app.width, app.height);
   }
 
+  app.viewPort.frameActions();
+};
+
+ViewPort.prototype.frameActions = function() {
+  app.viewPort.frameClock();
+  app.viewPort.integrateWrapper();
+  app.viewPort.setClock();
+  app.viewPort.setIntegrate();
+}
+
+ViewPort.prototype.frameClock = function() {
   if(app.SHOWCLOCK) {
     app.ctx.fillText("Earth time:" + app.CLOCK.e, 5, 25);
     app.ctx.fillText("Jupiter time:" + app.CLOCK.j, 5, 45);
@@ -336,12 +351,12 @@ ViewPort.prototype.frame = function() {
     app.ctx.fillText("Started:" + app.realTime, 5, 85);
     app.ctx.fillText("Now:" + Date(), 5, 105);
     app.ctx.fillText("Ticks: " + app.CLOCK.ticks, 5, 125);
+    app.ctx.fillText("FrameRate: " + Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime)))), 65, 125);
     app.ctx.fillText("Vx: " + (app.particles[app.FOLLOW].newX - app.particles[app.FOLLOW].oldX) * 100, 5, 145);
     app.ctx.fillText("Vy: " + (app.particles[app.FOLLOW].newY - app.particles[app.FOLLOW].oldY) * 100, 5, 165);
     app.ctx.fillText("Mass: " + app.particles[app.FOLLOW].mass, 5, 185);    
     app.ctx.fillText("Name: " + app.particles[app.FOLLOW].name, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
-
 
     var viewPortSize = app.viewPort.viewPortSize,
       unit = ' AU';
@@ -355,10 +370,10 @@ ViewPort.prototype.frame = function() {
       viewPortSize = Math.floor(viewPortSize);
     }
     app.ctx.fillText("Viewport size: " + viewPortSize + unit, 5, 245);
-
   }
+};
 
-
+ViewPort.prototype.integrateWrapper = function() {
   if(app.physics.variables.TIME_STEP != 1) {
     app.physics.constants.GRAVITY_CONSTANT /= app.physics.variables.TIME_STEP;
   }
@@ -366,23 +381,29 @@ ViewPort.prototype.frame = function() {
   for (var i = 0; i < app.particles.length; i++) {
     app.particles[i].integrate();
   }
+};
 
+ViewPort.prototype.setClock = function() {
   app.CLOCK.ticks += 1;
   app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
   app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
   app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
+};
 
+ViewPort.prototype.setIntegrate = function() {
+  app.viewPort.center = {x: (app.particles[app.FOLLOW].x - app.halfWidth), y: (app.particles[app.FOLLOW].y - app.halfHeight)};
   for (i = 0; i < app.particles.length; i++) {
     current = app.particles[i];
     current.x = current.newX;
     current.y = current.newY;
     current.draw();
   }
-
   if(app.physics.variables.TIME_STEP != 1) {
     app.physics.variables.TIME_STEP = 1;
-  }
+  }  
 };
+
+
 
 ViewPort.prototype.adjustZoom = function(direction) {
     if( app.VIEWSHIFT.zoom < .0001 && app.VIEWSHIFT.zoom > -.0001) {
@@ -472,6 +493,7 @@ Response.prototype.onKeyDown = function(e) {
         app.GO = true;
         requestAnimationFrame(app.viewPort.frame);
         app.CLOCK.ticks = 0;
+        app.splitTime = new Date();
       } else {
         app.GO = false;
       }
