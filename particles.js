@@ -138,6 +138,7 @@ Particles.prototype.buildParticle = function(cfg) {
     app.particles.push(tmp);
 };
 
+
 function Particle(id, x, y) {
   this.id = id; 
   this.x = this.oldX = x;
@@ -190,6 +191,8 @@ Particle.prototype.calcAcceleration = function(){
 
 Particle.prototype.updatePosition = function() {
   var dt = app.physics.variables.TIME_STEP;
+  this.oldx = this.x; //Not used by leapfrog itself.
+  this.oldy = this.y; //Not used by leapfrog itself.
   this.x += (this.velx + 0.5 * this.accx * dt) * dt;
   this.y += (this.vely + 0.5 * this.accy * dt) * dt;
 };
@@ -200,17 +203,34 @@ Particle.prototype.updateVelocity = function() {
   this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
 };
 
-Particle.prototype.isBoundTo(p2){
+leapFrog = function(){
+  ps = app.particles;
+  for (var i = 0; i < ps.length; i++) {
+    ps[i].updatePosition();
+  }
+  for (var i = 0; i < ps.length; i++) {
+    ps[i].calcAcceleration();
+  }
+  for (var i = 0; i < ps.length; i++) {
+    ps[i].updateVelocity();
+  }  
+};
+
+
+Particle.prototype.isBoundTo = function(p2){
   var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
   var velx = this.velx - p2.velx;
   var vely = this.vely - p2.vely;
   var dx = this.x - p2.x;
   var dy = this.y - p2.y;
-
-
-
-  
-
+  var d2 = dx*dx + dy*dy;
+  var v2 = velx*velx + vely*vely;
+  var energy = mu * v2/2.0 - app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / Math.sqrt(d2);
+  if (energy > 0){
+    return false;
+  }else{
+    return true;
+  }
 }
 
 Particle.prototype.checkClock = function() {
@@ -372,15 +392,7 @@ ViewPort.prototype.frame = function() {
   }
 
 
-  for (var i = 0; i < app.particles.length; i++) {
-    app.particles[i].updatePosition();
-  }
-  for (var i = 0; i < app.particles.length; i++) {
-    app.particles[i].calcAcceleration();
-  }
-  for (var i = 0; i < app.particles.length; i++) {
-    app.particles[i].updateVelocity();
-  }
+  leapFrog();
 
 
   app.CLOCK.ticks += 1;
