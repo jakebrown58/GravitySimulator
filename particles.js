@@ -139,6 +139,7 @@ Particles.prototype.buildParticle = function(cfg) {
 };
 
 
+
 function Particle(id, x, y) {
   this.id = id; 
   this.x = this.oldX = x;
@@ -162,8 +163,8 @@ Particle.prototype.calcAcceleration = function(){
     dy,
     grav;
 
-    this.oldaccx = this.accx
-    this.oldaccy = this.accy
+    this.oldaccx = this.accx;
+    this.oldaccy = this.accy;
 
 
     this.accx = 0.0;
@@ -199,6 +200,8 @@ Particle.prototype.updatePosition = function() {
 
 Particle.prototype.updateVelocity = function() {
   var dt = app.physics.variables.TIME_STEP;
+  this.oldvelx = this.velx; //Not used by leapfrog itself.
+  this.oldvely = this.vely; //Not used by leapfrog itself.
   this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
   this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
 };
@@ -215,6 +218,54 @@ leapFrog = function(){
     ps[i].updateVelocity();
   }  
 };
+
+Particle.prototype.kineticE = function(){
+  return (1/2) * this.mass * (this.velx*this.velx + this.vely*this.vely);
+}
+
+collide_glom = function(p1, p2){
+  var big, little;
+  if (p1.mass > p2.mass){
+    big = p1;
+    little = p2;
+  }else{
+    big = p2;
+    little = p1;
+  }
+  var mass = big.mass + little.mass;
+  var fracB = big.mass / mass;
+  var fracL = little.mass / mass;
+  cfg = {
+        id: big.id,
+        name: big.name,
+        mass: mass,
+        
+        x: (fracB*big.x + fracL*little.x),
+        y: (fracB*big.y + fracL*little.y),
+        oldx: (fracB*big.oldx + fracL*little.oldx),
+        oldy: (fracB*big.oldy + fracL*little.oldy),
+        
+        velx: (fracB*big.velx + fracL*little.velx),
+        vely: (fracB*big.vely + fracL*little.vely),
+        oldvelx: (fracB*big.oldvelx + fracL*little.oldvelx),
+        oldvely: (fracB*big.oldvely + fracL*little.oldvely),
+        
+        accx: (fracB*big.accx + fracL*little.accx),
+        accy: (fracB*big.accy + fracL*little.accy),
+        oldaccx: (fracB*big.oldaccx + fracL*little.oldaccx),
+        oldaccy: (fracB*big.oldaccy + fracL*little.oldaccy),
+
+        color:{r: big.color.r*fracB + little.color.r*fracL,
+               g: big.color.g*fracB + little.color.g*fracL,
+               b: big.color.b*fracB + little.color.b*fracL},
+        };
+  cfg.U = 0;
+  cfg.U += big.U || 0;
+  cfg.U += little.U || 0;
+  cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
+  //Todo: add new particle to app.particles using buildParticle(cfg);
+  //Todo: remove p1, p2 from app.particles.
+}
 
 
 Particle.prototype.isBoundTo = function(p2){
@@ -234,7 +285,7 @@ Particle.prototype.isBoundTo = function(p2){
 }
 
 Particle.prototype.checkClock = function() {
-    return this.x > app.halfWidth && this.y < app.halfHeight && this.newY > app.halfHeight;
+    return this.x > app.halfWidth && this.oldy < app.halfHeight && this.y > app.halfHeight;
 };
 
 Particle.prototype.attract = function(x, y) {
@@ -333,11 +384,11 @@ function ViewPort(){
   this.draw = true;
 }
 
-ViewPort.prototype.project = function(flatX, flatY, flatZ) {
-  var point = app.viewPort.iso(flatX, flatY);
+ViewPort.prototype.project = function(fracLatX, fracLatY, fracLatZ) {
+  var point = app.viewPort.iso(fracLatX, fracLatY);
   var x0 = app.width * 0.5;
   var y0 = app.height * 0.2;
-  var z = app.size * 0.5 - flatZ + point.y * Math.sin(app.VIEWANGLE);
+  var z = app.size * 0.5 - fracLatZ + point.y * Math.sin(app.VIEWANGLE);
   var x = (point.x - app.size * 0.5) * 6;
   var y = (app.size - point.y) * 0.005 + 1;
 
