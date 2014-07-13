@@ -48,6 +48,64 @@ function Physics() {
   this.variables.TIME_STEP = 1;
 }
 
+Physics.prototype.leapFrog = function() {
+  var ps = app.particles,
+    i;
+  for (i = 0; i < ps.length; i++) {
+    ps[i].updatePosition();
+  }
+  for (i = 0; i < ps.length; i++) {
+    ps[i].calcAcceleration();
+  }
+  for (i = 0; i < ps.length; i++) {
+    ps[i].updateVelocity();
+  }  
+};
+
+Physics.prototype.collide_glom = function(p1, p2) {
+  var big, little;
+  if (p1.mass > p2.mass){
+    big = p1;
+    little = p2;
+  }else{
+    big = p2;
+    little = p1;
+  }
+  var mass = big.mass + little.mass;
+  var fracB = big.mass / mass;
+  var fracL = little.mass / mass;
+  cfg = {
+        id: big.id,
+        name: big.name,
+        mass: mass,
+        
+        x: (fracB*big.x + fracL*little.x),
+        y: (fracB*big.y + fracL*little.y),
+        oldx: (fracB*big.oldx + fracL*little.oldx),
+        oldy: (fracB*big.oldy + fracL*little.oldy),
+        
+        velx: (fracB*big.velx + fracL*little.velx),
+        vely: (fracB*big.vely + fracL*little.vely),
+        oldvelx: (fracB*big.oldvelx + fracL*little.oldvelx),
+        oldvely: (fracB*big.oldvely + fracL*little.oldvely),
+        
+        accx: (fracB*big.accx + fracL*little.accx),
+        accy: (fracB*big.accy + fracL*little.accy),
+        oldaccx: (fracB*big.oldaccx + fracL*little.oldaccx),
+        oldaccy: (fracB*big.oldaccy + fracL*little.oldaccy),
+
+        color:{r: big.color.r*fracB + little.color.r*fracL,
+               g: big.color.g*fracB + little.color.g*fracL,
+               b: big.color.b*fracB + little.color.b*fracL},
+        };
+  cfg.U = 0;
+  cfg.U += big.U || 0;
+  cfg.U += little.U || 0;
+  cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
+  //Todo: add new particle to app.particles using buildParticle(cfg);
+  //Todo: remove p1, p2 from app.particles.
+};
+
 function Particles() {
   this.objects = {};
   this.objects.COMETS = 20;
@@ -117,13 +175,18 @@ Particles.prototype.finalize = function() {
     
   for (var i = 0; i < particles.length; i++) {
       var me = particles[i];
-      px += me.mass * (me.x - me.oldX);
-      py += me.mass * (me.y - me.oldY);
+      px += me.mass * me.velx;
+      py += me.mass * me.vely;
   }
   //Give the Sun a little kick to zero out the system's momentum:
   var sun = app.particles[0];
-  sun.oldX += px / sun.mass;
-  sun.oldY += py / sun.mass;
+  sun.velx += -px / sun.mass;
+  sun.vely += -py / sun.mass;
+
+  //This has to be done once before integration can occur. Prime The Pump!
+  for (var i = 0; i < app.particles.length; i++) {
+    app.particles[i].calcAcceleration();
+  }
 
   app.PARTICLECOUNT = particles.length -1;
 };
@@ -152,70 +215,75 @@ function Particle(id, x, y) {
     b:  Math.floor(Math.random() * 100 + 155)};
 };
 
-Particle.prototype.integrate = function() {
-  var velocityX = (this.x - this.oldX),
-    velocityY = (this.y - this.oldY),
-    curr,
-    gravVector,
+Particle.prototype.calcAcceleration = function(){
+ var curr,
     dx,
     dy,
-    distance,
     grav;
 
-  if(app.physics.variables.TIME_STEP != 1) {
-    velocityX = velocityX / Math.sqrt(app.physics.variables.TIME_STEP);
-    velocityY = velocityY / Math.sqrt( app.physics.variables.TIME_STEP);
-  }
+    this.oldaccx = this.accx;
+    this.oldaccy = this.accy;
 
-  gravVector = {x: 0, y: 0};
+    this.accx = 0.0;
+    this.accy = 0.0;
 
-  for (var i = 0; i < app.particles.length; i++) {
+    for (var i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
-    if(curr.id !== this.id ) { //&& !this.remove) {
+    if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
-      var d1 = dx * dx + dy * dy;
-      distance = Math.sqrt(d1) * d1;
-      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / distance;
-        
-      if(distance > 0) {
-        gravVector.x += grav * dx;
-        gravVector.y += grav * dy;
-      } else {
-        gravVector.x += 0;
-        gravVector.y += 0;
+      var d2 = dx * dx + dy * dy;
+      var d3 = Math.sqrt(d2) * d2;
+
+      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
+
+      if(d2 > 0) {
+        this.accx += grav * dx;
+        this.accy += grav * dy;
+      }else{
       }
     }
   }
+}
 
-  this.newX = this.x + velocityX + gravVector.x;
-  this.newY = this.y + velocityY + gravVector.y;
-  this.oldX = this.x;
-  this.oldY = this.y;
+Particle.prototype.updatePosition = function() {
+  var dt = app.physics.variables.TIME_STEP;
+  this.oldx = this.x; //Not used by leapfrog itself.
+  this.oldy = this.y; //Not used by leapfrog itself.
+  this.x += (this.velx + 0.5 * this.accx * dt) * dt;
+  this.y += (this.vely + 0.5 * this.accy * dt) * dt;
 };
+
+Particle.prototype.updateVelocity = function() {
+  var dt = app.physics.variables.TIME_STEP;
+  this.oldvelx = this.velx; //Not used by leapfrog itself.
+  this.oldvely = this.vely; //Not used by leapfrog itself.
+  this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
+  this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
+};
+
+Particle.prototype.kineticE = function(){
+  return (1/2) * this.mass * (this.velx*this.velx + this.vely*this.vely);
+}
+
+Particle.prototype.isBoundTo = function(p2){
+  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
+  var velx = this.velx - p2.velx;
+  var vely = this.vely - p2.vely;
+  var dx = this.x - p2.x;
+  var dy = this.y - p2.y;
+  var d2 = dx*dx + dy*dy;
+  var v2 = velx*velx + vely*vely;
+  var energy = mu * v2/2.0 - app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / Math.sqrt(d2);
+  if (energy > 0){
+    return false;
+  }else{
+    return true;
+  }
+}
 
 Particle.prototype.checkClock = function() {
-    return this.x > app.halfWidth && this.y < app.halfHeight && this.newY > app.halfHeight;
-};
-
-Particle.prototype.attract = function(x, y) {
-  var dx = x - this.x;
-  var dy = y - this.y;
-  var distance = .82 * Math.sqrt(dx * dx + dy * dy) * this.mass;
-  //this.x += dx / distance;
-  //this.y += dy / distance;
-};
-
-Particle.prototype.explode = function(x, y) {
-  var base = 20 - (this.mass / 2);
-  var velModX = (Math.random() * base - base / 2);
-  var velModY = (Math.random() * base - base / 2);
-  var velocityX = (this.x - this.oldX) + velModX;
-  var velocityY = (this.y - this.oldY) + velModY;
-  this.oldX = this.x;
-  this.oldY = this.y;
-  this.x += velocityX;
-  this.y += velocityY;
+    return this.x > app.halfWidth && this.oldy < app.halfHeight && this.y > app.halfHeight;
 };
 
 Particle.prototype.configure = function(config) {
@@ -253,8 +321,13 @@ Particle.prototype.configure = function(config) {
   particle.mass = config.mass;
   particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
   particle.y = app.halfHeight - localRadius * Math.sin(config.arc);
-  particle.oldX = particle.x - localOrbitalVelocity * Math.sin(config.arc);
-  particle.oldY = particle.y - localOrbitalVelocity * -Math.cos(config.arc);
+
+  particle.velx = localOrbitalVelocity * Math.sin(config.arc);
+  particle.vely = localOrbitalVelocity * -Math.cos(config.arc);
+
+  particle.accx = 0.0;
+  particle.accy = 0.0;
+
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
 };
@@ -301,11 +374,11 @@ function ViewPort(){
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
 }
 
-ViewPort.prototype.project = function(flatX, flatY, flatZ) {
-  var point = app.viewPort.iso(flatX, flatY);
+ViewPort.prototype.project = function(fracLatX, fracLatY, fracLatZ) {
+  var point = app.viewPort.iso(fracLatX, fracLatY);
   var x0 = app.width * 0.5;
   var y0 = app.height * 0.2;
-  var z = app.size * 0.5 - flatZ + point.y * Math.sin(app.VIEWANGLE);
+  var z = app.size * 0.5 - fracLatZ + point.y * Math.sin(app.VIEWANGLE);
   var x = (point.x - app.size * 0.5) * 6;
   var y = (app.size - point.y) * 0.005 + 1;
 
@@ -352,8 +425,8 @@ ViewPort.prototype.frameClock = function() {
     app.ctx.fillText("Now:" + Date(), 5, 105);
     app.ctx.fillText("Ticks: " + app.CLOCK.ticks, 5, 125);
     app.ctx.fillText("FrameRate: " + Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime)))), 65, 125);
-    app.ctx.fillText("Vx: " + (app.particles[app.FOLLOW].newX - app.particles[app.FOLLOW].oldX) * 100, 5, 145);
-    app.ctx.fillText("Vy: " + (app.particles[app.FOLLOW].newY - app.particles[app.FOLLOW].oldY) * 100, 5, 165);
+    app.ctx.fillText("Vx: " + Math.round((app.particles[app.FOLLOW].velx) * 1000,0), 5, 145);
+    app.ctx.fillText("Vy: " + Math.round((app.particles[app.FOLLOW].vely) * 1000,0), 5, 165);
     app.ctx.fillText("Mass: " + app.particles[app.FOLLOW].mass, 5, 185);    
     app.ctx.fillText("Name: " + app.particles[app.FOLLOW].name, 5, 205);    
     app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
@@ -378,10 +451,9 @@ ViewPort.prototype.integrateWrapper = function() {
     app.physics.constants.GRAVITY_CONSTANT /= app.physics.variables.TIME_STEP;
   }
 
-  for (var i = 0; i < app.particles.length; i++) {
-    app.particles[i].integrate();
-  }
+  app.physics.leapFrog();
 };
+
 
 ViewPort.prototype.setClock = function() {
   app.CLOCK.ticks += 1;
@@ -393,16 +465,15 @@ ViewPort.prototype.setClock = function() {
 ViewPort.prototype.setIntegrate = function() {
   app.viewPort.center = {x: (app.particles[app.FOLLOW].x - app.halfWidth), y: (app.particles[app.FOLLOW].y - app.halfHeight)};
   for (i = 0; i < app.particles.length; i++) {
-    current = app.particles[i];
-    current.x = current.newX;
-    current.y = current.newY;
-    current.draw();
+    //current = app.particles[i];
+    //current.x = current.newX;
+    //current.y = current.newY;
+    app.particles[i].draw();
   }
   if(app.physics.variables.TIME_STEP != 1) {
     app.physics.variables.TIME_STEP = 1;
   }  
 };
-
 
 
 ViewPort.prototype.adjustZoom = function(direction) {
@@ -488,7 +559,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWSHIFT.x -= 3;
     }
     if(e.keyCode === 80) {    // 'P'
-      app.physics.variables.TIME_STEP = app.physics.constants.GRAVITY_CONSTANT / app.physics.constants.ORIGINAL_GRAVITY_CONSTANT;
+      app.physics.variables.TIME_STEP = 1;
       if(app.GO === false) {
         app.GO = true;
         requestAnimationFrame(app.viewPort.frame);
@@ -511,13 +582,18 @@ Response.prototype.onKeyDown = function(e) {
       }
     } 
     if(e.keyCode === 88) {    // 'X'
-      if(app.physics.constants.GRAVITY_CONSTANT < .16) {
-        app.physics.variables.TIME_STEP = app.physics.variables.TIME_STEP / 2;
+      if(app.physics.variables.TIME_STEP < 100) {
+        app.physics.variables.TIME_STEP *= 1.5;
       }
     }
     if(e.keyCode === 90) {    // 'Z'
-      app.physics.variables.TIME_STEP *= 1.5;
+      app.physics.variables.TIME_STEP /= 1.5;
     }
+
+    if(e.keyCode === 82) {    // 'R'
+      app.physics.variables.TIME_STEP *= -1;
+    }
+
     if(e.keyCode === 188) {    // '<'
       app.viewPort.adjustZoom('out');
     }
@@ -530,7 +606,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWANGLE = .75;
       app.FOLLOW = 0;
       app.VIEWSHIFT.zoom = 0;
-      app.physics.variables.TIME_STEP = app.physics.constants.GRAVITY_CONSTANT / app.physics.constants.ORIGINAL_GRAVITY_CONSTANT;
+      app.physics.variables.TIME_STEP = 1;
     }  
 };
 
