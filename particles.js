@@ -47,6 +47,64 @@ function Physics() {
   this.variables.TIME_STEP = 1;
 }
 
+Physics.prototype.leapFrog = function() {
+  var ps = app.particles,
+    i;
+  for (i = 0; i < ps.length; i++) {
+    ps[i].updatePosition();
+  }
+  for (i = 0; i < ps.length; i++) {
+    ps[i].calcAcceleration();
+  }
+  for (i = 0; i < ps.length; i++) {
+    ps[i].updateVelocity();
+  }  
+};
+
+Physics.prototype.collide_glom = function(p1, p2) {
+  var big, little;
+  if (p1.mass > p2.mass){
+    big = p1;
+    little = p2;
+  }else{
+    big = p2;
+    little = p1;
+  }
+  var mass = big.mass + little.mass;
+  var fracB = big.mass / mass;
+  var fracL = little.mass / mass;
+  cfg = {
+        id: big.id,
+        name: big.name,
+        mass: mass,
+        
+        x: (fracB*big.x + fracL*little.x),
+        y: (fracB*big.y + fracL*little.y),
+        oldx: (fracB*big.oldx + fracL*little.oldx),
+        oldy: (fracB*big.oldy + fracL*little.oldy),
+        
+        velx: (fracB*big.velx + fracL*little.velx),
+        vely: (fracB*big.vely + fracL*little.vely),
+        oldvelx: (fracB*big.oldvelx + fracL*little.oldvelx),
+        oldvely: (fracB*big.oldvely + fracL*little.oldvely),
+        
+        accx: (fracB*big.accx + fracL*little.accx),
+        accy: (fracB*big.accy + fracL*little.accy),
+        oldaccx: (fracB*big.oldaccx + fracL*little.oldaccx),
+        oldaccy: (fracB*big.oldaccy + fracL*little.oldaccy),
+
+        color:{r: big.color.r*fracB + little.color.r*fracL,
+               g: big.color.g*fracB + little.color.g*fracL,
+               b: big.color.b*fracB + little.color.b*fracL},
+        };
+  cfg.U = 0;
+  cfg.U += big.U || 0;
+  cfg.U += little.U || 0;
+  cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
+  //Todo: add new particle to app.particles using buildParticle(cfg);
+  //Todo: remove p1, p2 from app.particles.
+};
+
 function Particles() {
   this.objects = {};
   this.objects.COMETS = 30;
@@ -138,8 +196,6 @@ Particles.prototype.buildParticle = function(cfg) {
     app.particles.push(tmp);
 };
 
-
-
 function Particle(id, x, y) {
   this.id = id; 
   this.x = this.oldX = x;
@@ -206,67 +262,9 @@ Particle.prototype.updateVelocity = function() {
   this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
 };
 
-leapFrog = function(){
-  ps = app.particles;
-  for (var i = 0; i < ps.length; i++) {
-    ps[i].updatePosition();
-  }
-  for (var i = 0; i < ps.length; i++) {
-    ps[i].calcAcceleration();
-  }
-  for (var i = 0; i < ps.length; i++) {
-    ps[i].updateVelocity();
-  }  
-};
-
 Particle.prototype.kineticE = function(){
   return (1/2) * this.mass * (this.velx*this.velx + this.vely*this.vely);
 }
-
-collide_glom = function(p1, p2){
-  var big, little;
-  if (p1.mass > p2.mass){
-    big = p1;
-    little = p2;
-  }else{
-    big = p2;
-    little = p1;
-  }
-  var mass = big.mass + little.mass;
-  var fracB = big.mass / mass;
-  var fracL = little.mass / mass;
-  cfg = {
-        id: big.id,
-        name: big.name,
-        mass: mass,
-        
-        x: (fracB*big.x + fracL*little.x),
-        y: (fracB*big.y + fracL*little.y),
-        oldx: (fracB*big.oldx + fracL*little.oldx),
-        oldy: (fracB*big.oldy + fracL*little.oldy),
-        
-        velx: (fracB*big.velx + fracL*little.velx),
-        vely: (fracB*big.vely + fracL*little.vely),
-        oldvelx: (fracB*big.oldvelx + fracL*little.oldvelx),
-        oldvely: (fracB*big.oldvely + fracL*little.oldvely),
-        
-        accx: (fracB*big.accx + fracL*little.accx),
-        accy: (fracB*big.accy + fracL*little.accy),
-        oldaccx: (fracB*big.oldaccx + fracL*little.oldaccx),
-        oldaccy: (fracB*big.oldaccy + fracL*little.oldaccy),
-
-        color:{r: big.color.r*fracB + little.color.r*fracL,
-               g: big.color.g*fracB + little.color.g*fracL,
-               b: big.color.b*fracB + little.color.b*fracL},
-        };
-  cfg.U = 0;
-  cfg.U += big.U || 0;
-  cfg.U += little.U || 0;
-  cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
-  //Todo: add new particle to app.particles using buildParticle(cfg);
-  //Todo: remove p1, p2 from app.particles.
-}
-
 
 Particle.prototype.isBoundTo = function(p2){
   var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
@@ -443,7 +441,7 @@ ViewPort.prototype.frame = function() {
   }
 
 
-  leapFrog();
+  app.physics.leapFrog();
 
 
   app.CLOCK.ticks += 1;
