@@ -97,6 +97,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
         color:{r: big.color.r*fracB + little.color.r*fracL,
                g: big.color.g*fracB + little.color.g*fracL,
                b: big.color.b*fracB + little.color.b*fracL},
+        drawSize:Math.pow(Math.pow(big.size, 3)+Math.pow(little.size, 3), 1/3)
         };
   cfg.U = 0;
   cfg.U += big.U || 0;
@@ -281,6 +282,21 @@ Particle.prototype.isBoundTo = function(p2){
     return true;
   }
 }
+
+Particle.prototype.distanceTo = function(p2){
+  dx = this.x - p2.x;
+  dy = this.y - p2.y;
+  var d2 = dx*dx + dy*dy;
+  return Math.sqrt(d2);
+};
+
+Particle.prototype.touching = function(p2){
+  if (this.size + p2.size) > this.distanceTo(p2) {
+    return true;
+  }else{
+    return false;
+  }
+};
 
 Particle.prototype.checkClock = function() {
     return this.x > app.halfWidth && this.oldy < app.halfHeight && this.y > app.halfHeight;
