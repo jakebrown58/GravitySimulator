@@ -374,11 +374,11 @@ function ViewPort(){
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
 }
 
-ViewPort.prototype.project = function(fracLatX, fracLatY, fracLatZ) {
-  var point = app.viewPort.iso(fracLatX, fracLatY);
+ViewPort.prototype.project = function(flatX, flatY, flatZ) {
+  var point = app.viewPort.iso(flatX, flatY);
   var x0 = app.width * 0.5;
   var y0 = app.height * 0.2;
-  var z = app.size * 0.5 - fracLatZ + point.y * Math.sin(app.VIEWANGLE);
+  var z = app.size * 0.5 - flatZ + point.y * Math.sin(app.VIEWANGLE);
   var x = (point.x - app.size * 0.5) * 6;
   var y = (app.size - point.y) * 0.005 + 1;
 
@@ -447,9 +447,9 @@ ViewPort.prototype.frameClock = function() {
 };
 
 ViewPort.prototype.integrateWrapper = function() {
-  if(app.physics.variables.TIME_STEP != 1) {
+  /*if(app.physics.variables.TIME_STEP != 1) {
     app.physics.constants.GRAVITY_CONSTANT /= app.physics.variables.TIME_STEP;
-  }
+  }*/
 
   app.physics.leapFrog();
 };
@@ -470,9 +470,6 @@ ViewPort.prototype.setIntegrate = function() {
     //current.y = current.newY;
     app.particles[i].draw();
   }
-  if(app.physics.variables.TIME_STEP != 1) {
-    app.physics.variables.TIME_STEP = 1;
-  }  
 };
 
 
