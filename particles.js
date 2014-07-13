@@ -517,7 +517,7 @@ ViewPort.prototype.adjustZoom = function(direction) {
 
 function Response() {
   app.display.addEventListener('mousemove', this.onMousemove);
-  //app.display.addEventListener('click', this.onClick);
+  app.display.addEventListener('click', this.onClick);
   app.display.addEventListener('keydown', this.onKeyDown);
 }
 
@@ -610,24 +610,29 @@ Response.prototype.onKeyDown = function(e) {
     }  
 };
 
-// Response.prototype.onClick = function(e) {
-//     //app.TRACE = !app.TRACE;
+Response.prototype.onClick = function(e) {
+    var xy = {x: e.clientX, y: e.clientY},
+      j = 0,
+      curr,
+      currIndex = 0,
+      currLoc = {x: 0, y: 0},
+      currDist = 10000000000000000000,
+      tmpDist;
 
-//     //app.particles.push(new Particle(particles.length - 1, Math.random() * width, Math.random() * height));
+    for(j = 0; j < app.particles.length; j++ ) {
+      curr = app.particles[j];
+      currLoc.x = (curr.x - app.viewPort.center.x) + (curr.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+      currLoc.y = (curr.y - app.viewPort.center.y) + (curr.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+      tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
+      if(tmpDist < currDist ){
+        currDist = tmpDist;
+        currIndex = j;
+      }
+    }
 
-//     //for(var j = 0; j < app.particles.length; j++ ) {
-//     //  if(app.particles[j].id === 0){
-          
-//         //particles[j].x = e.clientX;
-//         //particles[j].y = e.clientY;
-//     //  }
+    app.FOLLOW = currIndex;
+};
 
-//       //particles[j].explode();
-//     //}
-//     // for (var i = 0; i < particles.length; i++) {
-//     //   particles[i].explode();
-//     // }
-// };
 
 
 app.init();
