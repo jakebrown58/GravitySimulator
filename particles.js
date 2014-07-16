@@ -1,6 +1,6 @@
 var app = {};
 
-app.init = function() {
+app.init = function () {
   app.physics = new Physics();
   app.display = document.getElementById('display');
   app.ctx = display.getContext('2d');
@@ -8,8 +8,8 @@ app.init = function() {
   app.width = display.width = window.innerWidth;
   app.height = display.height = window.innerHeight;
   app.size = (app.width + app.height) / 2;
-  app.halfWidth = app.width * .5;
-  app.halfHeight = app.height * .5;
+  app.halfWidth = app.width * 0.5;
+  app.halfHeight = app.height * 0.5;
   app.mouse = { x: app.halfWidth, y: app.halfHeight };
   app.TRACE = false;
   app.DRAWSTATE = 1;
@@ -17,7 +17,7 @@ app.init = function() {
   app.GO = true;
   app.VIEWANGLE = .75;
   app.FOLLOW = 0;
-  app.CLOCK = {j:0, e:0, n:0, ticks: 0};
+  app.CLOCK = {j: 0, e: 0, n: 0, ticks: 0};
   app.SHOWCLOCK = false;
   app.realTime = Date();
   app.splitTime = Date();
@@ -34,10 +34,10 @@ function Physics() {
   this.constants.DAMPING = 1;
   this.constants.GRAVITY_CONSTANT = 1 / 100;   // 1500 will result in a time-step equal to about 1 earth-day.  lower is faster.
   this.constants.ORIGINAL_GRAVITY_CONSTANT = 1 / 100; // helps us get back to a base-state.
-  this.constants.ORIGINAL_VELOCITY_FACTOR = 1,
-  this.constants.JUPITER_MASS = 1,
-  this.constants.EARTH_MASS = 1 / 317,
-  this.constants.ASTRONOMICAL_UNIT = 50,  // astronomical unit / ie, 1 Earth distance from the sun.
+  this.constants.ORIGINAL_VELOCITY_FACTOR = 1;
+  this.constants.JUPITER_MASS = 1;
+  this.constants.EARTH_MASS = 1 / 317;
+  this.constants.ASTRONOMICAL_UNIT = 50;  // astronomical unit / ie, 1 Earth distance from the sun.
   this.constants.MILES_PER_AU = 92560000;
   this.constants.KM_PER_AU = 149586761;
   this.constants.LIGHTYEAR_PER_AU = 63239.72;
@@ -48,7 +48,7 @@ function Physics() {
   this.variables.TIME_STEP = 1;
 }
 
-Physics.prototype.leapFrog = function() {
+Physics.prototype.leapFrog = function () {
   var ps = app.particles,
     i;
   for (i = 0; i < ps.length; i++) {
@@ -108,9 +108,9 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
 function Particles() {
   this.objects = {};
-  this.objects.COMETS = 20;
-  this.objects.ASTEROIDS = 300;
-  this.objects.JUPITERCLOUD = 180;
+  this.objects.COMETS = 1;
+  this.objects.ASTEROIDS = 1;
+  this.objects.JUPITERCLOUD = 1;
   this.objects.PARTICLECOUNT = 1;  
 }
 
@@ -131,12 +131,13 @@ Particles.prototype.buildInitialParticles = function() {
     {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
     {name: 'Mercury', mass: earthMass * .055, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
     {name: 'Venus', mass: earthMass * .815, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
-    {name: 'Earth', mass: earthMass, orbits: [{mass: sunMass, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
+    {name: 'Earth', mass: earthMass, orbits: [{mass: sunMass * .94, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
     {name: 'Mars', mass: earthMass * .107, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
     {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
     {name: 'Saturn', mass: jupiterMass * .30, orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
     {name: 'Neptune', mass: earthMass * 17.147, orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
-    {name: 'Ganymede', mass: earthMass * .025, orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6}
+    {name: 'Ganymede', mass: earthMass * .025, orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6},
+    {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4,orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
   ];
 
   while(initialObjects.length > 0) {
@@ -148,8 +149,8 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
-    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 7 + aU * (Math.random() * 40), orbitalVelocity: -.14 + Math.random() * 3.02, drawSize: .1});
-  }  
+    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 340), orbitalVelocity: -.14 + Math.random() * 6.02, drawSize: .1});
+  }
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
     this.buildParticle({
@@ -188,7 +189,7 @@ Particles.prototype.finalize = function() {
     app.particles[i].calcAcceleration();
   }
 
-  app.PARTICLECOUNT = particles.length -1;
+  app.PARTICLECOUNT = app.particles.length -1;
 };
 
 Particles.prototype.buildParticle = function(cfg) {
@@ -241,6 +242,8 @@ Particle.prototype.calcAcceleration = function(){
         this.accx += grav * dx;
         this.accy += grav * dy;
       }else{
+        this.accx += 0;
+        this.accy += 0;
       }
     }
   }
@@ -425,16 +428,21 @@ ViewPort.prototype.frameClock = function() {
     app.ctx.fillText("Now:" + Date(), 5, 105);
     app.ctx.fillText("Ticks: " + app.CLOCK.ticks, 5, 125);
     app.ctx.fillText("FrameRate: " + Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime)))), 65, 125);
-    app.ctx.fillText("Vx: " + Math.round((app.particles[app.FOLLOW].velx) * 1000,0), 5, 145);
-    app.ctx.fillText("Vy: " + Math.round((app.particles[app.FOLLOW].vely) * 1000,0), 5, 165);
-    app.ctx.fillText("Mass: " + app.particles[app.FOLLOW].mass, 5, 185);    
-    app.ctx.fillText("Name: " + app.particles[app.FOLLOW].name, 5, 205);    
-    app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 225);
 
+    var focusParticle = app.particles[app.FOLLOW];
+    var followSpeed = Math.sqrt(focusParticle.velx * focusParticle.velx + focusParticle.vely * focusParticle.vely);
+    var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
+    app.ctx.fillText("F:  energy: " + focusKE, 5, 145);
+    app.ctx.fillText("     Speed: " + Math.round(followSpeed * 1000, 0), 5, 165);
+    //var followDirection = Math.tan(focusParticle.vely / followSpeed);    
+    //app.ctx.fillText("     direction: " + Math.round(followDirection * 100, 0) / 100, 5, 185);     // GRRRR..... i suck at trig in my head.....
+    app.ctx.fillText("     Mass: " + focusParticle.mass, 5, 205);    
+    app.ctx.fillText("     Name: " + focusParticle.name, 5, 225);    
+    app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 245);
     var viewPortSize = app.viewPort.viewPortSize,
       unit = ' AU';
     if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
-      viewPortSize = viewPortSize / app.physics.constants.LIGHTYEAR_PER_AU;
+      viewPortSize = Math.floor(10 * viewPortSize / app.physics.constants.LIGHTYEAR_PER_AU) / 10;
       unit = ' LIGHTYEARS';
     } else if(viewPortSize < 1) {
       viewPortSize = Math.floor(viewPortSize * app.physics.constants.MILES_PER_AU);
@@ -442,7 +450,8 @@ ViewPort.prototype.frameClock = function() {
     } else if( viewPortSize > 4) {
       viewPortSize = Math.floor(viewPortSize);
     }
-    app.ctx.fillText("Viewport size: " + viewPortSize + unit, 5, 245);
+    app.ctx.fillText("Viewport size: " + viewPortSize + unit, 5, 265);
+    app.ctx.fillText("Click Action: " + app.response.MODE, 5, 285);
   }
 };
 
@@ -474,39 +483,41 @@ ViewPort.prototype.setIntegrate = function() {
 
 
 ViewPort.prototype.adjustZoom = function(direction) {
-    if( app.VIEWSHIFT.zoom < .0001 && app.VIEWSHIFT.zoom > -.0001) {
-      app.VIEWSHIFT.zoom = 0;
-
-      if(direction === 'in') {
-        app.VIEWSHIFT.zoom = .5;
-      }
-      if(direction === 'out') {
-        app.VIEWSHIFT.zoom = -.015625;
-      }
-
-      return;
-    }
+  var nearZero = app.VIEWSHIFT.zoom < .0001 && app.VIEWSHIFT.zoom > -.0001;
+  if(nearZero === true) {
+    app.VIEWSHIFT.zoom = 0;
 
     if(direction === 'in') {
-      if(app.VIEWSHIFT.zoom > 0) {
-        app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom * 2;
-      } else {
-        app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom + .015625;
-      }
-    } else {
-      app.VIEWSHIFT.zoom -= .015625;
-
-      if(app.VIEWSHIFT.zoom > 1) {
-        app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom / 2;
-      }
+      app.VIEWSHIFT.zoom = .5;
+    }
+    if(direction === 'out') {
+      app.VIEWSHIFT.zoom = -.015625;
     }
 
-    if(app.VIEWSHIFT.zoom <= -1) {
-      app.VIEWSHIFT.zoom = -.9995;
-    } 
+    return;
+  }
 
-    app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
-    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
+  if(direction === 'in') {
+    if(app.VIEWSHIFT.zoom > 0) {
+      app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom * 2;
+    } else {
+      app.VIEWSHIFT.zoom = -1 - ((-1 - app.VIEWSHIFT.zoom) * 4 / 3);
+    }
+  } else {
+    if(app.VIEWSHIFT.zoom > 0) {
+      app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom / 2;
+    } else {
+      app.VIEWSHIFT.zoom = -1 - ((-1 - app.VIEWSHIFT.zoom) * 3 / 4);
+    }
+    
+  }
+
+  if(app.VIEWSHIFT.zoom <= -.99995) {
+    app.VIEWSHIFT.zoom = -.99995;
+  } 
+
+  app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
+  app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
 
 };
 
@@ -516,6 +527,7 @@ function Response() {
   app.display.addEventListener('mousemove', this.onMousemove);
   app.display.addEventListener('click', this.onClick);
   app.display.addEventListener('keydown', this.onKeyDown);
+  this.MODE = 'FOLLOW';
 }
 
 Response.prototype.onMouseMove = function() {
@@ -532,6 +544,18 @@ Response.prototype.onMouseMove = function() {
 
     app.mouse.x = e.clientX;
     app.mouse.y = e.clientY;
+};
+
+Response.prototype.changeMode = function() {
+  if(app.response.MODE === 'FOLLOW') {
+    app.response.MODE = 'ROCKET';
+  } else if( this.MODE === 'ROCKET') {
+    app.response.MODE = 'PHOTON';
+  } else if( this.MODE === 'PHOTON') {
+    app.response.MODE = 'DESTROY';
+  } else {
+    app.response.MODE = 'FOLLOW';
+  }
 };
 
 Response.prototype.onKeyDown = function(e) {
@@ -555,6 +579,9 @@ Response.prototype.onKeyDown = function(e) {
     if(e.keyCode === 65) {    // 'A'
       app.VIEWSHIFT.x -= 3;
     }
+    if(e.keyCode === 77) {    // 'M'
+      app.response.changeMode();
+    }    
     if(e.keyCode === 80) {    // 'P'
       app.physics.variables.TIME_STEP = 1;
       if(app.GO === false) {
@@ -608,8 +635,19 @@ Response.prototype.onKeyDown = function(e) {
 };
 
 Response.prototype.onClick = function(e) {
-    var xy = {x: e.clientX, y: e.clientY},
-      j = 0,
+    var xy = {x: e.clientX, y: e.clientY};
+
+    if(app.response.MODE === 'FOLLOW') {
+      app.response.follow(xy);
+    } else if(app.response.MODE === 'DESTROY') {
+      app.response.destroy(xy);
+    } else {
+      app.response.rocket();
+    }
+};
+
+Response.prototype.follow = function(xy){
+    var j = 0,
       curr,
       currIndex = 0,
       currLoc = {x: 0, y: 0},
@@ -630,7 +668,69 @@ Response.prototype.onClick = function(e) {
     app.FOLLOW = currIndex;
 };
 
+Response.prototype.destroy = function(xy){
+    var j = 0,
+      curr,
+      currIndex = 0,
+      currLoc = {x: 0, y: 0},
+      currDist = 10000000000000000000,
+      tmpDist;
 
+    for(j = 0; j < app.particles.length; j++ ) {
+      curr = app.particles[j];
+      currLoc.x = (curr.x - app.viewPort.center.x) + (curr.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+      currLoc.y = (curr.y - app.viewPort.center.y) + (curr.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+      tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
+      if(tmpDist < currDist ){
+        currDist = tmpDist;
+        currIndex = j;
+      }
+    }
+
+    var tmp = [];
+    for(var j = 0; j < app.particles.length; j++) {
+      if(j != currIndex) {
+        tmp.push(app.particles[j]);
+      }
+    }
+
+    app.particles = tmp;
+
+    if(app.FOLLOW == currIndex) {
+      app.FOLLOW = 0;
+    }
+};
+
+Response.prototype.rocket = function(){
+  var x = new Particles().buildParticle({name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, orbitalVelocity: 0.08 - Math.random() * .08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: .1}),
+    newGuy = app.particles[app.particles.length -1];
+
+  if(app.response.MODE === 'PHOTON') {
+    newGuy.name = 'PHOTON' + app.particles.length;
+    newGuy.mass = 0;
+    var arc = 0;//Math.random() * 2 * Math.PI;
+    newGuy.velx = 5000 * Math.cos(arc);
+    newGuy.vely = 5000 * Math.sin(arc);
+  } else {
+    newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .20;
+    newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .20;
+    newGuy.velx = app.particles[app.FOLLOW].velx + Math.random() * .32;
+    newGuy.vely = app.particles[app.FOLLOW].vely + Math.random() * .32;
+  }
+  
+  app.PARTICLECOUNT = app.particles.length - 1;
+
+    // if(app.particles.PARTICLECOUNT > 30) {
+    //   var tmp = [];
+    //   for(var j = 0; j < app.particles.length; j++) {
+    //     if(j != 13) {
+    //       tmp.push(app.particles[j]);
+    //     }
+    //   }
+
+    //   app.particles = tmp;
+    // }
+};
 
 app.init();
 requestAnimationFrame(app.viewPort.frame);
