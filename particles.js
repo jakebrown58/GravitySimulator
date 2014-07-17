@@ -434,11 +434,22 @@ ViewPort.prototype.frameClock = function() {
     var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
     app.ctx.fillText("F:  energy: " + focusKE, 5, 145);
     app.ctx.fillText("     Speed: " + Math.round(followSpeed * 1000, 0), 5, 165);
-    //var followDirection = Math.tan(focusParticle.vely / followSpeed);    
-    //app.ctx.fillText("     direction: " + Math.round(followDirection * 100, 0) / 100, 5, 185);     // GRRRR..... i suck at trig in my head.....
+    var followDirection = Math.atan(focusParticle.velx / focusParticle.vely) * 180 / Math.PI;
+
+    var q34 = focusParticle.velx < 0;
+    var q14 = focusParticle.vely > 0;
+    var q4 = q14 && q34,
+      q3 = q34 && !q4,
+      q1 = q14 && !q4,
+      q2 = !q1 && !q3 && !q4;
+    followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? 180 + followDirection : followDirection + 360;
+
+
+    app.ctx.fillText("     direction: " + Math.round(followDirection, 0), 5, 185);     // GRRRR..... i suck at trig in my head.....
+    //app.ctx.fillText("     direction: " + followDirection, 5, 185);     // GRRRR..... i suck at trig in my head.....
     app.ctx.fillText("     Mass: " + focusParticle.mass, 5, 205);    
     app.ctx.fillText("     Name: " + focusParticle.name, 5, 225);    
-    app.ctx.fillText("G: " + app.physics.constants.GRAVITY_CONSTANT, 5, 245);
+    app.ctx.fillText("Time: " + app.physics.variables.TIME_STEP, 5, 245);
     var viewPortSize = app.viewPort.viewPortSize,
       unit = ' AU';
     if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
