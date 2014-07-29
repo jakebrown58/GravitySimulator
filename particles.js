@@ -46,6 +46,7 @@ function Physics() {
 
   this.variables = {};
   this.variables.TIME_STEP = 1;
+  this.variables.CALC_STYLE = 'real';
 }
 
 Physics.prototype.leapFrog = function () {
@@ -108,9 +109,9 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
 function Particles() {
   this.objects = {};
-  this.objects.COMETS = 1;
-  this.objects.ASTEROIDS = 1;
-  this.objects.JUPITERCLOUD = 1;
+  this.objects.COMETS = Math.floor( Math.random() * 50);
+  this.objects.ASTEROIDS = Math.floor( Math.random() * 50);
+  this.objects.JUPITERCLOUD = Math.floor( Math.random() * 50);
   this.objects.PARTICLECOUNT = 1;  
 }
 
@@ -127,18 +128,30 @@ Particles.prototype.buildInitialParticles = function() {
     jupiterArc = Math.PI,
     cfg = {};
 
-  initialObjects = [
-    {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
-    {name: 'Mercury', mass: earthMass * .055, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
-    {name: 'Venus', mass: earthMass * .815, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
-    {name: 'Earth', mass: earthMass, orbits: [{mass: sunMass * .94, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
-    {name: 'Mars', mass: earthMass * .107, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
-    {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
-    {name: 'Saturn', mass: jupiterMass * .30, orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
-    {name: 'Neptune', mass: earthMass * 17.147, orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
-    {name: 'Ganymede', mass: earthMass * .025, orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6},
-    {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4,orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
-  ];
+    app.particles = [];
+
+  if(app.physics.variables.CALC_STYLE === 'real') {
+    initialObjects = [
+      {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
+      {name: 'Mercury', mass: earthMass * .055, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
+      {name: 'Venus', mass: earthMass * .815, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
+      {name: 'Earth', mass: earthMass, orbits: [{mass: sunMass * .94, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
+      {name: 'Mars', mass: earthMass * .107, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
+      {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
+      {name: 'Saturn', mass: jupiterMass * .30, orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
+      {name: 'Neptune', mass: earthMass * 17.147, orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
+      {name: 'Ganymede', mass: earthMass * .025, orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6},
+      {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4,orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
+    ];
+  } else {
+    var centerMass =  30 + jupiterMass * Math.random() * 3000,
+      colorShift = (1 - (centerMass / 3000)) / 2;
+      planetMass = earthMass * Math.random() * 600;
+    initialObjects = [
+      {name: 'Star', mass: centerMass, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255 - Math.floor(255 * colorShift), b: 255 - Math.floor(220 * colorShift)}}
+//      {name: 'Planet 1', mass: planetMass, radius: 69911, orbits: [{mass: centerMass * Math.sqrt(centerMass), radius: aU + aU * Math.random() * 8}], drawSize: .6, color: {r: 255, g: 215, b: 165}}
+    ];
+  }
 
   while(initialObjects.length > 0) {
     this.buildParticle(initialObjects.shift());
@@ -217,37 +230,84 @@ function Particle(id, x, y) {
 };
 
 Particle.prototype.calcAcceleration = function(){
- var curr,
+  if(app.physics.variables.CALC_STYLE === 'real') {
+    this.calcAccelerationReal();
+  } else {
+    this.calcAccelerationSpyrograph();
+  }
+};
+
+Particle.prototype.calcAccelerationReal = function(){
+  var curr,
     dx,
     dy,
-    grav;
+    grav,
+    i,
+    d2,
+    d3;
 
-    this.oldaccx = this.accx;
-    this.oldaccy = this.accy;
+  this.oldaccx = this.accx;
+  this.oldaccy = this.accy;
 
-    this.accx = 0.0;
-    this.accy = 0.0;
+  this.accx = 0;
+  this.accy = 0;
 
-    for (var i = 0; i < app.particles.length; i++) {
+  for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
-      var d2 = dx * dx + dy * dy;
-      var d3 = Math.sqrt(d2) * d2;
+      d2 = dx * dx + dy * dy;
+      d3 = Math.sqrt(d2) * d2;
 
       grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
 
-      if(d2 > 0) {
+      if (d2 > 0) {
         this.accx += grav * dx;
         this.accy += grav * dy;
-      }else{
+      } else{
         this.accx += 0;
         this.accy += 0;
       }
     }
   }
-}
+};
+
+Particle.prototype.calcAccelerationSpyrograph = function(){
+  var curr,
+    dx,
+    dy,
+    grav,
+    i,
+    d2,
+    d3;
+
+  this.oldaccx = this.accx;
+  this.oldaccy = this.accy;
+
+  this.accx = 0;
+  this.accy = 0;
+
+  for (i = 0; i < app.particles.length; i++) {
+    curr = app.particles[i];
+    if(curr.id !== this.id ) {
+      dx = curr.x - this.x;
+      dy = curr.y - this.y;
+      d2 = Math.sqrt(dx * dx + dy * dy);
+      d3 = d2 * d2;
+
+      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
+
+      if (d2 > 0) {
+        this.accx += grav * dx;
+        this.accy += grav * dy;
+      } else{
+        this.accx += 0;
+        this.accy += 0;
+      }
+    }
+  }
+};
 
 Particle.prototype.updatePosition = function() {
   var dt = app.physics.variables.TIME_STEP;
@@ -480,6 +540,10 @@ ViewPort.prototype.setClock = function() {
   app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
   app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
   app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
+
+  if(app.CLOCK.ticks > 1000000) {
+    app.CLOCK.ticks = 0;
+  }
 };
 
 ViewPort.prototype.setIntegrate = function() {
@@ -581,6 +645,15 @@ Response.prototype.onKeyDown = function(e) {
     if(e.keyCode === 32) {    // ' '
       app.TRACE = !app.TRACE;
     }
+    if(e.keyCode === 82) {    // 'R'
+      if(app.physics.variables.CALC_STYLE !== 'real') {
+        app.physics.variables.CALC_STYLE = 'real';
+      } else {
+        app.physics.variables.CALC_STYLE = 'wacky';
+      }
+      app.ctx.clearRect(0, 0, app.width, app.height);
+      var x = new Particles().buildInitialParticles();
+    }
     if(e.keyCode === 87) {    // 'W'
       app.VIEWSHIFT.y -= 3;
     }
@@ -625,7 +698,7 @@ Response.prototype.onKeyDown = function(e) {
       app.physics.variables.TIME_STEP /= 1.5;
     }
 
-    if(e.keyCode === 82) {    // 'R'
+    if(e.keyCode === 84) {    // 'T'
       app.physics.variables.TIME_STEP *= -1;
     }
 
