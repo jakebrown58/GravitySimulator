@@ -29,6 +29,37 @@ ViewPort.prototype.iso = function(x, y) {
   };
 };
 
+ViewPort.prototype.drawParticle = function(particle) {
+  var obj,
+    drawSize = particle.size;
+
+  if(app.DRAWSTATE === 0) {
+    obj = app.viewPort.project(particle.x, particle.y, 0);
+  } else {
+    obj = {x: particle.x, y: particle.y};
+    obj.x = (particle.x - app.viewPort.center.x) + (particle.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+    obj.y = (particle.y - app.viewPort.center.y) + (particle.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+  }
+
+  if(particle.radius > 1) {
+    drawSize = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.viewPort.viewPortSizeInKm;
+    drawSize = drawSize > particle.size ? drawSize : particle.size;
+  }
+
+
+  app.ctx.strokeStyle = particle.drawColor;
+  app.ctx.lineWidth = drawSize;
+  app.ctx.beginPath();
+  app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);  
+
+  if(drawSize >= 1) {
+    app.ctx.fillStyle = app.ctx.strokeStyle;
+    app.ctx.fill();
+  }
+
+  app.ctx.stroke();
+};
+
 ViewPort.prototype.frame = function() {
   var current;
 
@@ -123,7 +154,7 @@ ViewPort.prototype.setIntegrate = function() {
     //current = app.particles[i];
     //current.x = current.newX;
     //current.y = current.newY;
-    app.particles[i].draw();
+    app.viewPort.drawParticle(app.particles[i]);
   }
 };
 

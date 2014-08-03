@@ -1,4 +1,3 @@
-
 function Particle(id, x, y) {
   this.id = id; 
   this.x = this.oldX = x;
@@ -181,37 +180,4 @@ Particle.prototype.configure = function(config) {
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
-};
-
-Particle.prototype.draw = function() {
-  var obj,
-    drawSize = this.size;
-
-  if(app.DRAWSTATE === 0) {
-    obj = app.viewPort.project(this.x, this.y, 0);
-  } else {
-    obj = {x: this.x, y: this.y};
-    obj.x = (this.x - app.viewPort.center.x) + (this.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-    obj.y = (this.y - app.viewPort.center.y) + (this.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
-  }
-
-  if(this.radius > 1) {
-    drawSize = app.physics.constants.ASTRONOMICAL_UNIT * this.radius / app.viewPort.viewPortSizeInKm;
-    drawSize = drawSize > this.size ? drawSize : this.size;
-  }
-
-
-  app.ctx.strokeStyle = this.drawColor;
-  app.ctx.lineWidth = drawSize;
-  app.ctx.beginPath();
-  app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);  
-
-  if(drawSize >= 1) {
-    app.ctx.fillStyle = app.ctx.strokeStyle;
-    app.ctx.fill();
-  }
-
-  app.ctx.stroke();
-  ////app.ctx.moveTo(this.oldX, this.oldY);
-  //app.ctx.lineTo(this.x + 1, this.y + 1);
 };
