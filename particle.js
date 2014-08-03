@@ -18,19 +18,29 @@ function Particle(id, x, y) {
 
 Particle.prototype.calcAcceleration = function(){
   if(app.physics.variables.CALC_STYLE === 'real') {
-    this.calcAccelerationReal();
+    this.calcAccelerationOpen(this.d3Real);
   } else {
-    this.calcAccelerationSpyrograph();
+    this.calcAccelerationOpen(this.d3Spyro);
   }
 };
 
-Particle.prototype.calcAccelerationReal = function(){
+Particle.prototype.d3Real = function(dx, dy) {
+  var tmp = dx * dx + dy * dy;
+  return Math.sqrt(tmp) * tmp;
+};
+
+Particle.prototype.d3Spyro = function(dx, dy) {
+  var tmp = Math.sqrt(dx * dx + dy * dy);
+  return tmp * tmp;
+};
+
+
+Particle.prototype.calcAccelerationOpen = function(d3Fn){
   var curr,
     dx,
     dy,
     grav,
     i,
-    d2,
     d3;
 
   this.oldaccx = this.accx;
@@ -44,48 +54,11 @@ Particle.prototype.calcAccelerationReal = function(){
     if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
-      d2 = dx * dx + dy * dy;
-      d3 = Math.sqrt(d2) * d2;
+      d3 = d3Fn(dx, dy);
 
       grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
 
-      if (d2 > 0) {
-        this.accx += grav * dx;
-        this.accy += grav * dy;
-      } else{
-        this.accx += 0;
-        this.accy += 0;
-      }
-    }
-  }
-};
-
-Particle.prototype.calcAccelerationSpyrograph = function(){
-  var curr,
-    dx,
-    dy,
-    grav,
-    i,
-    d2,
-    d3;
-
-  this.oldaccx = this.accx;
-  this.oldaccy = this.accy;
-
-  this.accx = 0;
-  this.accy = 0;
-
-  for (i = 0; i < app.particles.length; i++) {
-    curr = app.particles[i];
-    if(curr.id !== this.id ) {
-      dx = curr.x - this.x;
-      dy = curr.y - this.y;
-      d2 = Math.sqrt(dx * dx + dy * dy);
-      d3 = d2 * d2;
-
-      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
-
-      if (d2 > 0) {
+      if (d3 > 0) {
         this.accx += grav * dx;
         this.accy += grav * dy;
       } else{
