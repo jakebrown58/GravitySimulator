@@ -24,9 +24,9 @@ Particles.prototype.buildInitialParticles = function() {
   if(app.physics.variables.CALC_STYLE === 'real') {
     initialObjects = [
       {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
-      {name: 'Mercury', mass: earthMass * .055, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
+      {name: 'Mercury', mass: earthMass * .055, radius: 1234, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
       {name: 'Venus', mass: earthMass * .815, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
-      {name: 'Earth', mass: earthMass, orbits: [{mass: sunMass * .94, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
+      {name: 'Earth', mass: earthMass, radius: 6371, orbits: [{mass: sunMass * .94, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
       {name: 'Mars', mass: earthMass * .107, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
       {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
       {name: 'Saturn', mass: jupiterMass * .30, orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
@@ -35,11 +35,11 @@ Particles.prototype.buildInitialParticles = function() {
       {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4,orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
     ];
   } else {
-    var centerMass =  30 + jupiterMass * Math.random() * 3000,
+    var centerMass =  Math.floor(30 + jupiterMass * Math.random() * 3000),
       colorShift = (1 - (centerMass / 3000)) / 2;
       planetMass = earthMass * Math.random() * 600;
     initialObjects = [
-      {name: 'Star', mass: centerMass, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255 - Math.floor(255 * colorShift), b: 255 - Math.floor(220 * colorShift)}}
+      {name: 'Star', mass: centerMass, radius: 800000, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255 - Math.floor(255 * colorShift), b: 255 - Math.floor(220 * colorShift)}}
 //      {name: 'Planet 1', mass: planetMass, radius: 69911, orbits: [{mass: centerMass * Math.sqrt(centerMass), radius: aU + aU * Math.random() * 8}], drawSize: .6, color: {r: 255, g: 215, b: 165}}
     ];
   }

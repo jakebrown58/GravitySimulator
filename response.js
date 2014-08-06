@@ -52,19 +52,27 @@ Response.prototype.onKeyDown = function(e) {
         app.physics.variables.CALC_STYLE = 'real';
       } else {
         app.physics.variables.CALC_STYLE = 'wacky';
+        app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
       }
       app.ctx.clearRect(0, 0, app.width, app.height);
       var x = new Particles().buildInitialParticles();
     }
     if(e.keyCode === 87) {    // 'W'
       app.VIEWSHIFT.y -= 3;
+      app.particles[app.FOLLOW].vely -= .1;
     }
     if(e.keyCode === 83) {    // 'S'
       app.VIEWSHIFT.y += 3;
+      app.particles[app.FOLLOW].vely += .1;
     }
     if(e.keyCode === 65) {    // 'A'
       app.VIEWSHIFT.x -= 3;
+      app.particles[app.FOLLOW].velx -= .1;
     }
+    if(e.keyCode === 68) {    // 'D'
+      app.VIEWSHIFT.x += 3;
+      app.particles[app.FOLLOW].velx += .1;
+    }      
     if(e.keyCode === 77) {    // 'M'
       app.response.changeMode();
     }    
@@ -78,10 +86,7 @@ Response.prototype.onKeyDown = function(e) {
       } else {
         app.GO = false;
       }
-    }
-    if(e.keyCode === 68) {    // 'D'
-      app.VIEWSHIFT.x += 3;
-    }    
+    }  
     if(e.keyCode === 67) {    // 'C'
       app.SHOWCLOCK = !app.SHOWCLOCK;
     }        
@@ -93,11 +98,11 @@ Response.prototype.onKeyDown = function(e) {
     } 
     if(e.keyCode === 88) {    // 'X'
       if(app.physics.variables.TIME_STEP < 100) {
-        app.physics.variables.TIME_STEP *= 1.5;
+        app.physics.variables.TIME_STEP *= 2;
       }
     }
     if(e.keyCode === 90) {    // 'Z'
-      app.physics.variables.TIME_STEP /= 1.5;
+      app.physics.variables.TIME_STEP /= 2;
     }
 
     if(e.keyCode === 84) {    // 'T'

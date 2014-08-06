@@ -16,6 +16,7 @@ function Physics() {
   this.variables = {};
   this.variables.TIME_STEP = 1;
   this.variables.CALC_STYLE = 'real';
+  this.variables.CALC_STYLE_VELOCITY_MOD = 1;
 }
 
 Physics.prototype.leapFrog = function () {

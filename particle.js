@@ -135,6 +135,11 @@ Particle.prototype.configure = function(config) {
         localOrbitalVelocity += Math.random() * parentGrav / 800;
       }
     }
+
+    if(app.physics.variables.CALC_STYLE !== 'real') {
+      localOrbitalVelocity *= app.physics.variables.CALC_STYLE_VELOCITY_MOD;
+    }
+
   } else {
     localOrbitalVelocity = config.orbitalVelocity * app.physics.constants.ORIGINAL_VELOCITY_FACTOR;
   }
