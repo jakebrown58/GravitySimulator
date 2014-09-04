@@ -3,6 +3,8 @@
 
 function ViewPort(){
   this.frameCount = 0;
+  this.txtOffset = 25;
+  this.lineHeight = 20;
   this.draw = true;
   this.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
@@ -37,8 +39,8 @@ ViewPort.prototype.drawParticle = function(particle) {
     obj = app.viewPort.project(particle.x, particle.y, 0);
   } else {
     obj = {x: particle.x, y: particle.y};
-    obj.x = (particle.x - app.viewPort.center.x) + (particle.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-    obj.y = (particle.y - app.viewPort.center.y) + (particle.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+    obj.x = (particle.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (particle.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+    obj.y = (particle.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (particle.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
   }
 
   if(particle.radius > 1) {
@@ -82,50 +84,44 @@ ViewPort.prototype.frameActions = function() {
 }
 
 ViewPort.prototype.frameClock = function() {
+
   if(app.SHOWCLOCK) {
-    app.ctx.fillText("Earth time:" + app.CLOCK.e, 5, 25);
-    app.ctx.fillText("Jupiter time:" + app.CLOCK.j, 5, 45);
-    app.ctx.fillText("Neptune time:" + app.CLOCK.n, 5, 65);
-    app.ctx.fillText("Started:" + app.realTime, 5, 85);
-    app.ctx.fillText("Now:" + Date(), 5, 105);
-    app.ctx.fillText("Ticks: " + app.CLOCK.ticks, 5, 125);
-    app.ctx.fillText("FrameRate: " + Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime)))), 65, 125);
+    this.txtOffset = 25;
+
+    this.appendLine("Earth time:" + app.CLOCK.e);
+    this.appendLine("Jupiter time:" + app.CLOCK.j);
+    this.appendLine("Neptune time:" + app.CLOCK.n);
+    this.appendLine("Started:" + app.realTime);
+    this.appendLine("Now:" + Date());
+
+
+    var frameRate = Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime))));
+    var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP;
+    var daysPerSecond = frameRate * hoursPerTick / 24;
+    this.appendLine("Simulation Speed: " + app.physics.variables.TIME_STEP);
+    this.appendLine("    Hours Per Tick: " + Math.floor(hoursPerTick * 10) / 10);
+    this.appendLine("    Days Per Second: " + Math.floor(daysPerSecond));
+    this.appendLine("Ticks: " + app.CLOCK.ticks);
+    this.appendLine("    Total Days: " + Math.floor(hoursPerTick * 24 * app.CLOCK.ticks));    
+    this.appendLine("    FrameRate: " + frameRate);
 
     var focusParticle = app.particles[app.FOLLOW];
-    var followSpeed = Math.sqrt(focusParticle.velx * focusParticle.velx + focusParticle.vely * focusParticle.vely);
     var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
-    app.ctx.fillText("F:  energy: " + focusKE, 5, 145);
-    app.ctx.fillText("     Speed: " + Math.round(followSpeed * 1000, 0), 5, 165);
-    var followDirection = Math.atan(focusParticle.velx / focusParticle.vely) * 180 / Math.PI;
+    this.appendLine("Following: " + focusParticle.name);
+    this.appendLine("     Energy: " + focusKE);
+    this.appendLine("     Speed: " + Math.round(app.physics.getParticleSpeed(focusParticle) * 1000, 0));
+    this.appendLine("     Direction: " + Math.round(focusParticle.direction, 0));
+    this.appendLine("     Mass: " + focusParticle.mass);
 
-    var q34 = focusParticle.velx < 0;
-    var q14 = focusParticle.vely > 0;
-    var q4 = q14 && q34,
-      q3 = q34 && !q4,
-      q1 = q14 && !q4,
-      q2 = !q1 && !q3 && !q4;
-    followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? 180 + followDirection : followDirection + 360;
-
-
-    app.ctx.fillText("     direction: " + Math.round(followDirection, 0), 5, 185);     // GRRRR..... i suck at trig in my head.....
-    //app.ctx.fillText("     direction: " + followDirection, 5, 185);     // GRRRR..... i suck at trig in my head.....
-    app.ctx.fillText("     Mass: " + focusParticle.mass, 5, 205);    
-    app.ctx.fillText("     Name: " + focusParticle.name, 5, 225);    
-    app.ctx.fillText("Time: " + app.physics.variables.TIME_STEP, 5, 245);
-    var viewPortSize = app.viewPort.viewPortSize,
-      unit = ' AU';
-    if(viewPortSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
-      viewPortSize = Math.floor(10 * viewPortSize / app.physics.constants.LIGHTYEAR_PER_AU) / 10;
-      unit = ' LIGHTYEARS';
-    } else if(viewPortSize < 1) {
-      viewPortSize = Math.floor(viewPortSize * app.physics.constants.MILES_PER_AU);
-      unit = ' MILES';
-    } else if( viewPortSize > 4) {
-      viewPortSize = Math.floor(viewPortSize);
-    }
-    app.ctx.fillText("Viewport size: " + viewPortSize + unit, 5, 265);
-    app.ctx.fillText("Click Action: " + app.response.MODE, 5, 285);
+    var viewPort = app.physics.convertViewPortPixelsToUnits(app.viewPort.viewPortSize);
+    this.appendLine("Viewport size: " + viewPort.size + viewPort.unit);
+    this.appendLine("Click Action: " + app.response.MODE);
   }
+};
+
+ViewPort.prototype.appendLine = function(txt) {
+  app.ctx.fillText(txt, 5, this.txtOffset);
+  this.txtOffset += this.lineHeight;
 };
 
 ViewPort.prototype.integrateWrapper = function() {
@@ -142,6 +138,11 @@ ViewPort.prototype.setClock = function() {
   app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
   app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
   app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
+
+
+  if(app.particles[3].checkClock() && app.CLOCK.e === 4) {
+    app.GO = false;
+  }
 
   if(app.CLOCK.ticks > 1000000) {
     app.CLOCK.ticks = 0;

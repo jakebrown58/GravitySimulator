@@ -16,7 +16,7 @@ Particles.prototype.buildInitialParticles = function() {
     //sunGravity = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT * sunMass,
     aU = 50,
     initalObjects = {},
-    jupiterArc = Math.PI,
+    jupiterArc = Math.PI + .00000001,
     cfg = {};
 
     app.particles = [];
@@ -26,7 +26,7 @@ Particles.prototype.buildInitialParticles = function() {
       {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
       {name: 'Mercury', mass: earthMass * .055, radius: 1234, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
       {name: 'Venus', mass: earthMass * .815, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
-      {name: 'Earth', mass: earthMass, radius: 6371, orbits: [{mass: sunMass * .94, radius: aU}], drawSize: 1, color: {r: 180, g: 200, b: 255}},
+      {name: 'Earth', mass: earthMass, radius: 6371, orbits: [{mass: sunMass * .94, radius: aU}], arc: jupiterArc, drawSize: 1, color: {r: 180, g: 200, b: 255}},
       {name: 'Mars', mass: earthMass * .107, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
       {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
       {name: 'Saturn', mass: jupiterMass * .30, orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},

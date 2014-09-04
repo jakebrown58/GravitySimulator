@@ -81,8 +81,10 @@ Particle.prototype.updateVelocity = function() {
   var dt = app.physics.variables.TIME_STEP;
   this.oldvelx = this.velx; //Not used by leapfrog itself.
   this.oldvely = this.vely; //Not used by leapfrog itself.
+  this.oldDirection = app.physics.getParticleDirection(this);
   this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
   this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
+  this.direction = app.physics.getParticleDirection(this);
 };
 
 Particle.prototype.kineticE = function(){
@@ -106,7 +108,7 @@ Particle.prototype.isBoundTo = function(p2){
 }
 
 Particle.prototype.checkClock = function() {
-    return this.x > app.halfWidth && this.oldy < app.halfHeight && this.y > app.halfHeight;
+    return Math.abs((this.oldDirection - this.direction)) > 10;
 };
 
 Particle.prototype.configure = function(config) {

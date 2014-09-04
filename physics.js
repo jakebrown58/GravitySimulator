@@ -13,6 +13,8 @@ function Physics() {
   this.constants.LIGHTYEAR = this.constants.ASTRONOMICAL_UNIT * this.constants.LIGHTYEAR_PER_AU;
 
 
+  this.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 = 13.9254843517139;
+
   this.variables = {};
   this.variables.TIME_STEP = 1;
   this.variables.CALC_STYLE = 'real';
@@ -75,4 +77,42 @@ Physics.prototype.collide_glom = function(p1, p2) {
   cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
   //Todo: add new particle to app.particles using buildParticle(cfg);
   //Todo: remove p1, p2 from app.particles.
+};
+
+Physics.prototype.getParticleSpeed = function (particle) {
+  return Math.sqrt(particle.velx * particle.velx + particle.vely * particle.vely);
+};
+
+Physics.prototype.getParticleDirection = function (particle) {
+  var followDirection = Math.atan(particle.velx / particle.vely) * 180 / Math.PI;
+    var q34 = particle.velx < 0;
+    var q14 = particle.vely > 0;
+    var q4 = q14 && q34,
+      q3 = q34 && !q4,
+      q1 = q14 && !q4,
+      q2 = !q1 && !q3 && !q4;
+    followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? 180 + followDirection : followDirection + 360;
+  return followDirection;
+};
+
+
+Physics.prototype.convertViewPortPixelsToUnits = function(rawSize) {
+    var viewPortSize = rawSize,
+      unit = ' AU';
+
+    if(rawSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
+      viewPortSize = Math.floor(10 * rawSize / app.physics.constants.LIGHTYEAR_PER_AU) / 10;
+      unit = ' LIGHTYEARS';
+    } else if(rawSize < 1) {
+      viewPortSize = Math.floor(rawSize * app.physics.constants.MILES_PER_AU);
+      unit = ' MILES';
+    } else if( rawSize > 4) {
+      viewPortSize = Math.floor(rawSize);
+    }
+
+    return {size: viewPortSize, unit: unit};
+};
+
+Physics.prototype.convertTicksToEarthTime = function(ticks) {
+
 };

@@ -56,22 +56,27 @@ Response.prototype.onKeyDown = function(e) {
       }
       app.ctx.clearRect(0, 0, app.width, app.height);
       var x = new Particles().buildInitialParticles();
+
+      app.CLOCK.ticks = 0;
+      app.CLOCK.e = 0;
+      app.CLOCK.j = 0;
+      app.CLOCK.n = 0;
     }
     if(e.keyCode === 87) {    // 'W'
-      app.VIEWSHIFT.y -= 3;
-      app.particles[app.FOLLOW].vely -= .1;
+      app.VIEWSHIFT.y -= 5;
+      //app.particles[app.FOLLOW].vely -= .1;
     }
     if(e.keyCode === 83) {    // 'S'
-      app.VIEWSHIFT.y += 3;
-      app.particles[app.FOLLOW].vely += .1;
+      app.VIEWSHIFT.y += 5;
+      //app.particles[app.FOLLOW].vely += .1;
     }
     if(e.keyCode === 65) {    // 'A'
-      app.VIEWSHIFT.x -= 3;
-      app.particles[app.FOLLOW].velx -= .1;
+      app.VIEWSHIFT.x -= 5;
+      //app.particles[app.FOLLOW].velx -= .1;
     }
     if(e.keyCode === 68) {    // 'D'
-      app.VIEWSHIFT.x += 3;
-      app.particles[app.FOLLOW].velx += .1;
+      app.VIEWSHIFT.x += 5;
+      //app.particles[app.FOLLOW].velx += .1;
     }      
     if(e.keyCode === 77) {    // 'M'
       app.response.changeMode();
@@ -92,6 +97,8 @@ Response.prototype.onKeyDown = function(e) {
     }        
     if(e.keyCode === 70) {    // 'F'
       app.FOLLOW += 1;
+      app.VIEWSHIFT.x = 0;
+      app.VIEWSHIFT.y= 0;
       if(app.FOLLOW >= app.PARTICLECOUNT) {
         app.FOLLOW = 0;
       }
@@ -200,8 +207,11 @@ Response.prototype.rocket = function(){
     newGuy.name = 'PHOTON' + app.particles.length;
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
+    newGuy.x = app.particles[0].x;
+    newGuy.y = app.particles[0].y;
     newGuy.velx = 5000 * Math.cos(arc);
     newGuy.vely = 5000 * Math.sin(arc);
+
   } else {
     newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .20;
     newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .20;
