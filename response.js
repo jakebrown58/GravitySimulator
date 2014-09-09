@@ -82,7 +82,7 @@ Response.prototype.onKeyDown = function(e) {
       app.response.changeMode();
     }    
     if(e.keyCode === 80) {    // 'P'
-      app.physics.variables.TIME_STEP = 1;
+      app.physics.updateTimeStep(1);
       if(app.GO === false) {
         app.GO = true;
         requestAnimationFrame(app.viewPort.frame);
@@ -105,15 +105,15 @@ Response.prototype.onKeyDown = function(e) {
     } 
     if(e.keyCode === 88) {    // 'X'
       if(app.physics.variables.TIME_STEP < 100) {
-        app.physics.variables.TIME_STEP *= 2;
+        app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
       }
     }
     if(e.keyCode === 90) {    // 'Z'
-      app.physics.variables.TIME_STEP /= 2;
+      app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2);
     }
 
     if(e.keyCode === 84) {    // 'T'
-      app.physics.variables.TIME_STEP *= -1;
+      app.physics.updateTimeStep(app.physics.variables.TIME_STEP * -1);
     }
 
     if(e.keyCode === 188) {    // '<'
@@ -128,7 +128,7 @@ Response.prototype.onKeyDown = function(e) {
       app.VIEWANGLE = .75;
       app.FOLLOW = 0;
       app.VIEWSHIFT.zoom = 0;
-      app.physics.variables.TIME_STEP = 1;
+      app.physics.updateTimeStep(1);
     }  
 };
 

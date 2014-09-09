@@ -14,11 +14,18 @@ function Physics() {
 
 
   this.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 = 13.9254843517139;
+  this.constants.TIME_STEP_NORMALIZER = 0.861729452054792;
 
   this.variables = {};
   this.variables.TIME_STEP = 1;
+  this.variables.TIME_STEP_INTEGRATOR = this.variables.TIME_STEP * this.constants.TIME_STEP_NORMALIZER;
   this.variables.CALC_STYLE = 'real';
   this.variables.CALC_STYLE_VELOCITY_MOD = 1;
+}
+
+Physics.prototype.updateTimeStep = function(newTimeStep) {
+  this.variables.TIME_STEP = newTimeStep;
+  this.variables.TIME_STEP_INTEGRATOR = newTimeStep * this.constants.TIME_STEP_NORMALIZER;
 }
 
 Physics.prototype.leapFrog = function () {
@@ -85,11 +92,11 @@ Physics.prototype.getParticleSpeed = function (particle) {
 
 Physics.prototype.getParticleDirection = function (particle) {
   var followDirection = Math.atan(particle.velx / particle.vely) * 180 / Math.PI;
-    var q34 = particle.velx < 0;
-    var q14 = particle.vely > 0;
-    var q4 = q14 && q34,
-      q3 = q34 && !q4,
-      q1 = q14 && !q4,
+  var left = particle.velx < 0;
+  var down = particle.vely > 0;
+  var q4 = down && left,
+      q3 = left && !q4,
+      q1 = down && !q4,
       q2 = !q1 && !q3 && !q4;
     followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? 180 + followDirection : followDirection + 360;
   return followDirection;

@@ -5,9 +5,8 @@ app.init = function () {
   app.display = document.getElementById('display');
   app.ctx = display.getContext('2d');
   app.particles = [];
-  app.width = display.width = window.innerWidth;
-  app.height = display.height = window.innerHeight;
-  app.size = (app.width + app.height) / 2;
+  app.width = display.width = window.innerWidth - 40;
+  app.height = display.height = window.innerHeight - 30;
   app.halfWidth = app.width * 0.5;
   app.halfHeight = app.height * 0.5;
   app.mouse = { x: app.halfWidth, y: app.halfHeight };

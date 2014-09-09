@@ -11,9 +11,9 @@ function Particle(id, x, y) {
   this.obj = {x: this.x, y: this.y}
   this.center = {};
   this.damping = 1;
-  this.color = {r: Math.floor(Math.random() * 100 + 155), 
-    g:  Math.floor(Math.random() * 200 + 145), 
-    b:  Math.floor(Math.random() * 100 + 155)};
+  this.color = {r: 205 + 50 * Math.floor(Math.random() * 2), 
+    g:  205 + 50 * Math.floor(Math.random() * 2),
+    b:  205 + 50 * Math.floor(Math.random() * 2)};
 };
 
 Particle.prototype.calcAcceleration = function(){
@@ -49,28 +49,24 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
   this.accx = 0;
   this.accy = 0;
 
-  for (i = 0; i < app.particles.length; i++) {
-    curr = app.particles[i];
+  for (i = 0; i < app.alwaysIntegrate.length; i++) {
+    curr = app.particles[app.alwaysIntegrate[i]];
     if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
       d3 = d3Fn(dx, dy);
 
-      grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
-
-      if (d3 > 0) {
+      if(d3 != 0) {
+        grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
         this.accx += grav * dx;
         this.accy += grav * dy;
-      } else{
-        this.accx += 0;
-        this.accy += 0;
       }
     }
   }
 };
 
 Particle.prototype.updatePosition = function() {
-  var dt = app.physics.variables.TIME_STEP;
+  var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.oldx = this.x; //Not used by leapfrog itself.
   this.oldy = this.y; //Not used by leapfrog itself.
   this.x += (this.velx + 0.5 * this.accx * dt) * dt;
@@ -78,7 +74,7 @@ Particle.prototype.updatePosition = function() {
 };
 
 Particle.prototype.updateVelocity = function() {
-  var dt = app.physics.variables.TIME_STEP;
+  var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.oldvelx = this.velx; //Not used by leapfrog itself.
   this.oldvely = this.vely; //Not used by leapfrog itself.
   this.oldDirection = app.physics.getParticleDirection(this);
@@ -88,23 +84,24 @@ Particle.prototype.updateVelocity = function() {
 };
 
 Particle.prototype.kineticE = function(){
-  return (1/2) * this.mass * (this.velx*this.velx + this.vely*this.vely);
+  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely);
 }
 
 Particle.prototype.isBoundTo = function(p2){
-  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
-  var velx = this.velx - p2.velx;
-  var vely = this.vely - p2.vely;
-  var dx = this.x - p2.x;
-  var dy = this.y - p2.y;
-  var d2 = dx*dx + dy*dy;
-  var v2 = velx*velx + vely*vely;
-  var energy = mu * v2/2.0 - app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / Math.sqrt(d2);
-  if (energy > 0){
-    return false;
-  }else{
-    return true;
+  var mu = (this.mass * p2.mass) / (this.mass + p2.mass),
+   velx = this.velx - p2.velx,
+   vely = this.vely - p2.vely,
+   dx = this.x - p2.x,
+   dy = this.y - p2.y,
+   sqrtD2 = Math.sqrt(dx * dx + dy * dy),
+   v2 = velx * velx + vely * vely,
+   energy = 0;
+
+  if(sqrtD2 > 0) {
+    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / sqrtD2);
   }
+
+  return energy > 0;
 }
 
 Particle.prototype.checkClock = function() {

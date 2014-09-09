@@ -8,6 +8,7 @@ function ViewPort(){
   this.draw = true;
   this.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
+  this.colorSorted = false;
 }
 
 ViewPort.prototype.project = function(flatX, flatY, flatZ) {
@@ -31,6 +32,31 @@ ViewPort.prototype.iso = function(x, y) {
   };
 };
 
+ViewPort.prototype.drawParticles = function() {
+  var particles;
+
+  if(!this.colorSorted) {
+    this.particles = app.particles.sort(function(itm) {
+      return itm.drawColor;
+    });
+
+    this.colorSorted = true;
+  }
+
+  particles = this.particles;
+
+  var currColor = particles[0].drawColor;
+  app.ctx.strokeStyle = currColor;
+  for(var i = 0 ; i < particles.length; i++ ){
+    if(particles[i].drawColor != currColor) {
+      currColor = particles[i].drawColor;
+      app.ctx.strokeStyle = currColor;
+    }
+
+    this.drawParticle(particles[i]);
+  }
+};
+
 ViewPort.prototype.drawParticle = function(particle) {
   var obj,
     drawSize = particle.size;
@@ -46,17 +72,22 @@ ViewPort.prototype.drawParticle = function(particle) {
   if(particle.radius > 1) {
     drawSize = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.viewPort.viewPortSizeInKm;
     drawSize = drawSize > particle.size ? drawSize : particle.size;
+  } else {
+    drawSize = .5;
   }
 
 
-  app.ctx.strokeStyle = particle.drawColor;
+  //app.ctx.strokeStyle = particle.drawColor;
   app.ctx.lineWidth = drawSize;
   app.ctx.beginPath();
-  app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);  
+  
 
   if(drawSize >= 1) {
+    app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);
     app.ctx.fillStyle = app.ctx.strokeStyle;
     app.ctx.fill();
+  } else {
+    app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, Math.PI, false);
   }
 
   app.ctx.stroke();
@@ -96,13 +127,22 @@ ViewPort.prototype.frameClock = function() {
 
 
     var frameRate = Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime))));
-    var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP;
-    var daysPerSecond = frameRate * hoursPerTick / 24;
+    var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP_INTEGRATOR;
+    var daysPerSecond = frameRate * (hoursPerTick / 24);
     this.appendLine("Simulation Speed: " + app.physics.variables.TIME_STEP);
-    this.appendLine("    Hours Per Tick: " + Math.floor(hoursPerTick * 10) / 10);
-    this.appendLine("    Days Per Second: " + Math.floor(daysPerSecond));
+
+    if(hoursPerTick > 1) {
+      this.appendLine("    Hours Per Tick: " + Math.floor(hoursPerTick * 10) / 10);
+      this.appendLine("    Days Per Second: " + Math.floor(daysPerSecond));
+    } else if( hoursPerTick > .0166) {
+      this.appendLine("    Minutes Per Tick: " + Math.floor(60 * hoursPerTick * 10) / 10);
+      this.appendLine("    Hours Per Second: " + Math.floor(daysPerSecond * 24));
+    } else {
+      this.appendLine("    Seconds Per Tick: " + Math.floor(3600 * hoursPerTick * 10) / 10);
+      this.appendLine("    Minutes Per Second: " + Math.floor(daysPerSecond * 1440));
+    }
     this.appendLine("Ticks: " + app.CLOCK.ticks);
-    this.appendLine("    Total Days: " + Math.floor(hoursPerTick * 24 * app.CLOCK.ticks));    
+    this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));    
     this.appendLine("    FrameRate: " + frameRate);
 
     var focusParticle = app.particles[app.FOLLOW];
@@ -116,6 +156,17 @@ ViewPort.prototype.frameClock = function() {
     var viewPort = app.physics.convertViewPortPixelsToUnits(app.viewPort.viewPortSize);
     this.appendLine("Viewport size: " + viewPort.size + viewPort.unit);
     this.appendLine("Click Action: " + app.response.MODE);
+
+    var totalMass = 0,
+      totalEnergy = 0;
+
+    for(var zz = 0; zz < app.particles.length; zz++) {
+      totalMass += app.particles[zz].mass;
+      totalEnergy += Math.round(app.particles[zz].kineticE()*100000,0);
+    }
+
+    this.appendLine("Total system mass: " + totalMass);
+    this.appendLine("Total system energy: " + totalEnergy);
   }
 };
 
@@ -139,11 +190,6 @@ ViewPort.prototype.setClock = function() {
   app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
   app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
 
-
-  if(app.particles[3].checkClock() && app.CLOCK.e === 4) {
-    app.GO = false;
-  }
-
   if(app.CLOCK.ticks > 1000000) {
     app.CLOCK.ticks = 0;
   }
@@ -151,12 +197,13 @@ ViewPort.prototype.setClock = function() {
 
 ViewPort.prototype.setIntegrate = function() {
   app.viewPort.center = {x: (app.particles[app.FOLLOW].x - app.halfWidth), y: (app.particles[app.FOLLOW].y - app.halfHeight)};
-  for (i = 0; i < app.particles.length; i++) {
-    //current = app.particles[i];
-    //current.x = current.newX;
-    //current.y = current.newY;
-    app.viewPort.drawParticle(app.particles[i]);
-  }
+  app.viewPort.drawParticles();
+  // for (i = 0; i < app.particles.length; i++) {
+  //   //current = app.particles[i];
+  //   //current.x = current.newX;
+  //   //current.y = current.newY;
+  //   app.viewPort.drawParticle(app.particles[i]);
+  // }
 };
 
 

@@ -1,8 +1,8 @@
 function Particles() {
   this.objects = {};
-  this.objects.COMETS = Math.floor( Math.random() * 50);
-  this.objects.ASTEROIDS = Math.floor( Math.random() * 50);
-  this.objects.JUPITERCLOUD = Math.floor( Math.random() * 50);
+  this.objects.COMETS = 250;// Math.floor( Math.random() * 1250);
+  this.objects.ASTEROIDS = 2200;// Math.floor( Math.random() * 1250);
+  this.objects.JUPITERCLOUD = 50; //Math.floor( Math.random() * 1250);
   this.objects.PARTICLECOUNT = 1;  
 }
 
@@ -20,6 +20,7 @@ Particles.prototype.buildInitialParticles = function() {
     cfg = {};
 
     app.particles = [];
+    app.alwaysIntegrate = [];
 
   if(app.physics.variables.CALC_STYLE === 'real') {
     initialObjects = [
@@ -48,12 +49,16 @@ Particles.prototype.buildInitialParticles = function() {
     this.buildParticle(initialObjects.shift());
   }
 
+  for(i = 0; i < app.particles.length; i++) {
+    app.alwaysIntegrate.push(i);
+  }
+
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
     this.buildParticle({name: 'Asteroid ' + i, mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: .1});
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
-    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 340), orbitalVelocity: -.14 + Math.random() * 6.02, drawSize: .1});
+    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 340), orbitalVelocity: -.34 + Math.random() * .62, drawSize: .1});
   }
 
   for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
