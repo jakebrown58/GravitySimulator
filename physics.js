@@ -28,6 +28,10 @@ Physics.prototype.updateTimeStep = function(newTimeStep) {
   this.variables.TIME_STEP_INTEGRATOR = newTimeStep * this.constants.TIME_STEP_NORMALIZER;
 }
 
+Physics.prototype.reverseTime = function() {
+  this.updateTimeStep(this.variables.TIME_STEP * -1);
+}
+
 Physics.prototype.leapFrog = function () {
   var ps = app.particles,
     i;
@@ -47,7 +51,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   if (p1.mass > p2.mass){
     big = p1;
     little = p2;
-  }else{
+  } else{
     big = p2;
     little = p1;
   }

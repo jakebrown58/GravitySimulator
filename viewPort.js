@@ -36,9 +36,11 @@ ViewPort.prototype.drawParticles = function() {
   var particles;
 
   if(!this.colorSorted) {
-    this.particles = app.particles.sort(function(itm) {
-      return itm.drawColor;
-    });
+    // this.particles = app.particles.sort(function(itm) {
+    //   return itm.drawColor;
+    // });
+
+    this.particles = app.particles;
 
     this.colorSorted = true;
   }
@@ -73,7 +75,7 @@ ViewPort.prototype.drawParticle = function(particle) {
     drawSize = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.viewPort.viewPortSizeInKm;
     drawSize = drawSize > particle.size ? drawSize : particle.size;
   } else {
-    drawSize = .5;
+    drawSize = .2;
   }
 
 
@@ -167,6 +169,10 @@ ViewPort.prototype.frameClock = function() {
 
     this.appendLine("Total system mass: " + totalMass);
     this.appendLine("Total system energy: " + totalEnergy);
+
+    var closestDist = app.physics.convertViewPortPixelsToUnits(app.closestPair.d);
+    this.appendLine("Closest Pair:   x - " + app.closestPair.x.name + " y -" + app.closestPair.y.name + " d -" + closestDist.size + closestDist.unit);
+    app.closestPair.d = 1000000;
   }
 };
 

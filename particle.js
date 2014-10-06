@@ -11,9 +11,9 @@ function Particle(id, x, y) {
   this.obj = {x: this.x, y: this.y}
   this.center = {};
   this.damping = 1;
-  this.color = {r: 205 + 50 * Math.floor(Math.random() * 2), 
-    g:  205 + 50 * Math.floor(Math.random() * 2),
-    b:  205 + 50 * Math.floor(Math.random() * 2)};
+  this.color = {r: 205 + 50 * Math.floor(Math.random() * 3), 
+    g:  205 + 50 * Math.floor(Math.random() * 3),
+    b:  205 + 50 * Math.floor(Math.random() * 3)};
 };
 
 Particle.prototype.calcAcceleration = function(){
@@ -30,8 +30,10 @@ Particle.prototype.d3Real = function(dx, dy) {
 };
 
 Particle.prototype.d3Spyro = function(dx, dy) {
-  var tmp = Math.sqrt(dx * dx + dy * dy);
-  return tmp * tmp;
+  //var tmp = Math.sqrt(dx * dx + dy * dy);
+  //return tmp * tmp;
+    var tmp = dx * dx + dy * dy;
+  return Math.sqrt(tmp) * tmp;
 };
 
 
@@ -55,6 +57,15 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
       dx = curr.x - this.x;
       dy = curr.y - this.y;
       d3 = d3Fn(dx, dy);
+
+      if(d3 < app.closestPair.d || app.closestPair === 0) {
+        app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
+        app.closestPair.d = app.closestPair.d * app.closestPair.d;
+        app.closestPair.x = this;
+        app.closestPair.y = curr;
+        app.FOLLOW = i;
+      }
+
 
       if(d3 != 0) {
         grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;

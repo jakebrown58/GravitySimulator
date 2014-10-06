@@ -1,9 +1,9 @@
 /* ******************* RESPONSE ******************************************************* */
 
 function Response() {
-  app.display.addEventListener('mousemove', this.onMousemove);
-  app.display.addEventListener('click', this.onClick);
-  app.display.addEventListener('keydown', this.onKeyDown);
+  app.eventListener.addEventListener('mousemove', this.onMousemove);
+  app.eventListener.addEventListener('click', this.onClick);
+  app.eventListener.addEventListener('keydown', this.onKeyDown);
   this.MODE = 'FOLLOW';
 }
 
@@ -52,16 +52,19 @@ Response.prototype.onKeyDown = function(e) {
         app.physics.variables.CALC_STYLE = 'real';
       } else {
         app.physics.variables.CALC_STYLE = 'wacky';
-        app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
+//        app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
       }
       app.ctx.clearRect(0, 0, app.width, app.height);
       var x = new Particles().buildInitialParticles();
-
+      app.viewPort.colorSorted = false;
       app.CLOCK.ticks = 0;
       app.CLOCK.e = 0;
       app.CLOCK.j = 0;
       app.CLOCK.n = 0;
     }
+    if(e.keyCode === 84) {    // 'T'
+      app.physics.reverseTime();
+    } 
     if(e.keyCode === 87) {    // 'W'
       app.VIEWSHIFT.y -= 5;
       //app.particles[app.FOLLOW].vely -= .1;
@@ -111,11 +114,6 @@ Response.prototype.onKeyDown = function(e) {
     if(e.keyCode === 90) {    // 'Z'
       app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2);
     }
-
-    if(e.keyCode === 84) {    // 'T'
-      app.physics.updateTimeStep(app.physics.variables.TIME_STEP * -1);
-    }
-
     if(e.keyCode === 188) {    // '<'
       app.viewPort.adjustZoom('out');
     }
