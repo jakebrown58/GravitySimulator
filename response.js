@@ -102,7 +102,7 @@ Response.prototype.onKeyDown = function(e) {
       app.FOLLOW += 1;
       app.VIEWSHIFT.x = 0;
       app.VIEWSHIFT.y= 0;
-      if(app.FOLLOW >= app.PARTICLECOUNT) {
+      if(app.FOLLOW >= app.particles.length) {
         app.FOLLOW = 0;
       }
     } 

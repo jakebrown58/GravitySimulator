@@ -58,6 +58,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   var mass = big.mass + little.mass;
   var fracB = big.mass / mass;
   var fracL = little.mass / mass;
+  
   cfg = {
         id: big.id,
         name: big.name,
@@ -78,16 +79,14 @@ Physics.prototype.collide_glom = function(p1, p2) {
         oldaccx: (fracB*big.oldaccx + fracL*little.oldaccx),
         oldaccy: (fracB*big.oldaccy + fracL*little.oldaccy),
 
-        color:{r: big.color.r*fracB + little.color.r*fracL,
-               g: big.color.g*fracB + little.color.g*fracL,
-               b: big.color.b*fracB + little.color.b*fracL},
+        color: big.color
         };
   cfg.U = 0;
   cfg.U += big.U || 0;
   cfg.U += little.U || 0;
   cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
-  //Todo: add new particle to app.particles using buildParticle(cfg);
-  //Todo: remove p1, p2 from app.particles.
+
+  return { newParticleTemplate: cfg, big: big, little: little};
 };
 
 Physics.prototype.getParticleSpeed = function (particle) {

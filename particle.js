@@ -63,9 +63,7 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
         app.closestPair.d = app.closestPair.d * app.closestPair.d;
         app.closestPair.x = this;
         app.closestPair.y = curr;
-        app.FOLLOW = i;
       }
-
 
       if(d3 != 0) {
         grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
