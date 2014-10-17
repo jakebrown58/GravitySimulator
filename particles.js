@@ -45,11 +45,27 @@ Particles.prototype.buildInitialParticles = function() {
 // //      {name: 'Planet 1', mass: planetMass, radius: 69911, orbits: [{mass: centerMass * Math.sqrt(centerMass), radius: aU + aU * Math.random() * 8}], drawSize: .6, color: {r: 255, g: 215, b: 165}}
 //     ];
 
+    this.buildParticle({name: 'Brown Dwarf ' + i, radius: 696342, mass: 1000 * jupiterMass, orbitalVelocity: 0, distance: 0, drawSize: 1});
+
+    this.buildParticle({name: 'Saturn-like ' + i, radius: 69911, mass: jupiterMass * .3, orbits: [{mass: 1000 * jupiterMass, radius: 1.8 * aU}], drawSize: 1});
+
+    // for (i = 0; i < 40; i++) {
+    //   var tmass =  jupiterMass / 80,
+    //     tradius = 69911 / 400;
+    //   this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbitalVelocity: 0, distance:  Math.random() * aU / 2 + .0001, drawSize: .1});
+    // }
+
     for (i = 0; i < 400; i++) {
-      var tmass =  1 / 400,
-        tradius = 70000 / 400;
-      this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbitalVelocity: 0, distance: aU * 2 + aU * (Math.random() / 2), drawSize: .1});
+      var tmass =  earthMass / 200,
+        tradius = 6371 / 800;
+      this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: 1000 * jupiterMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * .4}], drawSize: .1});
     }
+
+    // for (i = 0; i < 400; i++) {
+    //   var tmass =  earthMass * .017 / 400,
+    //     tradius = 800000;
+    //   this.buildParticle({name: 'Asteroid ' + i, radius: 6000, mass: tmass, orbits: [{mass: sunMass, radius: aU * 1.38 + aU / (Math.random() * 80)}], drawSize: .3});
+    // }
 
     // app.particles = app.particles.sort(function(itm, itm2) {
     //   return (10 * itm.radius) < (10 * itm2.radius);
@@ -60,7 +76,7 @@ Particles.prototype.buildInitialParticles = function() {
     this.buildParticle(initialObjects.shift());
   }
 
-  for(i = 0; i < app.particles.length; i++) {
+  for(i = 0; i < app.particles.length; i++) {   
     app.alwaysIntegrate.push(i);
   }
 

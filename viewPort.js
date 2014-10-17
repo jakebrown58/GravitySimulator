@@ -33,23 +33,11 @@ ViewPort.prototype.iso = function(x, y) {
 };
 
 ViewPort.prototype.drawParticles = function() {
-  var particles;
-
-  if(!this.colorSorted) {
-    // this.particles = app.particles.sort(function(itm) {
-    //   return itm.drawColor;
-    // });
-
-    this.particles = app.particles;
-
-    this.colorSorted = true;
-  }
-
-  particles = this.particles;
+  var particles = app.particles;
 
   var currColor = particles[0].drawColor;
   app.ctx.strokeStyle = currColor;
-  for(var i = 0 ; i < particles.length; i++ ){
+  for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
       currColor = particles[i].drawColor;
       app.ctx.strokeStyle = currColor;
@@ -72,7 +60,8 @@ ViewPort.prototype.drawParticle = function(particle) {
   }
 
   if(particle.radius > 1) {
-    drawSize = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.viewPort.viewPortSizeInKm;
+    var pctOfViewport = particle.radius / app.viewPort.viewPortSizeInKm;
+    drawSize = pctOfViewport * app.width / 2; //app.physics.constants.ASTRONOMICAL_UNIT * pctOfViewport;
     drawSize = drawSize > particle.size ? drawSize : particle.size;
   } else {
     drawSize = .2;
@@ -89,7 +78,7 @@ ViewPort.prototype.drawParticle = function(particle) {
     app.ctx.fillStyle = app.ctx.strokeStyle;
     app.ctx.fill();
   } else {
-    app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, Math.PI, false);
+    app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);
   }
 
   app.ctx.stroke();
@@ -162,17 +151,27 @@ ViewPort.prototype.frameClock = function() {
     var totalMass = 0,
       totalEnergy = 0;
 
-    for(var zz = 0; zz < app.particles.length; zz++) {
-      totalMass += app.particles[zz].mass;
-      totalEnergy += Math.round(app.particles[zz].kineticE()*100000,0);
-    }
+    // for(var zz = 0; zz < app.particles.length; zz++) {
+    //   totalMass += app.particles[zz].mass;
+    //   totalEnergy += Math.round(app.particles[zz].kineticE()*100000,0);
+    // }
 
     this.appendLine("Total system mass: " + totalMass);
     this.appendLine("Total system energy: " + totalEnergy);
+    this.appendLine("Total collissions: " + app.collissions);
 
-    var closestDist = app.physics.convertViewPortPixelsToUnits(app.closestPair.d);
-    this.appendLine("Closest Pair:   x - " + app.closestPair.x.name + " y -" + app.closestPair.y.name + " d -" + closestDist.size + closestDist.unit);
-    app.closestPair.d = 1000000;
+    var maxMass = 0;
+    for(var xx = 0; xx < app.particles.length; xx++) {
+      if(app.particles[xx].mass > maxMass) {
+        maxMass = app.particles[xx].mass;
+      }
+    }
+
+    this.appendLine("Most Massive: " + maxMass);
+
+    //var closestDist = app.physics.convertViewPortPixelsToUnits(app.closestPair.d);
+    //this.appendLine("Closest Pair:   x - " + app.closestPair.x.name + " y -" + app.closestPair.y.name + " d -" + closestDist.size + closestDist.unit);
+    //app.closestPair.d = 1000000;
   }
 };
 
@@ -192,9 +191,9 @@ ViewPort.prototype.integrateWrapper = function() {
 
 ViewPort.prototype.setClock = function() {
   app.CLOCK.ticks += 1;
-  app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
-  app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
-  app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
+  //app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
+  //app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
+  //app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
 
   if(app.CLOCK.ticks > 1000000) {
     app.CLOCK.ticks = 0;
@@ -247,7 +246,11 @@ ViewPort.prototype.adjustZoom = function(direction) {
     app.VIEWSHIFT.zoom = -.99995;
   } 
 
-  app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
-  app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
+  if(app.VIEWSHIFT.zoom !== 0) {
+    app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
+    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
+  }
+
+
 
 };

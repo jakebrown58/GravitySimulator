@@ -61,6 +61,7 @@ Response.prototype.onKeyDown = function(e) {
       app.CLOCK.e = 0;
       app.CLOCK.j = 0;
       app.CLOCK.n = 0;
+      app.collissions = 0;
     }
     if(e.keyCode === 84) {    // 'T'
       app.physics.reverseTime();
@@ -85,7 +86,7 @@ Response.prototype.onKeyDown = function(e) {
       app.response.changeMode();
     }    
     if(e.keyCode === 80) {    // 'P'
-      app.physics.updateTimeStep(1);
+      //app.physics.updateTimeStep(1);
       if(app.GO === false) {
         app.GO = true;
         requestAnimationFrame(app.viewPort.frame);

@@ -51,19 +51,19 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
   this.accx = 0;
   this.accy = 0;
 
-  for (i = 0; i < app.alwaysIntegrate.length; i++) {
-    curr = app.particles[app.alwaysIntegrate[i]];
+  for (i = 0; i < app.particles.length; i++) {
+    curr = app.particles[i];
     if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
       d3 = d3Fn(dx, dy);
 
-      if(d3 < app.closestPair.d || app.closestPair === 0) {
-        app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
-        app.closestPair.d = app.closestPair.d * app.closestPair.d;
-        app.closestPair.x = this;
-        app.closestPair.y = curr;
-      }
+      // if(d3 < app.closestPair.d || app.closestPair === 0) {
+      //   app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
+      //   app.closestPair.d = app.closestPair.d * app.closestPair.d;
+      //   app.closestPair.x = this;
+      //   app.closestPair.y = curr;
+      // }
 
       if(d3 != 0) {
         grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
@@ -152,7 +152,8 @@ Particle.prototype.configure = function(config) {
     localOrbitalVelocity = config.orbitalVelocity * app.physics.constants.ORIGINAL_VELOCITY_FACTOR;
   }
 
-  particle.radius = config.radius || 1;
+  particle.radius = config.radius || 100000;
+  particle.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.physics.constants.KM_PER_AU;
   particle.name = config.name;
   particle.mass = config.mass;
   particle.x = app.halfWidth - localRadius * Math.cos(config.arc);

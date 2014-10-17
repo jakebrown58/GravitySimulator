@@ -44,6 +44,9 @@ Physics.prototype.leapFrog = function () {
   for (i = 0; i < ps.length; i++) {
     ps[i].updateVelocity();
   }  
+
+  this.glomParticles();
+
 };
 
 Physics.prototype.collide_glom = function(p1, p2) {
@@ -81,12 +84,48 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
         color: big.color
         };
+
+  cfg.kenetic = (1/2) * cfg.mass * (cfg.velx * cfg.velx + cfg.vely * cfg.vely)
+
   cfg.U = 0;
   cfg.U += big.U || 0;
   cfg.U += little.U || 0;
-  cfg.U += big.kineticE() + little.kineticE() - cfg.kineticE();  //Leftover energy becomes thermal E of new thingy.
+  cfg.U += big.kineticE() + little.kineticE() - cfg.kenetic;  //Leftover energy becomes thermal E of new thingy.
 
-  return { newParticleTemplate: cfg, big: big, little: little};
+  little.mass = 0.00000000000001;
+  little.velx = 0;
+  little.vely = 0;
+  little.accx = 0;
+  little.accy = 0;
+  little.x = little.x + 5000 + Math.random() * 10000;
+  little.y = little.y + 5000 + Math.random() * 10000;
+  little.color = {r: 0, b: 0, g: 0};
+  little.destroyed = true;
+
+  big.radius = big.radius + little.radius;// + big.radius * (1 - Math.floor(10 * (cfg.mass / big.mass)) / 10);
+  big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;;
+
+  big.mass = cfg.mass;
+  big.x = cfg.x;
+  big.y = cfg.y;
+  big.oldx = cfg.oldx;
+  big.oldy = cfg.oldy;
+  big.velx = cfg.velx;
+  big.vely = cfg.vely;
+  big.oldvelx = cfg.oldvelx;
+  big.oldvely = cfg.oldvely;
+  big.accx = cfg.accx;
+  big.accy = cfg.accy;
+  big.oldaccx = cfg.oldaccx;
+  big.oldaccy = cfg.oldaccy;
+
+
+  if(app.FOLLOW === little.id) {
+    app.FOLLOW = big.id;
+  }
+
+
+  return {big: big, little: little, cfg: cfg};
 };
 
 Physics.prototype.getParticleSpeed = function (particle) {
@@ -103,6 +142,69 @@ Physics.prototype.getParticleDirection = function (particle) {
       q2 = !q1 && !q3 && !q4;
     followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? 180 + followDirection : followDirection + 360;
   return followDirection;
+};
+
+Physics.prototype.createCollidingParticleList = function() {
+  var p = app.particles,
+    ret = [],
+    i,
+    j;
+
+  for(i = 0; i < p.length; i++) {
+    for(j = i + 1; j < p.length; j++) {
+      if(p[i].id != p[j].id) {
+        if(this.areParticlesVeryClose(p[i], p[j])) {
+          ret.push({big: p[j], little: p[i]});
+        }
+      }
+    }
+  }
+
+  return ret;
+};
+
+Physics.prototype.glomParticles = function() {
+  var set = this.createCollidingParticleList();
+
+  app.collissions += set.length;
+  for(var i = 0; i < set.length; i++) {
+    this.collide_glom(set[i].big, set[i].little);
+  }
+
+  if(set.length > 0) {
+    var newParticles = [];
+    for(i = 0; i < app.particles.length; i++){
+      if(app.particles[i].destroyed !== true) {
+        newParticles.push(app.particles[i]);
+      }
+    }
+
+    for(i = 0; i < newParticles.length; i++){
+      if(app.FOLLOW === newParticles[i].id) {
+        app.FOLLOW = i;
+      }
+      newParticles[i].id = i;
+    }
+
+    app.particles = newParticles;
+  }
+};
+
+Physics.prototype.areParticlesVeryClose = function(p1,p2) {
+  if((p1.y + p1.normalizedRadius) < (p2.y - p2.normalizedRadius)) {
+    return false;
+  }
+  if((p2.y + p2.normalizedRadius) < (p1.y - p1.normalizedRadius)) {
+    return false;
+  } 
+  if((p1.x + p1.normalizedRadius) < (p2.x - p2.normalizedRadius)) {
+    return false;
+  }   
+  if((p2.x + p2.normalizedRadius) < (p1.x - p1.normalizedRadius)) {
+    return false;
+  }  
+
+  return true;
 };
 
 

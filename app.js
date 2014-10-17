@@ -16,6 +16,7 @@ app.init = function () {
   app.splitTime = Date();
   app.closestPair = {x: 0, y: 0, d: 0};
   app.eventListener = {};
+  app.collissions = 0;
 
   if(document && document.getElementById) {
     var display = document.getElementById('display');
