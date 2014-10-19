@@ -246,8 +246,8 @@ ViewPort.prototype.adjustZoom = function(direction) {
     app.VIEWSHIFT.zoom = -.99995;
   } 
 
-  if(app.VIEWSHIFT.zoom !== 0) {
-    app.viewPort.viewPortSize = (app.width / (app.VIEWSHIFT.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
+  if(app.VIEWSHIFT.zoom !== -1) {
+    app.viewPort.viewPortSize = (app.width / (1 + app.VIEWSHIFT.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
     app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
   }
 
