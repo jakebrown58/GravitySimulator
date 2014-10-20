@@ -128,7 +128,19 @@ Response.prototype.onKeyDown = function(e) {
       app.FOLLOW = 0;
       app.VIEWSHIFT.zoom = 0;
       app.physics.updateTimeStep(1);
-    }  
+    }
+    if(e.keyCode === 66) {    // 'B'
+      app.thrust.toggleBurn();
+    }
+    if(e.keyCode === 37) {  // 'LEFT'
+      app.thrust.updateHeading(-1);
+    }
+    if(e.keyCode === 39) {  // 'RIGHT'
+      app.thrust.updateHeading(1);
+    }
+    if(e.keyCode === 38) {  // 'UP'
+      app.thrust.updateThrust(1);
+    }    
 };
 
 Response.prototype.onClick = function(e) {
@@ -199,7 +211,7 @@ Response.prototype.destroy = function(xy){
 };
 
 Response.prototype.rocket = function(){
-  var x = new Particles().buildParticle({name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, orbitalVelocity: 0.08 - Math.random() * .08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: .1}),
+  var x = new Particles().buildParticle({name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * .08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: .1}),
     newGuy = app.particles[app.particles.length -1];
 
   if(app.response.MODE === 'PHOTON') {
@@ -212,8 +224,8 @@ Response.prototype.rocket = function(){
     newGuy.vely = 5000 * Math.sin(arc);
 
   } else {
-    newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .20;
-    newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .20;
+    newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .25;
+    newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .25;
     newGuy.velx = app.particles[app.FOLLOW].velx + Math.random() * .32;
     newGuy.vely = app.particles[app.FOLLOW].vely + Math.random() * .32;
   }

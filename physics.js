@@ -47,6 +47,10 @@ Physics.prototype.leapFrog = function () {
 
   this.glomParticles();
 
+
+  ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 1000);
+  ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 1000);
+
 };
 
 Physics.prototype.collide_glom = function(p1, p2) {
@@ -167,11 +171,12 @@ Physics.prototype.glomParticles = function() {
   var set = this.createCollidingParticleList();
 
   app.collissions += set.length;
-  for(var i = 0; i < set.length; i++) {
-    this.collide_glom(set[i].big, set[i].little);
-  }
 
   if(set.length > 0) {
+    for(var i = 0; i < set.length; i++) {
+      this.collide_glom(set[i].big, set[i].little);
+    }
+    
     var newParticles = [];
     for(i = 0; i < app.particles.length; i++){
       if(app.particles[i].destroyed !== true) {

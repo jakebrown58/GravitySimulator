@@ -17,6 +17,7 @@ app.init = function () {
   app.closestPair = {x: 0, y: 0, d: 0};
   app.eventListener = {};
   app.collissions = 0;
+  app.thrust = new Thrust();
 
   if(document && document.getElementById) {
     var display = document.getElementById('display');
@@ -63,5 +64,47 @@ var mockCtx = function() {
 
   this.clearRect = function() {
     return 0;
+  }
+}
+
+
+function Thrust() {
+  this.heading = 0;
+  this.thrust = 0;
+  this.burning = false;
+}
+
+Thrust.prototype.updateHeading = function(headingAdjustment) {
+  this.heading += headingAdjustment;
+
+  if(this.heading > 360) {
+    this.heading = 0;
+  }
+  if(this.heading < 0) {
+    this.heading = 360;
+  }
+}
+
+Thrust.prototype.getThrustVector = function() {
+  if(!this.burning) {
+    return {x: 0, y:0};
+  }
+
+
+  return { 
+    x: this.thrust * Math.cos(Math.PI * this.heading / 180),
+    y: this.thrust * Math.sin(Math.PI * this.heading / 180)
+  };
+}
+
+Thrust.prototype.updateThrust = function(thrustAdjustment) {
+  this.thrust += thrustAdjustment;
+}
+
+Thrust.prototype.toggleBurn = function() {
+  this.burning = !this.burning;
+
+  if(!this.burning) {
+    this.thrust= 0;
   }
 }

@@ -142,6 +142,7 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("     Energy: " + focusKE);
     this.appendLine("     Speed: " + Math.round(app.physics.getParticleSpeed(focusParticle) * 1000, 0));
     this.appendLine("     Direction: " + Math.round(focusParticle.direction, 0));
+    this.appendLine("        retro direction: " + Math.round(focusParticle.direction - 180, 0));
     this.appendLine("     Mass: " + focusParticle.mass);
 
     var viewPort = app.physics.convertViewPortPixelsToUnits(app.viewPort.viewPortSize);
@@ -151,27 +152,32 @@ ViewPort.prototype.frameClock = function() {
     var totalMass = 0,
       totalEnergy = 0;
 
-    // for(var zz = 0; zz < app.particles.length; zz++) {
-    //   totalMass += app.particles[zz].mass;
-    //   totalEnergy += Math.round(app.particles[zz].kineticE()*100000,0);
-    // }
+    for(var zz = 0; zz < app.particles.length; zz++) {
+      totalMass += app.particles[zz].mass;
+      totalEnergy += Math.round(app.particles[zz].kineticE()*100000,0);
+    }
 
     this.appendLine("Total system mass: " + totalMass);
     this.appendLine("Total system energy: " + totalEnergy);
     this.appendLine("Total collissions: " + app.collissions);
 
-    var maxMass = 0;
-    for(var xx = 0; xx < app.particles.length; xx++) {
-      if(app.particles[xx].mass > maxMass) {
-        maxMass = app.particles[xx].mass;
-      }
-    }
+    // var maxMass = 0;
+    // for(var xx = 0; xx < app.particles.length; xx++) {
+    //   if(app.particles[xx].mass > maxMass) {
+    //     maxMass = app.particles[xx].mass;
+    //   }
+    // }
 
-    this.appendLine("Most Massive: " + maxMass);
+    // this.appendLine("Most Massive: " + maxMass);
 
     //var closestDist = app.physics.convertViewPortPixelsToUnits(app.closestPair.d);
     //this.appendLine("Closest Pair:   x - " + app.closestPair.x.name + " y -" + app.closestPair.y.name + " d -" + closestDist.size + closestDist.unit);
     //app.closestPair.d = 1000000;
+
+
+    this.appendLine("Thrust:    H: " + app.thrust.heading + " E: " + app.thrust.thrust + " B: " + app.thrust.burning);
+    this.appendLine("Thrust Vector: " + app.thrust.getThrustVector().x + " | " + app.thrust.getThrustVector().y)
+
   }
 };
 
