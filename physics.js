@@ -48,8 +48,8 @@ Physics.prototype.leapFrog = function () {
   this.glomParticles();
 
 
-  ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 1000);
-  ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 1000);
+  ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
+  ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 3000);
 
 };
 
@@ -137,14 +137,14 @@ Physics.prototype.getParticleSpeed = function (particle) {
 };
 
 Physics.prototype.getParticleDirection = function (particle) {
-  var followDirection = Math.atan(particle.velx / particle.vely) * 180 / Math.PI;
+  var followDirection = Math.atan(particle.vely / particle.velx) * 180 / Math.PI;
   var left = particle.velx < 0;
   var down = particle.vely > 0;
   var q4 = down && left,
       q3 = left && !q4,
       q1 = down && !q4,
       q2 = !q1 && !q3 && !q4;
-    followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? 180 + followDirection : followDirection + 360;
+    followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? followDirection : followDirection + 180;
   return followDirection;
 };
 

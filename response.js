@@ -133,10 +133,10 @@ Response.prototype.onKeyDown = function(e) {
       app.thrust.toggleBurn();
     }
     if(e.keyCode === 37) {  // 'LEFT'
-      app.thrust.updateHeading(-1);
+      app.thrust.updateHeading(-2);
     }
     if(e.keyCode === 39) {  // 'RIGHT'
-      app.thrust.updateHeading(1);
+      app.thrust.updateHeading(2);
     }
     if(e.keyCode === 38) {  // 'UP'
       app.thrust.updateThrust(1);

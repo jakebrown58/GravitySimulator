@@ -81,6 +81,19 @@ ViewPort.prototype.drawParticle = function(particle) {
     app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);
   }
 
+
+  if(particle.id === app.FOLLOW) {
+    var direction = particle.direction / 180 * Math.PI;
+    var heading = app.thrust.heading / 180 * Math.PI;
+    app.ctx.lineWidth = 3;
+    app.ctx.lineTo(obj.x + 12 * Math.cos(direction), obj.y + 12 * Math.sin(direction));
+
+    if(particle.name.slice(0, 6) == 'ROCKET') {
+      app.ctx.moveTo(obj.x, obj.y);
+      app.ctx.lineTo(obj.x + 24 * Math.cos(heading), obj.y + 24 * Math.sin(heading));
+    }
+  }
+
   app.ctx.stroke();
 };
 
