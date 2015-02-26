@@ -1,7 +1,11 @@
 GravitySimulator
 ================
 
+## Demo
+
 See a live example on JS Fiddle:  http://jsfiddle.net/uSJbm/15/
+
+## About
 
 This was heavily inspired by PlayfulJS - you should check it out - it's a lot of fun.
 
@@ -9,7 +13,13 @@ This is a simulator that has basic gravity equations.  It's configured with real
 
 It also has a bunch of random celestial bodies, like comets and asteriods, and a cloud of space junk around Jupiter.
 
-It supports various viewports.  
+## Instructions
+
+Just download the repo - and open up index.html in a browser.  It doesn't require a server or any libraries.
+
+It supports various viewports. 
+
+## Keyboard Actions
 
 Spacebar - toggles 'tracing' on or off.  with this on, you can make some awesome spyrographs.
 * '<' and '>' - zoom in and out.  
