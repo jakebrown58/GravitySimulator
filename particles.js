@@ -1,8 +1,8 @@
 function Particles() {
   this.objects = {};
-  this.objects.COMETS = 1;// Math.floor( Math.random() * 1250);
-  this.objects.ASTEROIDS = 0;// Math.floor( Math.random() * 1250);
-  this.objects.JUPITERCLOUD = 1; //Math.floor( Math.random() * 1250);
+  this.objects.COMETS = 20;// Math.floor( Math.random() * 1250);
+  this.objects.ASTEROIDS = 5;// Math.floor( Math.random() * 1250);
+  this.objects.JUPITERCLOUD = 8; //Math.floor( Math.random() * 1250);
   this.objects.PARTICLECOUNT = 1;  
 }
 
@@ -25,17 +25,19 @@ Particles.prototype.buildInitialParticles = function() {
   if(app.physics.variables.CALC_STYLE === 'real') {
     initialObjects = [
       {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
-      {name: 'Mercury', mass: earthMass * .055, radius: 1234, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
-      {name: 'Venus', mass: earthMass * .815, radius: 1234, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
+      {name: 'Mercury', mass: earthMass * .055, radius: 2439, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
+      {name: 'Venus', mass: earthMass * .815, radius: 6051, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
       {name: 'Earth', mass: earthMass, radius: 6371, orbits: [{mass: sunMass, radius: aU}], arc: jupiterArc, drawSize: 1, color: {r: 180, g: 200, b: 255}},
-      {name: 'Mars', mass: earthMass * .107, radius: 1234, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
+      {name: 'Mars', mass: earthMass * .107, radius: 3376, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
       {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
-      {name: 'Saturn', mass: jupiterMass * .30, radius: 1234,orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
-      {name: 'Neptune', mass: earthMass * 17.147, radius: 1234,orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
+      {name: 'Saturn', mass: jupiterMass * .30, radius: 60268,orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
+      {name: 'Neptune', mass: earthMass * 17.147, radius: 24341,orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
+      {name: 'Uranus', mass: earthMass * 14.536, radius: 25362,orbits: [{mass: sunMass, radius: aU * 19.5}], drawSize: 1, color: {r: 180, g: 180, b: 215}},
       {name: 'Ganymede', mass: earthMass * .025, radius: 1234,orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6},
       {name: 'Moon', mass: earthMass * .0123, radius: 1097,orbits: [{mass: sunMass, radius: aU}, {mass: earthMass, radius: aU * .00257}], arc: jupiterArc, drawSize: .6},
-      {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4,orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
+      {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4, orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
     ];
+
   } else {
 //     var centerMass =  Math.floor(30 + jupiterMass * Math.random() * 3000),
 //       colorShift = (1 - (centerMass / 3000)) / 2;
@@ -57,7 +59,7 @@ Particles.prototype.buildInitialParticles = function() {
 
     for (i = 0; i < 400; i++) {
       var tmass =  earthMass / 200,
-        tradius = 6371 / 800;
+        tradius = 6371 / .01;
       this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: 1000 * jupiterMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * .4}], drawSize: .1});
     }
 
@@ -81,25 +83,27 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
-    this.buildParticle({name: 'Asteroid ' + i, mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: .1});
+    this.buildParticle({name: 'Asteroid ' + i, radius: 60, mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: .1});
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
-    this.buildParticle({name: 'COMET' + i, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 1340), orbitalVelocity: -.34 + Math.random() * .62, drawSize: .1});
+    this.buildParticle({name: 'COMET' + i, radius: 60, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 1340), orbitalVelocity: -.34 + Math.random() * .62, drawSize: .1});
   }
 
-  for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
-    this.buildParticle({
-      name: 'Jupiter Cloud' + i, 
-      arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80, 
-      mass: earthMass / (8000 + Math.random() * 32000), 
-      orbits: [
-        {mass: sunMass, radius: aU * 5.2}, 
-        {mass: jupiterMass, eccentric: 'little', radius: aU * .01 + aU * Math.random() * .08}], 
-      drawSize: .03
-    });
+  if(app.physics.variables.CALC_STYLE === 'real') {
+    for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
+      this.buildParticle({
+        name: 'Jupiter Cloud' + i, 
+        radius: 60,
+        arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80, 
+        mass: earthMass / (8000 + Math.random() * 32000), 
+        orbits: [
+          {mass: sunMass, radius: aU * 5.2}, 
+          {mass: jupiterMass, eccentric: 'little', radius: aU * .01 + aU * Math.random() * .08}], 
+        drawSize: .03
+      });
+    }
   }
-
   //this.buildParticle({name: 'LIGHTYEAR EXPRESS', mass: 1 / 500000000000000, radius: app.physics.constants.LIGHTYEAR, arc: 0, orbitalVelocity: .300, drawSize: 1});
   //app.particles[app.particles.length-1].oldX = app.particles[app.particles.length-1].x - (328 * app.physics.constants.ASTRONOMICAL_UNIT);
 };

@@ -45,7 +45,9 @@ Physics.prototype.leapFrog = function () {
     ps[i].updateVelocity();
   }  
 
-  this.glomParticles();
+  if(app.physics.variables.CALC_STYLE === 'wacky') {
+    this.glomParticles();
+  }
 
 
   ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
@@ -106,7 +108,14 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.color = {r: 0, b: 0, g: 0};
   little.destroyed = true;
 
-  big.radius = big.radius + little.radius;// + big.radius * (1 - Math.floor(10 * (cfg.mass / big.mass)) / 10);
+
+  var vol = 1.33 * Math.PI * Math.pow(big.radius, 3);
+  var density = big.mass / vol;
+
+  var newVolume = cfg.mass / density;
+  big.radius = Math.cbrt((newVolume * .75 / Math.PI));
+
+  //big.radius = big.radius + little.radius;// + big.radius * (1 - Math.floor(10 * (cfg.mass / big.mass)) / 10);
   big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;;
 
   big.mass = cfg.mass;

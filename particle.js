@@ -141,6 +141,8 @@ Particle.prototype.configure = function(config) {
 
       if(orbital.eccentric === 'little') {
         localOrbitalVelocity += Math.random() * parentGrav / 800;
+      } else if(orbital.eccentric !== undefined) {
+        localOrbitalVelocity = parentGrav * orbital.eccentric;
       }
     }
 
