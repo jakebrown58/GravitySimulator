@@ -36,6 +36,7 @@ ViewPort.prototype.drawParticles = function() {
   var particles = app.particles;
 
   var currColor = particles[0].drawColor;
+  app.FOLLOWXY = [app.particles[app.FOLLOW].x, app.particles[app.FOLLOW].y];
   app.ctx.strokeStyle = currColor;
   for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
@@ -51,12 +52,13 @@ ViewPort.prototype.drawParticle = function(particle) {
   var obj,
     drawSize = particle.size;
 
+
   if(app.DRAWSTATE === 0) {
     obj = app.viewPort.project(particle.x, particle.y, 0);
   } else {
     obj = {x: particle.x, y: particle.y};
-    obj.x = (particle.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (particle.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-    obj.y = (particle.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (particle.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+    obj.x = (particle.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (particle.x - app.FOLLOWXY[0]) * app.VIEWSHIFT.zoom;
+    obj.y = (particle.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (particle.y - app.FOLLOWXY[1]) * app.VIEWSHIFT.zoom;
   }
 
   if(particle.radius > 1) {

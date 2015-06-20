@@ -57,9 +57,9 @@ Particles.prototype.buildInitialParticles = function() {
     //   this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbitalVelocity: 0, distance:  Math.random() * aU / 2 + .0001, drawSize: .1});
     // }
 
-    for (i = 0; i < 400; i++) {
-      var tmass =  earthMass / 200,
-        tradius = 6371 / .01;
+    for (i = 0; i < 900; i++) {
+      var tmass =  earthMass / 20,
+        tradius = 6371 / .1;
       this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: 1000 * jupiterMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * .4}], drawSize: .1});
     }
 

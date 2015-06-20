@@ -50,8 +50,10 @@ Physics.prototype.leapFrog = function () {
   }
 
 
-  ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
-  ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 3000);
+  if(app.response.MODE === 'ROCKET') {
+    ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
+    ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 3000);
+  }
 
 };
 

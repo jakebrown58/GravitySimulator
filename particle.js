@@ -1,16 +1,10 @@
 function Particle(id, x, y) {
   this.id = id; 
-  this.x = this.oldX = x;
-  this.y = this.oldY = y;
+  this.x = x;
+  this.y = y;
   this.remove = false;
 
-  this.oldX = x + Math.random() * 8 - 4;
-  //this.oldY = y + Math.random() * 8 - 4;
-
   this.mass = 2;
-  this.obj = {x: this.x, y: this.y}
-  this.center = {};
-  this.damping = 1;
   this.color = {r: 205 + 50 * Math.floor(Math.random() * 3), 
     g:  205 + 50 * Math.floor(Math.random() * 3),
     b:  205 + 50 * Math.floor(Math.random() * 3)};

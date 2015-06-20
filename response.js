@@ -3,7 +3,7 @@
 function Response() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
   app.eventListener.addEventListener('click', this.onClick);
-  app.eventListener.addEventListener('keydown', this.onKeyDown);
+  app.eventListener.addEventListener('keydown', this.onKeyDown, this);
   this.MODE = 'FOLLOW';
 }
 
@@ -35,112 +35,133 @@ Response.prototype.changeMode = function() {
   }
 };
 
-Response.prototype.onKeyDown = function(e) {
-    if(e.keyCode === 86) {    // v
-      app.DRAWSTATE += 1;
+Response.prototype.reset = function() {
+  if(app.physics.variables.CALC_STYLE !== 'real') {
+    app.physics.variables.CALC_STYLE = 'real';
+  } else {
+    app.physics.variables.CALC_STYLE = 'wacky';
+    //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
+  }
+  app.ctx.clearRect(0, 0, app.width, app.height);
+  var x = new Particles().buildInitialParticles();
+  app.viewPort.colorSorted = false;
+  app.CLOCK.ticks = 0;
+  app.CLOCK.e = 0;
+  app.CLOCK.j = 0;
+  app.CLOCK.n = 0;
+  app.collissions = 0;
+}
 
-      if(app.DRAWSTATE === 3) {
-        app.DRAWSTATE = 0;
-      }
-      app.ctx.clearRect(0, 0, app.width, app.height);
+Response.prototype.pause = function() {
+  //app.physics.updateTimeStep(1);
+  if(app.GO === false) {
+    app.GO = true;
+    requestAnimationFrame(app.viewPort.frame);
+    app.CLOCK.ticks = 0;
+    app.splitTime = new Date();
+  } else {
+    app.GO = false;
+  }
+}
+
+Response.prototype.changeView = function() {
+  app.DRAWSTATE += 1;
+
+  if(app.DRAWSTATE === 3) {
+    app.DRAWSTATE = 0;
+  }
+  app.ctx.clearRect(0, 0, app.width, app.height);  
+}
+
+Response.prototype.incrementFollow = function () {
+  app.FOLLOW += 1;
+  app.VIEWSHIFT.x = 0;
+  app.VIEWSHIFT.y= 0;
+  if(app.FOLLOW >= app.particles.length) {
+    app.FOLLOW = 0;
+  }
+}
+
+Response.prototype.resetViewToHome = function() {
+  app.VIEWSHIFT.x = 0;
+  app.VIEWSHIFT.y= 0;
+  app.VIEWANGLE = .75;
+  app.FOLLOW = 0;
+  app.VIEWSHIFT.zoom = 0;
+  app.physics.updateTimeStep(1);
+}
+
+Response.prototype.onKeyDown = function(e, ref) {
+  var me = this;
+  if(e.keyCode === 86) {    // v
+    app.response.changeView();
+  }
+  if(e.keyCode === 32) {    // ' '
+    app.TRACE = !app.TRACE;
+  }
+  if(e.keyCode === 82) {    // 'R'
+    app.response.reset(); 
+  }
+  if(e.keyCode === 84) {    // 'T'
+    app.physics.reverseTime();
+  } 
+  if(e.keyCode === 87) {    // 'W'
+    app.VIEWSHIFT.y -= 5;
+    //app.particles[app.FOLLOW].vely -= .1;
+  }
+  if(e.keyCode === 83) {    // 'S'
+    app.VIEWSHIFT.y += 5;
+    //app.particles[app.FOLLOW].vely += .1;
+  }
+  if(e.keyCode === 65) {    // 'A'
+    app.VIEWSHIFT.x -= 5;
+    //app.particles[app.FOLLOW].velx -= .1;
+  }
+  if(e.keyCode === 68) {    // 'D'
+    app.VIEWSHIFT.x += 5;
+    //app.particles[app.FOLLOW].velx += .1;
+  }      
+  if(e.keyCode === 77) {    // 'M'
+    app.response.changeMode();
+  }    
+  if(e.keyCode === 80) {    // 'P'
+    app.response.pause();
+  }  
+  if(e.keyCode === 67) {    // 'C'
+    app.SHOWCLOCK = !app.SHOWCLOCK;
+  }        
+  if(e.keyCode === 70) {    // 'F'
+    app.response.incrementFollow();
+  } 
+  if(e.keyCode === 88) {    // 'X'
+    if(app.physics.variables.TIME_STEP < 100) {
+      app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
     }
-    if(e.keyCode === 32) {    // ' '
-      app.TRACE = !app.TRACE;
-    }
-    if(e.keyCode === 82) {    // 'R'
-      if(app.physics.variables.CALC_STYLE !== 'real') {
-        app.physics.variables.CALC_STYLE = 'real';
-      } else {
-        app.physics.variables.CALC_STYLE = 'wacky';
-//        app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
-      }
-      app.ctx.clearRect(0, 0, app.width, app.height);
-      var x = new Particles().buildInitialParticles();
-      app.viewPort.colorSorted = false;
-      app.CLOCK.ticks = 0;
-      app.CLOCK.e = 0;
-      app.CLOCK.j = 0;
-      app.CLOCK.n = 0;
-      app.collissions = 0;
-    }
-    if(e.keyCode === 84) {    // 'T'
-      app.physics.reverseTime();
-    } 
-    if(e.keyCode === 87) {    // 'W'
-      app.VIEWSHIFT.y -= 5;
-      //app.particles[app.FOLLOW].vely -= .1;
-    }
-    if(e.keyCode === 83) {    // 'S'
-      app.VIEWSHIFT.y += 5;
-      //app.particles[app.FOLLOW].vely += .1;
-    }
-    if(e.keyCode === 65) {    // 'A'
-      app.VIEWSHIFT.x -= 5;
-      //app.particles[app.FOLLOW].velx -= .1;
-    }
-    if(e.keyCode === 68) {    // 'D'
-      app.VIEWSHIFT.x += 5;
-      //app.particles[app.FOLLOW].velx += .1;
-    }      
-    if(e.keyCode === 77) {    // 'M'
-      app.response.changeMode();
-    }    
-    if(e.keyCode === 80) {    // 'P'
-      //app.physics.updateTimeStep(1);
-      if(app.GO === false) {
-        app.GO = true;
-        requestAnimationFrame(app.viewPort.frame);
-        app.CLOCK.ticks = 0;
-        app.splitTime = new Date();
-      } else {
-        app.GO = false;
-      }
-    }  
-    if(e.keyCode === 67) {    // 'C'
-      app.SHOWCLOCK = !app.SHOWCLOCK;
-    }        
-    if(e.keyCode === 70) {    // 'F'
-      app.FOLLOW += 1;
-      app.VIEWSHIFT.x = 0;
-      app.VIEWSHIFT.y= 0;
-      if(app.FOLLOW >= app.particles.length) {
-        app.FOLLOW = 0;
-      }
-    } 
-    if(e.keyCode === 88) {    // 'X'
-      if(app.physics.variables.TIME_STEP < 100) {
-        app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
-      }
-    }
-    if(e.keyCode === 90) {    // 'Z'
-      app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2);
-    }
-    if(e.keyCode === 188) {    // '<'
-      app.viewPort.adjustZoom('out');
-    }
-    if(e.keyCode === 190) {    // '>'
-      app.viewPort.adjustZoom('in');
-    }    
-    if(e.keyCode === 72) {    // 'H'
-      app.VIEWSHIFT.x = 0;
-      app.VIEWSHIFT.y= 0;
-      app.VIEWANGLE = .75;
-      app.FOLLOW = 0;
-      app.VIEWSHIFT.zoom = 0;
-      app.physics.updateTimeStep(1);
-    }
-    if(e.keyCode === 66) {    // 'B'
-      app.thrust.toggleBurn();
-    }
-    if(e.keyCode === 37) {  // 'LEFT'
-      app.thrust.updateHeading(-2);
-    }
-    if(e.keyCode === 39) {  // 'RIGHT'
-      app.thrust.updateHeading(2);
-    }
-    if(e.keyCode === 38) {  // 'UP'
-      app.thrust.updateThrust(1);
-    }    
+  }
+  if(e.keyCode === 90) {    // 'Z'
+    app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2);
+  }
+  if(e.keyCode === 188) {    // '<'
+    app.viewPort.adjustZoom('out');
+  }
+  if(e.keyCode === 190) {    // '>'
+    app.viewPort.adjustZoom('in');
+  }    
+  if(e.keyCode === 72) {    // 'H'
+    app.response.resetViewToHome();
+  }
+  if(e.keyCode === 66) {    // 'B'
+    app.thrust.toggleBurn();
+  }
+  if(e.keyCode === 37) {  // 'LEFT'
+    app.thrust.updateHeading(-2);
+  }
+  if(e.keyCode === 39) {  // 'RIGHT'
+    app.thrust.updateHeading(2);
+  }
+  if(e.keyCode === 38) {  // 'UP'
+    app.thrust.updateThrust(1);
+  }    
 };
 
 Response.prototype.onClick = function(e) {
@@ -177,6 +198,11 @@ Response.prototype.follow = function(xy){
     app.FOLLOW = currIndex;
 };
 
+Response.prototype.input = function() {
+  app.CURSOR = true;  
+  app.GO = false;
+};
+
 Response.prototype.destroy = function(xy){
     var j = 0,
       curr,
@@ -204,6 +230,9 @@ Response.prototype.destroy = function(xy){
     }
 
     app.particles = tmp;
+
+    //app.ABSLOCATION = [app.particles[currIndex].x, app.particles[currIndex].y];
+    app.ABSLOCATION = [0,0];
 
     if(app.FOLLOW == currIndex) {
       app.FOLLOW = 0;
