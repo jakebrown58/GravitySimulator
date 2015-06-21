@@ -69,36 +69,6 @@ Physics.prototype.collide_glom = function(p1, p2) {
   var mass = big.mass + little.mass;
   var fracB = big.mass / mass;
   var fracL = little.mass / mass;
-  
-  cfg = {
-        id: big.id,
-        name: big.name,
-        mass: mass,
-        
-        x: (fracB*big.x + fracL*little.x),
-        y: (fracB*big.y + fracL*little.y),
-        oldx: (fracB*big.oldx + fracL*little.oldx),
-        oldy: (fracB*big.oldy + fracL*little.oldy),
-        
-        velx: (fracB*big.velx + fracL*little.velx),
-        vely: (fracB*big.vely + fracL*little.vely),
-        oldvelx: (fracB*big.oldvelx + fracL*little.oldvelx),
-        oldvely: (fracB*big.oldvely + fracL*little.oldvely),
-        
-        accx: (fracB*big.accx + fracL*little.accx),
-        accy: (fracB*big.accy + fracL*little.accy),
-        oldaccx: (fracB*big.oldaccx + fracL*little.oldaccx),
-        oldaccy: (fracB*big.oldaccy + fracL*little.oldaccy),
-
-        color: big.color
-        };
-
-  cfg.kenetic = (1/2) * cfg.mass * (cfg.velx * cfg.velx + cfg.vely * cfg.vely)
-
-  cfg.U = 0;
-  cfg.U += big.U || 0;
-  cfg.U += little.U || 0;
-  cfg.U += big.kineticE() + little.kineticE() - cfg.kenetic;  //Leftover energy becomes thermal E of new thingy.
 
   little.mass = 0.00000000000001;
   little.velx = 0;
@@ -112,35 +82,35 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
 
   var vol = 1.33 * Math.PI * Math.pow(big.radius, 3);
-  var density = big.mass / vol;
-
-  var newVolume = cfg.mass / density;
+  var newVolume = mass / (big.mass / vol);
   big.radius = Math.cbrt((newVolume * .75 / Math.PI));
-
-  //big.radius = big.radius + little.radius;// + big.radius * (1 - Math.floor(10 * (cfg.mass / big.mass)) / 10);
   big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;;
 
-  big.mass = cfg.mass;
-  big.x = cfg.x;
-  big.y = cfg.y;
-  big.oldx = cfg.oldx;
-  big.oldy = cfg.oldy;
-  big.velx = cfg.velx;
-  big.vely = cfg.vely;
-  big.oldvelx = cfg.oldvelx;
-  big.oldvely = cfg.oldvely;
-  big.accx = cfg.accx;
-  big.accy = cfg.accy;
-  big.oldaccx = cfg.oldaccx;
-  big.oldaccy = cfg.oldaccy;
+  big.mass = mass;
+  big.x = (fracB*big.x + fracL*little.x);
+  big.y = (fracB*big.y + fracL*little.y);
+  big.oldx = (fracB*big.oldx + fracL*little.oldx);
+  big.oldy = (fracB*big.oldy + fracL*little.oldy);
+  big.velx = (fracB*big.velx + fracL*little.velx);
+  big.vely = (fracB*big.vely + fracL*little.vely);
+  big.oldvelx = (fracB*big.oldvelx + fracL*little.oldvelx);
+  big.oldvely = (fracB*big.oldvely + fracL*little.oldvely);
+  big.accx = (fracB*big.accx + fracL*little.accx);
+  big.accy = (fracB*big.accy + fracL*little.accy);
+  big.oldaccx = (fracB*big.oldaccx + fracL*little.oldaccx);
+  big.oldaccy = (fracB*big.oldaccy + fracL*little.oldaccy);
 
+  // cfg.U = 0;
+  // cfg.U += big.U || 0;
+  // cfg.U += little.U || 0;
+  // cfg.U += big.kineticE() + little.kineticE() - cfg.kenetic;  //Leftover energy becomes thermal E of new thingy.
+
+  // cfg.kenetic = (1/2) * cfg.mass * (cfg.velx * cfg.velx + cfg.vely * cfg.vely)
 
   if(app.FOLLOW === little.id) {
     app.FOLLOW = big.id;
   }
-
-
-  return {big: big, little: little, cfg: cfg};
+  return {big: big, little: little};
 };
 
 Physics.prototype.getParticleSpeed = function (particle) {
@@ -188,6 +158,7 @@ Physics.prototype.glomParticles = function() {
       this.collide_glom(set[i].big, set[i].little);
     }
     
+    // this is garbage collecter heaven here.... clean up at some point if we want a speed boost from post-collissions.
     var newParticles = [];
     for(i = 0; i < app.particles.length; i++){
       if(app.particles[i].destroyed !== true) {
