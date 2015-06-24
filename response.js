@@ -14,6 +14,7 @@ var keyMap = {
   70: 'follow', // 'F'
   88: 'speedItUp', // 'X'
   90: 'slowItDown', // 'Z'
+  73: 'toggleCommandMode', // 'I'
   188: 'zoomOut', // '<'
   190: 'zoomIn', // '>'
   72: 'switchToDefaultView', // 'H'
@@ -27,32 +28,15 @@ function Response() {
   app.eventListener.addEventListener('click', this.onClick);
   app.eventListener.addEventListener('keydown', this.onKeyDown, this);
   this.MODE = 'FOLLOW';
+  this.CommandMode = 'COMMAND';
 }
 
 Response.prototype.onKeyDown = function(e, ref) {
-  var action = keyMap[e.keyCode];
-
-  if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
-  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
-  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
-  if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
-  if(action === 'rocketRotateLeft') { app.thrust.act(action); }
-  if(action === 'rocketRotateRight') { app.thrust.act(action); }
-  if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
-  if(action === 'viewToggle') { app.response.changeView(); }
-  if(action === 'trace') { app.TRACE = !app.TRACE; }
-  if(action === 'reset') { app.response.reset(); }
-  if(action === 'reverseTime') { app.physics.reverseTime(); } 
-  if(action === 'viewShiftUp') { app.VIEWSHIFT.y -= 5; }
-  if(action === 'viewShiftDown') { app.VIEWSHIFT.y += 5; }
-  if(action === 'viewShiftLeft') { app.VIEWSHIFT.x -= 5; }
-  if(action === 'viewShiftRight') { app.VIEWSHIFT.x += 5; }
-  if(action === 'switchClickAction') { app.response.changeMode(); }
-  if(action === 'pause') { app.response.pause(); }  
-  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
-  if(action === 'follow') { app.response.incrementFollow(); } 
-  if(action === 'speedItUp') { app.response.speedUp(); }
-  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }
+  if(app.response.CommandMode === 'COMMAND') {
+    app.response.handleCommand(e);
+  } else {
+    app.response.handleConsole(e);
+  }
 };
 
 Response.prototype.onClick = function(e) {
@@ -82,6 +66,50 @@ Response.prototype.onMouseMove = function() {
   app.mouse.x = e.clientX;
   app.mouse.y = e.clientY;
 };
+
+Response.prototype.handleCommand = function(e) {
+  var action = keyMap[e.keyCode];
+  if(action === 'toggleCommandMode') { app.response.switchCommandMode();  return ;}
+  if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
+  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
+  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
+  if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
+  if(action === 'rocketRotateLeft') { app.thrust.act(action); }
+  if(action === 'rocketRotateRight') { app.thrust.act(action); }
+  if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
+  if(action === 'viewToggle') { app.response.changeView(); }
+  if(action === 'trace') { app.TRACE = !app.TRACE; }
+  if(action === 'reset') { app.response.reset(); }
+  if(action === 'reverseTime') { app.physics.reverseTime(); } 
+  if(action === 'viewShiftUp') { app.VIEWSHIFT.y -= 5; }
+  if(action === 'viewShiftDown') { app.VIEWSHIFT.y += 5; }
+  if(action === 'viewShiftLeft') { app.VIEWSHIFT.x -= 5; }
+  if(action === 'viewShiftRight') { app.VIEWSHIFT.x += 5; }
+  if(action === 'switchClickAction') { app.response.changeMode(); }
+  if(action === 'pause') { app.response.pause(); }  
+  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
+  if(action === 'follow') { app.response.incrementFollow(); } 
+  if(action === 'speedItUp') { app.response.speedUp(); }
+  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }  
+}
+
+Response.prototype.handleConsole = function(e) {
+  if(e.keyCode === 88) {
+    app.response.switchCommandMode();
+  }
+}
+
+Response.prototype.switchCommandMode = function() {
+  if(app.response.CommandMode === 'COMMAND') {
+    app.response.CommandMode = 'CONSOLE';
+    app.response.pause();
+    app.ctx.clearRect(0, 0, app.width, app.height);
+  } else {
+    app.response.CommandMode = 'COMMAND'
+    app.response.pause();
+    app.response.resetViewToHome();
+  }
+}
 
 Response.prototype.changeMode = function() {
   if(app.response.MODE === 'FOLLOW') {
