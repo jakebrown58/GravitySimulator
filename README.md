@@ -15,7 +15,8 @@ It also has a bunch of random celestial bodies, like comets and asteriods, and a
 
 ## Instructions
 
-Just download the repo - and open up index.html in a browser.  It doesn't require a server or any libraries.
+Download the repo locally however you like - and open up particles.html in a browser.  
+It doesn't require a server or any libraries.
 
 
 ## Keyboard Actions
