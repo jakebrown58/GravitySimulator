@@ -74,6 +74,14 @@ function Thrust() {
   this.burning = false;
 }
 
+Thrust.prototype.act = function(action) {
+  var me = this;
+  if(action === 'rocketEnginesBurnToggle') { me.toggleBurn(); }
+  if(action === 'rocketRotateLeft') { me.updateHeading(-2); }
+  if(action === 'rocketRotateRight') { me.updateHeading(2); }
+  if(action === 'rocketIncreaseThrust') { me.updateThrust(1); }
+}
+
 Thrust.prototype.updateHeading = function(headingAdjustment) {
   this.heading += headingAdjustment;
 

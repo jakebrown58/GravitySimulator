@@ -91,78 +91,60 @@ Response.prototype.resetViewToHome = function() {
   app.physics.updateTimeStep(1);
 }
 
-Response.prototype.onKeyDown = function(e, ref) {
-  var me = this;
-  if(e.keyCode === 86) {    // v
-    app.response.changeView();
-  }
-  if(e.keyCode === 32) {    // ' '
-    app.TRACE = !app.TRACE;
-  }
-  if(e.keyCode === 82) {    // 'R'
-    app.response.reset(); 
-  }
-  if(e.keyCode === 84) {    // 'T'
-    app.physics.reverseTime();
-  } 
-  if(e.keyCode === 87) {    // 'W'
-    app.VIEWSHIFT.y -= 5;
-    //app.particles[app.FOLLOW].vely -= .1;
-  }
-  if(e.keyCode === 83) {    // 'S'
-    app.VIEWSHIFT.y += 5;
-    //app.particles[app.FOLLOW].vely += .1;
-  }
-  if(e.keyCode === 65) {    // 'A'
-    app.VIEWSHIFT.x -= 5;
-    //app.particles[app.FOLLOW].velx -= .1;
-  }
-  if(e.keyCode === 68) {    // 'D'
-    app.VIEWSHIFT.x += 5;
-    //app.particles[app.FOLLOW].velx += .1;
-  }      
-  if(e.keyCode === 77) {    // 'M'
-    app.response.changeMode();
-  }    
-  if(e.keyCode === 80) {    // 'P'
-    app.response.pause();
-  }  
-  if(e.keyCode === 67) {    // 'C'
-    app.SHOWCLOCK = !app.SHOWCLOCK;
-  }        
-  if(e.keyCode === 70) {    // 'F'
-    app.response.incrementFollow();
-  } 
-  if(e.keyCode === 88) {    // 'X'
-    if(app.physics.variables.TIME_STEP < 100) {
-      app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
-    }
-  }
-  if(e.keyCode === 90) {    // 'Z'
-    app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2);
-  }
-  if(e.keyCode === 188) {    // '<'
-    app.viewPort.adjustZoom('out');
-  }
-  if(e.keyCode === 190) {    // '>'
-    app.viewPort.adjustZoom('in');
-  }    
-  if(e.keyCode === 72) {    // 'H'
-    app.response.resetViewToHome();
-  }
-  if(e.keyCode === 66) {    // 'B'
-    app.thrust.toggleBurn();
-  }
-  if(e.keyCode === 37) {  // 'LEFT'
-    app.thrust.updateHeading(-2);
-  }
-  if(e.keyCode === 39) {  // 'RIGHT'
-    app.thrust.updateHeading(2);
-  }
-  if(e.keyCode === 38) {  // 'UP'
-    app.thrust.updateThrust(1);
-  }    
+var keyMap = {
+  86: 'viewToggle', // v
+  32: 'trace',  // ' '
+  82: 'reset', // 'R'
+  84: 'reverseTime', // 'T'
+  87: 'viewShiftUp', // 'W'
+  83: 'viewShiftDown', // 'S'
+  65: 'viewShiftLeft', // 'A'
+  68: 'viewShiftRight', // 'D'
+  77: 'switchClickAction', // 'M'
+  80: 'pause', // 'P'
+  67: 'visualLogging', // 'C'
+  70: 'follow', // 'F'
+  88: 'speedItUp', // 'X'
+  90: 'slowItDown', // 'Z'
+  188: 'zoomOut', // '<'
+  190: 'zoomIn', // '>'
+  72: 'switchToDefaultView', // 'H'
+  66: 'rocketEnginesBurnToggle', // 'B'
+  37: 'rocketRotateLeft', // 'LEFT'
+  38: 'rocketIncreaseThrust', // 'UP'
 };
+
+Response.prototype.onKeyDown = function(e, ref) {
+  var action = keyMap[e.keyCode];
+
+  if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
+  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
+  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
+  if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
+  if(action === 'rocketRotateLeft') { app.thrust.act(action); }
+  if(action === 'rocketRotateRight') { app.thrust.act(action); }
+  if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
+  if(action === 'viewToggle') { app.response.changeView(); }
+  if(action === 'trace') { app.TRACE = !app.TRACE; }
+  if(action === 'reset') { app.response.reset(); }
+  if(action === 'reverseTime') { app.physics.reverseTime(); } 
+  if(action === 'viewShiftUp') { app.VIEWSHIFT.y -= 5; }
+  if(action === 'viewShiftDown') { app.VIEWSHIFT.y += 5; }
+  if(action === 'viewShiftLeft') { app.VIEWSHIFT.x -= 5; }
+  if(action === 'viewShiftRight') { app.VIEWSHIFT.x += 5; }
+  if(action === 'switchClickAction') { app.response.changeMode(); }
+  if(action === 'pause') { app.response.pause(); }  
+  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
+  if(action === 'follow') { app.response.incrementFollow(); } 
+  if(action === 'speedItUp') { app.response.speedUp(); }
+  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }
+};
+
+Response.prototype.speedUp = function() {
+  if(app.physics.variables.TIME_STEP < 100) {
+    app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
+  }
+}
 
 Response.prototype.onClick = function(e) {
     var xy = {x: e.clientX, y: e.clientY};
