@@ -1,96 +1,4 @@
 /* ******************* RESPONSE ******************************************************* */
-
-function Response() {
-  app.eventListener.addEventListener('mousemove', this.onMousemove);
-  app.eventListener.addEventListener('click', this.onClick);
-  app.eventListener.addEventListener('keydown', this.onKeyDown, this);
-  this.MODE = 'FOLLOW';
-}
-
-Response.prototype.onMouseMove = function() {
-    var up = app.mouse.y > e.clientY;
-
-    app.VIEWANGLE = up ? app.VIEWANGLE + Math.PI / 32 : app.VIEWANGLE - Math.PI / 32;
-
-    if(app.VIEWANGLE < 0) {
-      app.VIEWANGLE = 0;
-    }
-    if(app.VIEWANGLE > Math.PI / 2) {
-      app.VIEWANGLE = Math.PI / 2;
-    }
-
-    app.mouse.x = e.clientX;
-    app.mouse.y = e.clientY;
-};
-
-Response.prototype.changeMode = function() {
-  if(app.response.MODE === 'FOLLOW') {
-    app.response.MODE = 'ROCKET';
-  } else if( this.MODE === 'ROCKET') {
-    app.response.MODE = 'PHOTON';
-  } else if( this.MODE === 'PHOTON') {
-    app.response.MODE = 'DESTROY';
-  } else {
-    app.response.MODE = 'FOLLOW';
-  }
-};
-
-Response.prototype.reset = function() {
-  if(app.physics.variables.CALC_STYLE !== 'real') {
-    app.physics.variables.CALC_STYLE = 'real';
-  } else {
-    app.physics.variables.CALC_STYLE = 'wacky';
-    //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
-  }
-  app.ctx.clearRect(0, 0, app.width, app.height);
-  var x = new Particles().buildInitialParticles();
-  app.viewPort.colorSorted = false;
-  app.CLOCK.ticks = 0;
-  app.CLOCK.e = 0;
-  app.CLOCK.j = 0;
-  app.CLOCK.n = 0;
-  app.collissions = 0;
-}
-
-Response.prototype.pause = function() {
-  //app.physics.updateTimeStep(1);
-  if(app.GO === false) {
-    app.GO = true;
-    requestAnimationFrame(app.viewPort.frame);
-    app.CLOCK.ticks = 0;
-    app.splitTime = new Date();
-  } else {
-    app.GO = false;
-  }
-}
-
-Response.prototype.changeView = function() {
-  app.DRAWSTATE += 1;
-
-  if(app.DRAWSTATE === 3) {
-    app.DRAWSTATE = 0;
-  }
-  app.ctx.clearRect(0, 0, app.width, app.height);  
-}
-
-Response.prototype.incrementFollow = function () {
-  app.FOLLOW += 1;
-  app.VIEWSHIFT.x = 0;
-  app.VIEWSHIFT.y= 0;
-  if(app.FOLLOW >= app.particles.length) {
-    app.FOLLOW = 0;
-  }
-}
-
-Response.prototype.resetViewToHome = function() {
-  app.VIEWSHIFT.x = 0;
-  app.VIEWSHIFT.y= 0;
-  app.VIEWANGLE = .75;
-  app.FOLLOW = 0;
-  app.VIEWSHIFT.zoom = 0;
-  app.physics.updateTimeStep(1);
-}
-
 var keyMap = {
   86: 'viewToggle', // v
   32: 'trace',  // ' '
@@ -113,6 +21,13 @@ var keyMap = {
   37: 'rocketRotateLeft', // 'LEFT'
   38: 'rocketIncreaseThrust', // 'UP'
 };
+
+function Response() {
+  app.eventListener.addEventListener('mousemove', this.onMousemove);
+  app.eventListener.addEventListener('click', this.onClick);
+  app.eventListener.addEventListener('keydown', this.onKeyDown, this);
+  this.MODE = 'FOLLOW';
+}
 
 Response.prototype.onKeyDown = function(e, ref) {
   var action = keyMap[e.keyCode];
@@ -140,23 +55,51 @@ Response.prototype.onKeyDown = function(e, ref) {
   if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }
 };
 
+Response.prototype.onClick = function(e) {
+  var xy = {x: e.clientX, y: e.clientY};
+
+  if(app.response.MODE === 'FOLLOW') {
+    app.response.follow(xy);
+  } else if(app.response.MODE === 'DESTROY') {
+    app.response.destroy(xy);
+  } else {
+    app.response.rocket();
+  }
+};
+
+Response.prototype.onMouseMove = function() {
+  var up = app.mouse.y > e.clientY;
+
+  app.VIEWANGLE = up ? app.VIEWANGLE + Math.PI / 32 : app.VIEWANGLE - Math.PI / 32;
+
+  if(app.VIEWANGLE < 0) {
+    app.VIEWANGLE = 0;
+  }
+  if(app.VIEWANGLE > Math.PI / 2) {
+    app.VIEWANGLE = Math.PI / 2;
+  }
+
+  app.mouse.x = e.clientX;
+  app.mouse.y = e.clientY;
+};
+
+Response.prototype.changeMode = function() {
+  if(app.response.MODE === 'FOLLOW') {
+    app.response.MODE = 'ROCKET';
+  } else if( this.MODE === 'ROCKET') {
+    app.response.MODE = 'PHOTON';
+  } else if( this.MODE === 'PHOTON') {
+    app.response.MODE = 'DESTROY';
+  } else {
+    app.response.MODE = 'FOLLOW';
+  }
+};
+
 Response.prototype.speedUp = function() {
   if(app.physics.variables.TIME_STEP < 100) {
     app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
   }
 }
-
-Response.prototype.onClick = function(e) {
-    var xy = {x: e.clientX, y: e.clientY};
-
-    if(app.response.MODE === 'FOLLOW') {
-      app.response.follow(xy);
-    } else if(app.response.MODE === 'DESTROY') {
-      app.response.destroy(xy);
-    } else {
-      app.response.rocket();
-    }
-};
 
 Response.prototype.follow = function(xy){
     var j = 0,
@@ -254,3 +197,59 @@ Response.prototype.rocket = function(){
     //   app.particles = tmp;
     // }
 };
+
+Response.prototype.reset = function() {
+  if(app.physics.variables.CALC_STYLE !== 'real') {
+    app.physics.variables.CALC_STYLE = 'real';
+  } else {
+    app.physics.variables.CALC_STYLE = 'wacky';
+    //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
+  }
+  app.ctx.clearRect(0, 0, app.width, app.height);
+  var x = new Particles().buildInitialParticles();
+  app.viewPort.colorSorted = false;
+  app.CLOCK.ticks = 0;
+  app.CLOCK.e = 0;
+  app.CLOCK.j = 0;
+  app.CLOCK.n = 0;
+  app.collissions = 0;
+}
+
+Response.prototype.pause = function() {
+  //app.physics.updateTimeStep(1);
+  if(app.GO === false) {
+    app.GO = true;
+    requestAnimationFrame(app.viewPort.frame);
+    app.CLOCK.ticks = 0;
+    app.splitTime = new Date();
+  } else {
+    app.GO = false;
+  }
+}
+
+Response.prototype.changeView = function() {
+  app.DRAWSTATE += 1;
+
+  if(app.DRAWSTATE === 3) {
+    app.DRAWSTATE = 0;
+  }
+  app.ctx.clearRect(0, 0, app.width, app.height);  
+}
+
+Response.prototype.incrementFollow = function () {
+  app.FOLLOW += 1;
+  app.VIEWSHIFT.x = 0;
+  app.VIEWSHIFT.y= 0;
+  if(app.FOLLOW >= app.particles.length) {
+    app.FOLLOW = 0;
+  }
+}
+
+Response.prototype.resetViewToHome = function() {
+  app.VIEWSHIFT.x = 0;
+  app.VIEWSHIFT.y= 0;
+  app.VIEWANGLE = .75;
+  app.FOLLOW = 0;
+  app.VIEWSHIFT.zoom = 0;
+  app.physics.updateTimeStep(1);
+}
