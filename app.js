@@ -21,6 +21,7 @@ app.init = function () {
 
   if(document && document.getElementById) {
     var display = document.getElementById('display');
+    app.display = display;
     app.width = display.width = window.innerWidth - 40;
     app.height = display.height = window.innerHeight - 30;
     app.halfWidth = app.width * 0.5;

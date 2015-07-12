@@ -1,7 +1,7 @@
 /* ******************* RESPONSE ******************************************************* */
 var keyMap = {
   86: 'viewToggle', // v
-  32: 'trace',  // ' '
+  32: 'trace',  // '<space>'
   82: 'reset', // 'R'
   84: 'reverseTime', // 'T'
   87: 'viewShiftUp', // 'W'
@@ -29,13 +29,19 @@ function Response() {
   app.eventListener.addEventListener('keydown', this.onKeyDown, this);
   this.MODE = 'FOLLOW';
   this.CommandMode = 'COMMAND';
+  app.textParser = new TextParser();
+
+  this.commands = [
+    {command: "cprop", description: "change any property on any object to any value (power tool)", fn: this.changeProperty}
+    ];
 }
 
 Response.prototype.onKeyDown = function(e, ref) {
+  app.response.eventHandle = this.onKeyDown;
   if(app.response.CommandMode === 'COMMAND') {
     app.response.handleCommand(e);
   } else {
-    app.response.handleConsole(e);
+    //app.response.handleConsole(e);
   }
 };
 
@@ -94,21 +100,23 @@ Response.prototype.handleCommand = function(e) {
 }
 
 Response.prototype.handleConsole = function(e) {
-  if(e.keyCode === 88) {
-    app.response.switchCommandMode();
-  }
+  app.textParser.handleConsole();
 }
 
+Response.prototype.onCommandExit = function() {
+  app.response.pause();
+  app.response.CommandMode = 'COMMAND';
+  //app.eventListener.addEventListener("keydown", app.response.onKeyDown);
+}
+
+
 Response.prototype.switchCommandMode = function() {
-  if(app.response.CommandMode === 'COMMAND') {
-    app.response.CommandMode = 'CONSOLE';
-    app.response.pause();
-    app.ctx.clearRect(0, 0, app.width, app.height);
-  } else {
-    app.response.CommandMode = 'COMMAND'
-    app.response.pause();
-    app.response.resetViewToHome();
-  }
+  app.response.CommandMode = 'shell';
+  app.eventListener.removeEventListener("keydown", app.response.eventHandle);
+  app.ctx.clearRect(0, 0, app.width, app.height);
+  app.response.pause();
+  app.ctx.clearRect(0, 0, app.width, app.height);
+  shellJs.init(app.display, app.response.onCommandExit, app.response.commands);
 }
 
 Response.prototype.changeMode = function() {
@@ -273,6 +281,10 @@ Response.prototype.incrementFollow = function () {
   }
 }
 
+Response.prototype.changeProperty = function(id, propName, newValue) {
+  app.particles[id][propName] = newValue;
+}
+
 Response.prototype.resetViewToHome = function() {
   app.VIEWSHIFT.x = 0;
   app.VIEWSHIFT.y= 0;
@@ -280,4 +292,11 @@ Response.prototype.resetViewToHome = function() {
   app.FOLLOW = 0;
   app.VIEWSHIFT.zoom = 0;
   app.physics.updateTimeStep(1);
+}
+
+
+function TextParser() { 
+}
+
+TextParser.prototype.handleConsole = function() {
 }

@@ -106,13 +106,16 @@ ViewPort.prototype.frame = function() {
 
   if(app.GO) {
     requestAnimationFrame(app.viewPort.frame);
+
+    if(!app.TRACE) {
+      app.ctx.clearRect(0, 0, app.width, app.height);
+    }
+
+    app.viewPort.frameActions();
+
   }
 
-  if(!app.TRACE) {
-    app.ctx.clearRect(0, 0, app.width, app.height);
-  }
 
-  app.viewPort.frameActions();
 };
 
 ViewPort.prototype.frameActions = function() {
@@ -171,8 +174,11 @@ ViewPort.prototype.frameClock = function() {
 
     for(var zz = 0; zz < app.particles.length; zz++) {
       totalMass += app.particles[zz].mass;
-      totalEnergy += Math.round(app.particles[zz].kineticE()*100000,0);
+      totalEnergy += app.particles[zz].kineticE()*100000;
     }
+
+    totalMass = Math.round(totalMass*1000,0) / 1000;
+    totalEnergy = Math.round(totalEnergy*100000,0);
 
     this.appendLine("Total system mass: " + totalMass);
     this.appendLine("Total system energy: " + totalEnergy);
