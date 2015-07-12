@@ -104,7 +104,7 @@ Response.prototype.handleConsole = function(e) {
 }
 
 Response.prototype.onCommandExit = function() {
-  app.response.pause();
+//  app.response.pause();
   app.response.CommandMode = 'COMMAND';
   //app.eventListener.addEventListener("keydown", app.response.onKeyDown);
 }
@@ -113,10 +113,10 @@ Response.prototype.onCommandExit = function() {
 Response.prototype.switchCommandMode = function() {
   app.response.CommandMode = 'shell';
   app.eventListener.removeEventListener("keydown", app.response.eventHandle);
-  app.ctx.clearRect(0, 0, app.width, app.height);
-  app.response.pause();
-  app.ctx.clearRect(0, 0, app.width, app.height);
-  shellJs.init(app.display, app.response.onCommandExit, app.response.commands);
+//  app.ctx.clearRect(0, 0, app.width, app.height);
+//  app.response.pause();
+//  app.ctx.clearRect(0, 0, app.width, app.height);
+  shellJs.init(app.display, app.response.onCommandExit, app.response.commands, true);
 }
 
 Response.prototype.changeMode = function() {
