@@ -32,7 +32,9 @@ function Response() {
   app.textParser = new TextParser();
 
   this.commands = [
-    {command: "cprop", description: "change any property on any object to any value (power tool)", fn: this.changeProperty}
+    {command: "cprop", description: "change any property on any object to any value (power tool)", fn: this.changeProperty},
+    {command: "addp", description: "add a single planet", fn: this.addParticle},
+    {command: "addc", description: "add a bunch of planets", fn: this.addCloud}
     ];
 }
 
@@ -283,6 +285,29 @@ Response.prototype.incrementFollow = function () {
 
 Response.prototype.changeProperty = function(id, propName, newValue) {
   app.particles[id][propName] = newValue;
+}
+
+Response.prototype.addParticle = function(massX, radX, eC, arc, name) {
+  var eccentricity = eC == null ? 1 : eC / 100,
+    radians = arc == null ? Math.random() * 2 * Math.PI : arc,
+    text = name == null ? 'planet-X' : name;
+  var cfg = {name: text, mass: massX, radius: 1097, 
+      orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
+  var x = new Particles().buildParticle(cfg);
+  return x;
+}
+
+Response.prototype.addCloud = function(cnt, rC, rF) {
+  var x = new Particles();
+
+  for(var y = 0; y < cnt; y++) {
+    var rad = rC * 5 + (Math.random() * (rF - rC)) * 5;
+    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097, 
+      orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: .1};
+    x.buildParticle(cfg);
+  }
+
+  return x;
 }
 
 Response.prototype.resetViewToHome = function() {
