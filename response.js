@@ -14,7 +14,7 @@ var keyMap = {
   70: 'follow', // 'F'
   88: 'speedItUp', // 'X'
   90: 'slowItDown', // 'Z'
-  73: 'toggleCommandMode', // 'I'
+  192: 'toggleCommandMode', // '`'
   188: 'zoomOut', // '<'
   190: 'zoomIn', // '>'
   72: 'switchToDefaultView', // 'H'
@@ -34,7 +34,8 @@ function Response() {
   this.commands = [
     {command: "cprop", description: "change any property on any object to any value (power tool)", fn: this.changeProperty},
     {command: "addp", description: "add a single planet", fn: this.addParticle},
-    {command: "addc", description: "add a bunch of planets", fn: this.addCloud}
+    {command: "addc", description: "add a bunch of planets", fn: this.addCloud},
+    {command: "destall", description: "remove everything", fn: this.destroyAll}
     ];
 }
 
@@ -291,7 +292,7 @@ Response.prototype.addParticle = function(massX, radX, eC, arc, name) {
   var eccentricity = eC == null ? 1 : eC / 100,
     radians = arc == null ? Math.random() * 2 * Math.PI : arc,
     text = name == null ? 'planet-X' : name;
-  var cfg = {name: text, mass: massX, radius: 1097, 
+  var cfg = {name: text, mass: massX / 100, radius: 1097, 
       orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
   var x = new Particles().buildParticle(cfg);
   return x;
@@ -308,6 +309,13 @@ Response.prototype.addCloud = function(cnt, rC, rF) {
   }
 
   return x;
+}
+
+Response.prototype.destroyAll = function() {
+  var me = this;
+  app.FOLLOW = 0;
+  app.particles.splice(1, app.particles.length - 1);
+  app.alwaysIntegrate.splice(1, app.alwaysIntegrate.length - 1);
 }
 
 Response.prototype.resetViewToHome = function() {
