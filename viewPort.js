@@ -11,6 +11,37 @@ function ViewPort(){
   this.colorSorted = false;
 }
 
+ViewPort.prototype.splash = function() {
+  var version = "2.0";
+  this.appendLine("Planetary Gravity Simulator");
+  this.appendLine("v " + version);
+  this.appendLine("");
+  this.appendLine("Type 'v' to exit the splash screen.");
+  this.appendLine("Type ' ' then '~' to enter console mode, and type help from there to learn about commands.");
+  this.appendLine("Also has one-key instant commands in direct mode: ");
+  this.appendLine('....viewToggle - v');
+ this.appendLine('....trace - <space>');
+ this.appendLine('....reset - R');
+ this.appendLine('....reverseTime - T');
+ this.appendLine('....viewShiftUp - W');
+ this.appendLine('....viewShiftDown - S');
+ this.appendLine('....viewShiftLeft - A');
+ this.appendLine('....viewShiftRight - D');
+ this.appendLine('....switchClickAction - M');
+ this.appendLine('....pause - P');
+ this.appendLine('....visualLogging - C');
+ this.appendLine('....follow - F');
+ this.appendLine('....speedItUp - X');
+ this.appendLine('....slowItDown - Z');
+  this.appendLine('....toggleCommandMode - ~');
+  this.appendLine('....zoomOut - <');
+  this.appendLine('....zoomIn - >');
+ this.appendLine('....switchToDefaultView - H');
+ this.appendLine('....rocketEnginesBurnToggle - B');
+ this.appendLine('....rocketRotateLeft - LEFT');
+ this.appendLine('....rocketIncreaseThrust - UP');
+};
+
 ViewPort.prototype.project = function(flatX, flatY, flatZ) {
   var point = app.viewPort.iso(flatX, flatY);
   var x0 = app.width * 0.5;
@@ -119,6 +150,23 @@ ViewPort.prototype.frame = function() {
 };
 
 ViewPort.prototype.frameActions = function() {
+  if(app.DRAWSTATE === 4) {
+    app.ctx.lineWidth = 1;
+
+    app.ctx.font="20px Arial";
+    app.ctx.strokeStyle = app.particles[0].drawColor;
+    this.txtOffset = 25;
+    app.viewPort.splash();
+    this.txtOffset = 25;
+
+    app.ctx.beginPath();
+
+    //app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);
+    app.ctx.fillStyle = app.ctx.strokeStyle;
+    //app.ctx.fill();
+    app.ctx.stroke();
+    return;
+  }
   app.viewPort.frameClock();
   app.viewPort.integrateWrapper();
   app.viewPort.setClock();

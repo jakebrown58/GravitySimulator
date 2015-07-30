@@ -5,7 +5,7 @@ app.init = function () {
   app.particles = [];
   app.mouse = { x: app.halfWidth, y: app.halfHeight };
   app.TRACE = false;
-  app.DRAWSTATE = 1;
+  app.DRAWSTATE = 4;
   app.VIEWSHIFT = {x: -50, y: 0, zoom: 0};
   app.GO = true;
   app.VIEWANGLE = .75;
@@ -36,6 +36,8 @@ app.init = function () {
     app.halfWidth = app.width * 0.5;
     app.halfHeight = app.height * 0.5;
   }
+
+  app.size = (app.width + app.height) / 2;
 
   app.viewPort = new ViewPort();
   app.response = new Response();

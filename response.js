@@ -60,7 +60,7 @@ Response.prototype.onClick = function(e) {
   }
 };
 
-Response.prototype.onMouseMove = function() {
+Response.prototype.onMousemove = function(e) {
   var up = app.mouse.y > e.clientY;
 
   app.VIEWANGLE = up ? app.VIEWANGLE + Math.PI / 32 : app.VIEWANGLE - Math.PI / 32;
@@ -268,9 +268,13 @@ Response.prototype.pause = function() {
 
 Response.prototype.changeView = function() {
   app.DRAWSTATE += 1;
+  app.ctx.font="12px Calibri";
 
   if(app.DRAWSTATE === 3) {
     app.DRAWSTATE = 0;
+  }
+  if(app.DRAWSTATE > 3) {
+    app.DRAWSTATE = 1;
   }
   app.ctx.clearRect(0, 0, app.width, app.height);  
 }

@@ -47,9 +47,10 @@ Particles.prototype.buildInitialParticles = function() {
 // //      {name: 'Planet 1', mass: planetMass, radius: 69911, orbits: [{mass: centerMass * Math.sqrt(centerMass), radius: aU + aU * Math.random() * 8}], drawSize: .6, color: {r: 255, g: 215, b: 165}}
 //     ];
 
-    this.buildParticle({name: 'Brown Dwarf ' + i, radius: 696342, mass: 1000 * jupiterMass, orbitalVelocity: 0, distance: 0, drawSize: 1});
+    var brownDwarfMass = 1000 * jupiterMass + Math.random() * 250;
+    this.buildParticle({name: 'Brown Dwarf ' + i, radius: 696342, mass: brownDwarfMass, orbitalVelocity: 0, distance: 0, drawSize: 1});
 
-    this.buildParticle({name: 'Saturn-like ' + i, radius: 69911, mass: jupiterMass * .3, orbits: [{mass: 1000 * jupiterMass, radius: 1.8 * aU}], drawSize: 1});
+    this.buildParticle({name: 'Saturn-like ' + i, radius: 69911, mass: jupiterMass * .3, orbits: [{mass: brownDwarfMass + (Math.random() * 50), radius: 1.8 * aU}], drawSize: 1});
 
     // for (i = 0; i < 40; i++) {
     //   var tmass =  jupiterMass / 80,
@@ -60,7 +61,7 @@ Particles.prototype.buildInitialParticles = function() {
     for (i = 0; i < 900; i++) {
       var tmass =  earthMass / 20,
         tradius = 6371 / .1;
-      this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: 1000 * jupiterMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * .4}], drawSize: .1});
+      this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: brownDwarfMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * .4}], drawSize: .1});
     }
 
     // for (i = 0; i < 400; i++) {
