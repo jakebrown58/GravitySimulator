@@ -28,7 +28,7 @@ app.init = function () {
     app.halfHeight = app.height * 0.5;
     app.ctx = display.getContext('2d');
     display.focus();
-    app.eventListener = display;
+    app.eventListener = display;       
   } else {
     app.ctx = new mockCtx();
     app.width = 100;
@@ -36,6 +36,14 @@ app.init = function () {
     app.halfWidth = app.width * 0.5;
     app.halfHeight = app.height * 0.5;
   }
+
+  window.addEventListener("resize", function() { 
+    app.width = display.width = window.innerWidth - 40;
+    app.height = display.height = window.innerHeight - 30;
+    app.halfWidth = app.width * 0.5;
+    app.halfHeight = app.height * 0.5;
+    app.size = (app.width + app.height) / 2;
+  }); 
 
   app.size = (app.width + app.height) / 2;
 
