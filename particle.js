@@ -96,7 +96,7 @@ Particle.prototype.updateVelocity = function() {
 };
 
 Particle.prototype.kineticE = function(){
-  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * thie.velz);
+  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * this.velz);
 }
 
 Particle.prototype.isBoundTo = function(p2){
