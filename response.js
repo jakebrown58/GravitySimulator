@@ -20,6 +20,7 @@ var keyMap = {
   72: 'switchToDefaultView', // 'H'
   66: 'rocketEnginesBurnToggle', // 'B'
   37: 'rocketRotateLeft', // 'LEFT'
+  39: 'rocketRotateRight', // 'RIGHT'
   38: 'rocketIncreaseThrust', // 'UP'
 };
 
