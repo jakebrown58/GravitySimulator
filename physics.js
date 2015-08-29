@@ -53,6 +53,7 @@ Physics.prototype.leapFrog = function () {
   if(app.response.MODE === 'ROCKET') {
     ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
     ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 3000);
+    ps[app.FOLLOW].velz += (-app.thrust.getThrustVector().z / 3000);
   }
 
 };
@@ -73,10 +74,13 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.mass = 0.00000000000001;
   little.velx = 0;
   little.vely = 0;
+  little.velz = 0;
   little.accx = 0;
   little.accy = 0;
+  little.accz = 0;
   little.x = little.x + 5000 + Math.random() * 10000;
   little.y = little.y + 5000 + Math.random() * 10000;
+  little.z = little.z + 5000 + Math.random() * 10000;
   little.color = {r: 0, b: 0, g: 0};
   little.destroyed = true;
 
@@ -89,14 +93,19 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.mass = mass;
   big.x = (fracB*big.x + fracL*little.x);
   big.y = (fracB*big.y + fracL*little.y);
+  big.z = (fracB*big.z + fracL*little.z)
   big.oldx = (fracB*big.oldx + fracL*little.oldx);
   big.oldy = (fracB*big.oldy + fracL*little.oldy);
+  big.oldz = (fracB*big.oldz + fracL*little.oldz);
   big.velx = (fracB*big.velx + fracL*little.velx);
   big.vely = (fracB*big.vely + fracL*little.vely);
+  big.velz = (fracB*big.velz + fracL*little.velz);
   big.oldvelx = (fracB*big.oldvelx + fracL*little.oldvelx);
   big.oldvely = (fracB*big.oldvely + fracL*little.oldvely);
+  big.oldvelz = (fracB*big.oldvelz + fracL*little.oldvelz);
   big.accx = (fracB*big.accx + fracL*little.accx);
   big.accy = (fracB*big.accy + fracL*little.accy);
+  big.accz = (fracB*big.accz + fracL*little.accz);
   big.oldaccx = (fracB*big.oldaccx + fracL*little.oldaccx);
   big.oldaccy = (fracB*big.oldaccy + fracL*little.oldaccy);
 
@@ -121,6 +130,7 @@ Physics.prototype.getParticleDirection = function (particle) {
   var followDirection = Math.atan(particle.vely / particle.velx) * 180 / Math.PI;
   var left = particle.velx < 0;
   var down = particle.vely > 0;
+  //var into = particle.velz > 0;
   var q4 = down && left,
       q3 = left && !q4,
       q1 = down && !q4,
@@ -178,6 +188,12 @@ Physics.prototype.glomParticles = function() {
 };
 
 Physics.prototype.areParticlesVeryClose = function(p1,p2) {
+  if((p1.z + p1.normalizedRadius) < (p2.z - p2.normalizedRadius)) {
+    return false;
+  }
+  if((p2.z + p2.normalizedRadius) < (p1.z - p1.normalizedRadius)) {
+    return false;
+  } 
   if((p1.y + p1.normalizedRadius) < (p2.y - p2.normalizedRadius)) {
     return false;
   }

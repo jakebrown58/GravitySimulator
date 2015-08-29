@@ -18,15 +18,15 @@ Particle.prototype.calcAcceleration = function(){
   }
 };
 
-Particle.prototype.d3Real = function(dx, dy) {
-  var tmp = dx * dx + dy * dy;
+Particle.prototype.d3Real = function(dx, dy, dz) {
+  var tmp = dx * dx + dy * dy + dz * dz;
   return Math.sqrt(tmp) * tmp;
 };
 
-Particle.prototype.d3Spyro = function(dx, dy) {
+Particle.prototype.d3Spyro = function(dx, dy, dz) {
   //var tmp = Math.sqrt(dx * dx + dy * dy);
   //return tmp * tmp;
-    var tmp = dx * dx + dy * dy;
+  var tmp = dx * dx + dy * dy + dz * dz;
   return Math.sqrt(tmp) * tmp;
 };
 
@@ -35,22 +35,26 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
   var curr,
     dx,
     dy,
+    dz,
     grav,
     i,
     d3;
 
   this.oldaccx = this.accx;
   this.oldaccy = this.accy;
+  this.oldaccz = this.accz;
 
   this.accx = 0;
   this.accy = 0;
+  this.accz = 0;
 
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if(curr.id !== this.id ) {
       dx = curr.x - this.x;
       dy = curr.y - this.y;
-      d3 = d3Fn(dx, dy);
+      dz = curr.z - this.z;
+      d3 = d3Fn(dx, dy, dz);
 
       // if(d3 < app.closestPair.d || app.closestPair === 0) {
       //   app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
@@ -63,6 +67,7 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
         grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
         this.accx += grav * dx;
         this.accy += grav * dy;
+        this.accz += grav * dz;
       }
     }
   }
@@ -72,32 +77,38 @@ Particle.prototype.updatePosition = function() {
   var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.oldx = this.x; //Not used by leapfrog itself.
   this.oldy = this.y; //Not used by leapfrog itself.
+  this.oldz = this.z;
   this.x += (this.velx + 0.5 * this.accx * dt) * dt;
   this.y += (this.vely + 0.5 * this.accy * dt) * dt;
+  this.z += (this.velz + 0.5 * this.accz * dt) * dt;
 };
 
 Particle.prototype.updateVelocity = function() {
   var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.oldvelx = this.velx; //Not used by leapfrog itself.
   this.oldvely = this.vely; //Not used by leapfrog itself.
+  this.oldvelz = this.velz;
   this.oldDirection = app.physics.getParticleDirection(this);
   this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
   this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
+  this.velz += 0.5 * (this.oldaccz + this.accz) * dt;
   this.direction = app.physics.getParticleDirection(this);
 };
 
 Particle.prototype.kineticE = function(){
-  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely);
+  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * thie.velz);
 }
 
 Particle.prototype.isBoundTo = function(p2){
   var mu = (this.mass * p2.mass) / (this.mass + p2.mass),
    velx = this.velx - p2.velx,
    vely = this.vely - p2.vely,
+   velz = this.velz - p2.velz,
    dx = this.x - p2.x,
    dy = this.y - p2.y,
-   sqrtD2 = Math.sqrt(dx * dx + dy * dy),
-   v2 = velx * velx + vely * vely,
+   dz = this.z - p2.z,
+   sqrtD2 = Math.sqrt(dx * dx + dy * dy + dz * dz),
+   v2 = velx * velx + vely * vely + velz * velz,
    energy = 0;
 
   if(sqrtD2 > 0) {
@@ -154,12 +165,15 @@ Particle.prototype.configure = function(config) {
   particle.mass = config.mass;
   particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
   particle.y = app.halfHeight - localRadius * Math.sin(config.arc);
+  particle.z = 0;
 
   particle.velx = localOrbitalVelocity * Math.sin(config.arc);
   particle.vely = localOrbitalVelocity * -Math.cos(config.arc);
+  particle.velz = 0;
 
   particle.accx = 0.0;
   particle.accy = 0.0;
+  particle.accz = 0;
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);

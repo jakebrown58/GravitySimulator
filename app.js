@@ -6,7 +6,7 @@ app.init = function () {
   app.mouse = { x: app.halfWidth, y: app.halfHeight };
   app.TRACE = false;
   app.DRAWSTATE = 4;
-  app.VIEWSHIFT = {x: -50, y: 0, zoom: 0};
+  app.VIEWSHIFT = {x: -50, y: 0, z: 0, zoom: 0};
   app.GO = true;
   app.VIEWANGLE = .75;
   app.FOLLOW = 0;
@@ -14,7 +14,7 @@ app.init = function () {
   app.SHOWCLOCK = false;
   app.realTime = Date();
   app.splitTime = Date();
-  app.closestPair = {x: 0, y: 0, d: 0};
+  app.closestPair = {x: 0, y: 0, z: 0, d: 0};
   app.eventListener = {};
   app.collissions = 0;
   app.thrust = new Thrust();
@@ -98,13 +98,14 @@ Thrust.prototype.updateHeading = function(headingAdjustment) {
 
 Thrust.prototype.getThrustVector = function() {
   if(!this.burning) {
-    return {x: 0, y:0};
+    return {x: 0, y:0, z:0};
   }
 
 
   return { 
     x: this.thrust * Math.cos(Math.PI * this.heading / 180),
-    y: this.thrust * Math.sin(Math.PI * this.heading / 180)
+    y: this.thrust * Math.sin(Math.PI * this.heading / 180),
+    z: 0
   };
 }
 
