@@ -45,11 +45,6 @@ Physics.prototype.leapFrog = function () {
     ps[i].updateVelocity();
   }  
 
-  if(app.physics.variables.CALC_STYLE === 'wacky') {
-    this.glomParticles();
-  }
-
-
   if(app.response.MODE === 'ROCKET') {
     ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
     ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 3000);
@@ -148,17 +143,15 @@ Physics.prototype.createCollidingParticleList = function() {
   return ret;
 };
 
-Physics.prototype.glomParticles = function() {
-  var set = this.createCollidingParticleList();
-
-  app.collissions += set.length;
+Physics.prototype.glomParticles = function(set) {
+  app.collisions += set.length;
 
   if(set.length > 0) {
     for(var i = 0; i < set.length; i++) {
       this.collide_glom(set[i].big, set[i].little);
     }
     
-    // this is garbage collecter heaven here.... clean up at some point if we want a speed boost from post-collissions.
+    // this is garbage collecter heaven here.... clean up at some point if we want a speed boost from post-collisions.
     var newParticles = [];
     for(i = 0; i < app.particles.length; i++){
       if(app.particles[i].destroyed !== true) {

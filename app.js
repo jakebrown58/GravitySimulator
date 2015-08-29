@@ -16,7 +16,9 @@ app.init = function () {
   app.splitTime = Date();
   app.closestPair = {x: 0, y: 0, d: 0};
   app.eventListener = {};
-  app.collissions = 0;
+  app.collisions = 0;
+  app.COLLISION_IMMENENCE_RANGE = 1;
+  app.potentialCollisions = app.resetPotentialCollisions();
   app.thrust = new Thrust();
 
   if(document && document.getElementById) {
@@ -45,6 +47,26 @@ app.init = function () {
   var x = new Particles().buildInitialParticles();
   requestAnimationFrame(app.viewPort.frame);
 };
+
+app.resetPotentialCollisions = function() {
+  app.potentialCollisions = { "0": [], "1": [], "5": [], "10": [], "50": [], "100": [] };
+}
+
+app.flattenPotentialCollisions = function() {
+  var flat = [];
+
+  for (var bucket in app.potentialCollisions) {
+    var list = app.potentialCollisions[(new Number(bucket) / 100)];
+    if (list && list.length)
+      for (var pair in list) {
+        var big = app.particles[list[pair][0]];
+        var little = app.particles[list[pair][1]];
+        flat.push({big: big, little: little});
+      }
+  }
+
+  return flat;
+}
 
 
 var mockCtx = function() {
