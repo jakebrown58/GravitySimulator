@@ -86,6 +86,8 @@ ViewPort.prototype.drawParticle = function(particle) {
 
   if(app.DRAWSTATE === 0) {
     obj = app.viewPort.project(particle.x, particle.y, 0);
+    obj.x = obj.x - app.VIEWSHIFT.x;
+    obj.y = obj.y - app.VIEWSHIFT.y;
   } else {
     obj = {x: particle.x, y: particle.y};
     obj.x = (particle.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (particle.x - app.FOLLOWXY[0]) * app.VIEWSHIFT.zoom;
