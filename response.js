@@ -252,7 +252,9 @@ Response.prototype.reset = function() {
   app.CLOCK.e = 0;
   app.CLOCK.j = 0;
   app.CLOCK.n = 0;
-  app.collissions = 0;
+  app.collisions = 0;
+
+  app.resetPotentialCollisions();
 }
 
 Response.prototype.pause = function() {

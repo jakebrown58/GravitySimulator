@@ -232,7 +232,32 @@ ViewPort.prototype.frameClock = function() {
 
     this.appendLine("Total system mass: " + totalMass);
     this.appendLine("Total system energy: " + totalEnergy);
-    this.appendLine("Total collissions: " + app.collissions);
+    this.appendLine("Total collisions: " + app.collisions);
+    this.appendLine("Potential collisions: ");
+    this.appendLine("----------------------");
+
+    var lastBucket = null;
+    for (var bucket in app.potentialCollisions) {
+      var num = (new Number(bucket) / 100);
+      if (lastBucket) {
+        var list = app.potentialCollisions[lastBucket];
+        if (list.length) {
+          this.appendLine("Items between " + (lastBucket / 100) + " and " + num + " apart: ");
+
+          for (var pair in list) {
+            pair = list[pair];
+            var a = app.particles[pair[0]];
+            var b = app.particles[pair[1]];
+            this.appendLine("    " + a.name + " and " + b.name);
+          }
+        }
+      }
+
+      lastBucket = bucket;
+    }
+    this.appendLine("----------------------");
+
+
 
     // var maxMass = 0;
     // for(var xx = 0; xx < app.particles.length; xx++) {
@@ -264,7 +289,10 @@ ViewPort.prototype.integrateWrapper = function() {
     app.physics.constants.GRAVITY_CONSTANT /= app.physics.variables.TIME_STEP;
   }*/
 
+  app.resetPotentialCollisions();
+
   app.physics.leapFrog();
+  app.physics.handleCollisions();
 };
 
 
