@@ -143,6 +143,20 @@ Physics.prototype.createCollidingParticleList = function() {
   return ret;
 };
 
+Physics.prototype.handleCollisions = function() {
+  var coll = app.potentialCollisions["0"]; //app.flattenPotentialCollisions();
+  if(coll.length) {
+    for (var pair in coll) {
+      var a = app.particles[coll[pair][0]];
+      var b = app.particles[coll[pair][1]];
+      if (app.physics.areParticlesVeryClose(a, b)) {
+        var flip = b.mass > a.mass;
+        app.physics.glomParticles([{ big: (flip ? b : a), little: (flip ? a : b)}]);
+      }
+    }
+  }
+};
+
 Physics.prototype.glomParticles = function(set) {
   app.collisions += set.length;
 
