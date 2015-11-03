@@ -176,13 +176,12 @@ ViewPort.prototype.frameActions = function() {
 }
 
 ViewPort.prototype.frameClock = function() {
-
-  if(app.SHOWCLOCK) {
     this.txtOffset = 25;
 
-    this.appendLine("Earth time:" + app.CLOCK.e);
-    this.appendLine("Jupiter time:" + app.CLOCK.j);
-    this.appendLine("Neptune time:" + app.CLOCK.n);
+  if(app.response.MODE === 'ROCKET') {
+    app.viewPort.showRocketTelemetry();
+  }
+  else if(app.SHOWCLOCK) {
     this.appendLine("Started:" + app.realTime);
     this.appendLine("Now:" + Date());
 
@@ -257,9 +256,6 @@ ViewPort.prototype.frameClock = function() {
       lastBucket = bucket;
     }
     this.appendLine("----------------------");
-
-
-
     // var maxMass = 0;
     // for(var xx = 0; xx < app.particles.length; xx++) {
     //   if(app.particles[xx].mass > maxMass) {
@@ -273,11 +269,30 @@ ViewPort.prototype.frameClock = function() {
     //this.appendLine("Closest Pair:   x - " + app.closestPair.x.name + " y -" + app.closestPair.y.name + " d -" + closestDist.size + closestDist.unit);
     //app.closestPair.d = 1000000;
 
+  }
+};
+
+ViewPort.prototype.showRocketTelemetry = function() {
+    var focusParticle = app.particles[app.FOLLOW];
+    var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
+    this.appendLine("Following: " + focusParticle.name);
+    this.appendLine("     Energy: " + focusKE);
+    this.appendLine("     Speed: " + Math.round(app.physics.getParticleSpeed(focusParticle) * 1000, 0));
+    this.appendLine("     Direction: " + Math.round(focusParticle.direction, 0));
+    this.appendLine("        retro direction: " + Math.round(focusParticle.direction - 180, 0));
+    this.appendLine("     Mass: " + focusParticle.mass);
+
+    this.appendLine("   targeting: " + app.particles[3].name);
+    this.appendLine("     target speed: " + Math.round(app.physics.getParticleSpeed(app.particles[3]) * 1000, 0));
+    this.appendLine("     target direction: " + Math.round(app.particles[3].direction, 0));
+
+    var d3Sol = Math.round(focusParticle.dist(focusParticle.x - app.particles[0].x, focusParticle.y - app.particles[0].y, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
+    var d3Target = Math.round(focusParticle.dist(focusParticle.x - app.particles[3].x, focusParticle.y - app.particles[3].y, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
+    this.appendLine("     d(SOL): " + (d3Sol / 500));
+    this.appendLine("     d(TAR): " + (d3Target / 500));
 
     this.appendLine("Thrust:    H: " + app.thrust.heading + " E: " + app.thrust.thrust + " B: " + app.thrust.burning);
-    this.appendLine("Thrust Vector: " + app.thrust.getThrustVector().x + " | " + app.thrust.getThrustVector().y)
-
-  }
+    this.appendLine("Thrust Vector: " + app.thrust.getThrustVector().x + " | " + app.thrust.getThrustVector().y);
 };
 
 ViewPort.prototype.appendLine = function(txt) {

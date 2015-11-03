@@ -31,6 +31,10 @@ Particle.prototype.distanceto = function(p2){
   return this.position.v_distanceto(p2.position);
 };
 
+Particle.prototype.dist = function(dx, dy, dz) {
+  var tmp = dx * dx + dy * dy + dz * dz;
+  return Math.sqrt(tmp);
+};
 
 Particle.prototype.d3Spyro = function(dx, dy, dz) {
   //var tmp = Math.sqrt(dx * dx + dy * dy);
