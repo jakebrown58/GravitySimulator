@@ -30,7 +30,15 @@ app.init = function () {
     app.halfHeight = app.height * 0.5;
     app.ctx = display.getContext('2d');
     display.focus();
-    app.eventListener = display;       
+    app.eventListener = display;
+
+    var console = document.getElementById('console');
+    app.console = console;
+    app.console.width = app.width * .2;
+    app.console.height = app.height;
+    app.console.style.visibility = "hidden";
+
+    app.console.ctx = console.getContext('2d');
   } else {
     app.ctx = new mockCtx();
     app.width = 100;
@@ -54,6 +62,18 @@ app.init = function () {
 
   var x = new Particles().buildInitialParticles();
   requestAnimationFrame(app.viewPort.frame);
+};
+
+app.toggleConsoleVisibility = function(makeVisible) {
+  var consoleScale = .2;
+
+  if (makeVisible) {
+    app.console.style.visibility = "visible";
+    app.display.width = app.width * .8;
+  } else {
+    app.console.style.visibility = "hidden";
+    app.display.width = app.width;
+  }
 };
 
 app.resetPotentialCollisions = function() {
