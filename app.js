@@ -6,7 +6,7 @@ app.init = function () {
   app.mouse = { x: app.halfWidth, y: app.halfHeight };
   app.TRACE = false;
   app.DRAWSTATE = 4;
-  app.VIEWSHIFT = {x: -50, y: 0, zoom: 0};
+  app.VIEWSHIFT = {x: -50, y: 0, z: 0, zoom: 0};
   app.GO = true;
   app.VIEWANGLE = .75;
   app.FOLLOW = 0;
@@ -14,7 +14,7 @@ app.init = function () {
   app.SHOWCLOCK = false;
   app.realTime = Date();
   app.splitTime = Date();
-  app.closestPair = {x: 0, y: 0, d: 0};
+  app.closestPair = {x: 0, y: 0, z: 0, d: 0};
   app.eventListener = {};
   app.collisions = 0;
   app.COLLISION_IMMENENCE_RANGE = .1;
@@ -30,7 +30,7 @@ app.init = function () {
     app.halfHeight = app.height * 0.5;
     app.ctx = display.getContext('2d');
     display.focus();
-    app.eventListener = display;
+    app.eventListener = display;       
   } else {
     app.ctx = new mockCtx();
     app.width = 100;
@@ -38,6 +38,14 @@ app.init = function () {
     app.halfWidth = app.width * 0.5;
     app.halfHeight = app.height * 0.5;
   }
+
+  window.addEventListener("resize", function() { 
+    app.width = display.width = window.innerWidth - 40;
+    app.height = display.height = window.innerHeight - 30;
+    app.halfWidth = app.width * 0.5;
+    app.halfHeight = app.height * 0.5;
+    app.size = (app.width + app.height) / 2;
+  }); 
 
   app.size = (app.width + app.height) / 2;
 
