@@ -23,6 +23,11 @@ Particle.prototype.d3Real = function(dx, dy, dz) {
   return Math.sqrt(tmp) * tmp;
 };
 
+Particle.prototype.dist = function(dx, dy, dz) {
+  var tmp = dx * dx + dy * dy + dz * dz;
+  return Math.sqrt(tmp);
+};
+
 Particle.prototype.d3Spyro = function(dx, dy, dz) {
   //var tmp = Math.sqrt(dx * dx + dy * dy);
   //return tmp * tmp;
