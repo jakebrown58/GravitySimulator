@@ -78,7 +78,7 @@ app.toggleConsoleVisibility = function(makeVisible) {
 
 app.resetPotentialCollisions = function() {
   app.potentialCollisions = { "0": [], "1": [], "5": [], "10": [], "50": [], "100": [] };
-}
+};
 
 app.flattenPotentialCollisions = function() {
   var flat = [];
@@ -94,7 +94,7 @@ app.flattenPotentialCollisions = function() {
   }
 
   return flat;
-}
+};
 
 
 var mockCtx = function() {
@@ -118,4 +118,4 @@ var mockCtx = function() {
   this.clearRect = function() {
     return 0;
   }
-}
+};
