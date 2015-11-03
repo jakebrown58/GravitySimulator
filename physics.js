@@ -88,7 +88,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.mass = mass;
   big.x = (fracB*big.x + fracL*little.x);
   big.y = (fracB*big.y + fracL*little.y);
-  big.z = (fracB*big.z + fracL*little.z)
+  big.z = (fracB*big.z + fracL*little.z);
   big.oldx = (fracB*big.oldx + fracL*little.oldx);
   big.oldy = (fracB*big.oldy + fracL*little.oldy);
   big.oldz = (fracB*big.oldz + fracL*little.oldz);
@@ -103,6 +103,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.accz = (fracB*big.accz + fracL*little.accz);
   big.oldaccx = (fracB*big.oldaccx + fracL*little.oldaccx);
   big.oldaccy = (fracB*big.oldaccy + fracL*little.oldaccy);
+  big.oldaccz = (fracB*big.oldaccz + fracL*little.oldaccz);
 
   // cfg.U = 0;
   // cfg.U += big.U || 0;
@@ -118,19 +119,20 @@ Physics.prototype.collide_glom = function(p1, p2) {
 };
 
 Physics.prototype.getParticleSpeed = function (particle) {
-  return Math.sqrt(particle.velx * particle.velx + particle.vely * particle.vely);
+  return Math.sqrt(particle.velx * particle.velx + particle.vely * particle.vely + particle.velz*particle.velz);
 };
 
 Physics.prototype.getParticleDirection = function (particle) {
-  var followDirection = Math.atan(particle.vely / particle.velx) * 180 / Math.PI;
-  var left = particle.velx < 0;
-  var down = particle.vely > 0;
-  //var into = particle.velz > 0;
-  var q4 = down && left,
-      q3 = left && !q4,
-      q1 = down && !q4,
-      q2 = !q1 && !q3 && !q4;
-    followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? followDirection : followDirection + 180;
+  var followDirection = Math.atan2(particle.vely, particle.velx) * 180 / Math.PI;
+  // var left = particle.velx < 0;
+  // var down = particle.vely > 0;
+  // //var into = particle.velz > 0;
+  // var q4 = down && left,
+  //     q3 = left && !q4,
+  //     q1 = down && !q4,
+  //     q2 = !q1 && !q3 && !q4;
+  //   followDirection = q1 ? followDirection : q3 ? followDirection + 180 : q2 ? followDirection : followDirection + 180;
+  if (followDirection < 0.) followDirection += 360
   return followDirection;
 };
 

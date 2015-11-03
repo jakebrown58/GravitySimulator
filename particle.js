@@ -1,7 +1,8 @@
-function Particle(id, x, y) {
+function Particle(id, x, y, z) {
   this.id = id; 
   this.x = x;
   this.y = y;
+  this.z = z;
   this.remove = false;
 
   this.mass = 2;
@@ -116,7 +117,7 @@ Particle.prototype.updateVelocity = function() {
 };
 
 Particle.prototype.kineticE = function(){
-  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * this.velz);
+  return (1./2.) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * this.velz);
 }
 
 Particle.prototype.isBoundTo = function(p2){
@@ -148,7 +149,7 @@ Particle.prototype.configure = function(config) {
     localRadius = config.distance || 0;
 
   if(config.arc === undefined) {
-    config.arc = Math.random() * 6.28;
+    config.arc = Math.random() * 2 * Math.PI;
   }
   if(config.color) {
     particle.color = config.color;
@@ -193,7 +194,7 @@ Particle.prototype.configure = function(config) {
 
   particle.accx = 0.0;
   particle.accy = 0.0;
-  particle.accz = 0;
+  particle.accz = 0.0;
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
