@@ -48,7 +48,7 @@ Physics.prototype.leapFrog = function () {
   if(app.response.MODE === 'ROCKET') {
     ps[app.FOLLOW].velx += (-app.thrust.getThrustVector().x / 3000);
     ps[app.FOLLOW].vely += (-app.thrust.getThrustVector().y / 3000);
-    ps[app.FOLLOW].velz += (-app.thrust.getThrustVector().z / 3000);
+    //ps[app.FOLLOW].velz += (-app.thrust.getThrustVector().z / 3000);
   }
 
 };
