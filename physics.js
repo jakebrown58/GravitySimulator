@@ -71,7 +71,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.vel = [0., 0., 0.];
   little.acc = [0., 0., 0.];
   // little.pos.v_inc_by([5000 + Math.random() * 10000, 5000 + Math.random() * 10000, 5000 + Math.random() * 10000 ])
-  little.position = [].lRandom(5000 + 5000 * Math.Random());
+  little.position = [].lRandom(5000 + 5000 * Math.random());
   little.color = {r: 0, b: 0, g: 0};
   little.destroyed = true;
 

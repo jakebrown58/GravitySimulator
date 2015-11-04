@@ -85,7 +85,7 @@ ViewPort.prototype.drawParticle = function(particle) {
 
 
   if(app.DRAWSTATE === 0) {
-    obj = app.viewPort.project(particle.position[0], particle.position[1], particles.position[2]);
+    obj = app.viewPort.project(particle.position[0], particle.position[1], particle.position[2]);
     obj.x = obj.x - app.VIEWSHIFT.x;
     obj.y = obj.y - app.VIEWSHIFT.y;
   } else {
@@ -244,12 +244,13 @@ ViewPort.prototype.frameClock = function() {
         if (list.length) {
           this.appendLine("Items between " + (lastBucket / 100) + " and " + num + " apart: ");
 
+          // BROKEN
           for (var pair in list) {
-            pair = list[pair];
-            var a = app.particles[pair[0]];
-            var b = app.particles[pair[1]];
+            var a = app.particles[list[pair][0]];
+            var b = app.particles[list[pair][1]];
             this.appendLine("    " + a.name + " and " + b.name);
           }
+          // BROKEN
         }
       }
 
