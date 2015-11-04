@@ -1,8 +1,6 @@
 function Particle(id, x, y, z) {
   this.id = id; 
-  this.x = x;
-  this.y = y;
-  this.z = z;
+  this.position = [x, y, z]
   this.remove = false;
 
   this.mass = 2;
@@ -19,10 +17,20 @@ Particle.prototype.calcAcceleration = function(){
   }
 };
 
-Particle.prototype.d3Real = function(dx, dy, dz) {
-  var tmp = dx * dx + dy * dy + dz * dz;
-  return Math.sqrt(tmp) * tmp;
+Particle.prototype.d3to = function(p2){
+  return this.position.v_dist3to(p2.position);
 };
+
+Particle.prototype.d2to = function(p2){
+  //Note that this (distance squared) is the cheapest
+  //Of the distance functions to calculate.
+  return this.position.v_dist2to(p2.position);
+};
+
+Particle.prototype.distanceto = function(p2){
+  return this.position.v_distanceto(p2.position);
+};
+
 
 Particle.prototype.d3Spyro = function(dx, dy, dz) {
   //var tmp = Math.sqrt(dx * dx + dy * dy);
@@ -34,33 +42,25 @@ Particle.prototype.d3Spyro = function(dx, dy, dz) {
 
 Particle.prototype.calcAccelerationOpen = function(d3Fn){
   var curr,
-    dx,
-    dy,
-    dz,
     grav,
     i,
     d3;
 
-  this.oldaccx = this.accx;
-  this.oldaccy = this.accy;
-  this.oldaccz = this.accz;
+  this.oldacc = this.acc.slice(0);
+  this.acc    = [0., 0., 0.];
 
-  this.accx = 0;
-  this.accy = 0;
-  this.accz = 0;
 
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if(curr.id !== this.id ) {
-      dx = curr.x - this.x;
-      dy = curr.y - this.y;
-      dz = curr.z - this.z;
-      d3 = d3Fn(dx, dy, dz);
+      rel = [curr.position[0] - this.position[0],
+             curr.position[1] - this.position[1],
+             curr.position[2] - this.position[2]]
+      d3 = curr.d3to(this);
 
       if (d3 < app.COLLISION_IMMENENCE_RANGE) {
         this.checkPotentialCollision(d3, curr);
       }
-
       // if(d3 < app.closestPair.d || app.closestPair === 0) {
       //   app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
       //   app.closestPair.d = app.closestPair.d * app.closestPair.d;
@@ -69,10 +69,8 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
       // }
 
       if(d3 != 0) {
-        grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
-        this.accx += grav * dx;
-        this.accy += grav * dy;
-        this.accz += grav * dz;
+        rel.v_scale(curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3);
+        this.acc.v_inc_by(rel);
       }
     }
   }
@@ -96,48 +94,47 @@ Particle.prototype.checkPotentialCollision = function(d3, curr) {
 
 Particle.prototype.updatePosition = function() {
   var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
-  this.oldx = this.x; //Not used by leapfrog itself.
-  this.oldy = this.y; //Not used by leapfrog itself.
-  this.oldz = this.z;
-  this.x += (this.velx + 0.5 * this.accx * dt) * dt;
-  this.y += (this.vely + 0.5 * this.accy * dt) * dt;
-  this.z += (this.velz + 0.5 * this.accz * dt) * dt;
+
+  this.oldpos = this.position.slice(0); //Not used by leapfrog itself.
+
+  delta_position = this.acc.slice(0);
+
+  delta_position.v_scale (  dt/2    );
+  delta_position.v_inc_by( this.vel );
+  delta_position.v_scale (  dt      );
+  
+  this.position.v_inc_by(delta_position)
 };
 
 Particle.prototype.updateVelocity = function() {
   var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
-  this.oldvelx = this.velx; //Not used by leapfrog itself.
-  this.oldvely = this.vely; //Not used by leapfrog itself.
-  this.oldvelz = this.velz;
+  this.oldvel = this.vel.slice(0);//Not used by leapfrog itself.
+
   this.oldDirection = app.physics.getParticleDirection(this);
-  this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
-  this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
-  this.velz += 0.5 * (this.oldaccz + this.accz) * dt;
+  
+  delta_v = this.oldacc.slice(0);
+  delta_v.v_inc_by ( this.acc );
+  delta_v.v_scale  ( dt / 2.  );
+  this.vel.v_inc_by( delta_v  );
+
   this.direction = app.physics.getParticleDirection(this);
 };
 
 Particle.prototype.kineticE = function(){
-  return (1./2.) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * this.velz);
+  return (1./2.) * this.mass * this.vel.v_sumsq();
 }
 
 Particle.prototype.isBoundTo = function(p2){
   var mu = (this.mass * p2.mass) / (this.mass + p2.mass),
-   velx = this.velx - p2.velx,
-   vely = this.vely - p2.vely,
-   velz = this.velz - p2.velz,
-   dx = this.x - p2.x,
-   dy = this.y - p2.y,
-   dz = this.z - p2.z,
-   sqrtD2 = Math.sqrt(dx * dx + dy * dy + dz * dz),
-   v2 = velx * velx + vely * vely + velz * velz,
-   energy = 0;
+  v2 = this.vel.v_dist2to(p2.vel);
+  d = this.distanceto(p2);
+  energy = 0;
 
-  if(sqrtD2 > 0) {
-    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / sqrtD2);
+  if(d > 0) {
+    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / d);
   }
-
-  return energy > 0;
-}
+  return energy < 0;
+};
 
 Particle.prototype.checkClock = function() {
     return Math.abs((this.oldDirection - this.direction)) > 10;
@@ -184,17 +181,15 @@ Particle.prototype.configure = function(config) {
   particle.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.physics.constants.KM_PER_AU;
   particle.name = config.name;
   particle.mass = config.mass;
-  particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
-  particle.y = app.halfHeight - localRadius * Math.sin(config.arc);
-  particle.z = 0;
+  particle.position = [app.halfWidth - localRadius * Math.cos(config.arc),
+                      app.halfHeight - localRadius * Math.sin(config.arc),
+                      0.0];
 
-  particle.velx = localOrbitalVelocity * Math.sin(config.arc);
-  particle.vely = localOrbitalVelocity * -Math.cos(config.arc);
-  particle.velz = 0;
+  particle.vel = [localOrbitalVelocity * Math.sin(config.arc),
+                      localOrbitalVelocity * -Math.cos(config.arc),
+                      0.0];
 
-  particle.accx = 0.0;
-  particle.accy = 0.0;
-  particle.accz = 0.0;
+  particle.acc = [0., 0., 0.];
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);

@@ -158,8 +158,8 @@ Response.prototype.follow = function(xy){
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
       if (curr && app.viewPort && app.viewPort.center) {
-        currLoc.x = (curr.x - app.viewPort.center.x) + (curr.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-        currLoc.y = (curr.y - app.viewPort.center.y) + (curr.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+        currLoc.x = (curr.position[0] - app.viewPort.center.x) + (curr.position[0] - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+        currLoc.y = (curr.position[1] - app.viewPort.center.y) + (curr.position[1] - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
         tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
         if(tmpDist < currDist ){
           currDist = tmpDist;
@@ -180,17 +180,22 @@ Response.prototype.destroy = function(xy){
     var j = 0,
       curr,
       currIndex = 0,
-      currLoc = {x: 0, y: 0},
-      currDist = 10000000000000000000,
+      currLoc = [0., 0., 0.]
+      currDist2 = 1.0e19;
       tmpDist;
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
-      currLoc.x = (curr.x - app.viewPort.center.x) + (curr.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-      currLoc.y = (curr.y - app.viewPort.center.y) + (curr.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
-      tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
-      if(tmpDist < currDist ){
-        currDist = tmpDist;
+      currLoc = curr.position.slice();
+      currLoc.v_dec_by(app.particles[app.FOLLOW].position);
+      currLoc.v_scale(app.VIEWSHIFT.zoom);
+      currLoc.v_inc_by(curr.position);
+      currLoc.v_dec_by([app.viewPort.center.x, app.viewPort.center.y, 0.]);
+
+      tmpDist2 = currLoc.v_dist2to([xy.x, xy.y, 0.]);
+
+      if(tmpDist2 < currDist ){
+        currDist = tmpDist2;
         currIndex = j;
       }
     }
@@ -220,16 +225,15 @@ Response.prototype.rocket = function(){
     newGuy.name = 'PHOTON' + app.particles.length;
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
-    newGuy.x = app.particles[0].x;
-    newGuy.y = app.particles[0].y;
-    newGuy.velx = 5000 * Math.cos(arc);
-    newGuy.vely = 5000 * Math.sin(arc);
+    newGuy.position = app.particles[0].position.slice(0);
+    newGuy.vel = [5000 * Math.cos(arc), 5000 * Math.sin(arc), 0.];
 
   } else {
-    newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .25;
-    newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .25;
-    newGuy.velx = app.particles[app.FOLLOW].velx + Math.random() * .32;
-    newGuy.vely = app.particles[app.FOLLOW].vely + Math.random() * .32;
+    newGuy.position = app.particles[app.FOLLOW].position.slice(0);
+    newGuy.position.v_inc_by([].lRandom(0.3 * Math.random()));
+
+    newGuy.vel      = app.particles[app.FOLLOW].vel.slice(0);
+    newGuy.vel.v_inc_by([].lRandom(0.32 * Math.random()));
   }
   
   app.PARTICLECOUNT = app.particles.length - 1;
