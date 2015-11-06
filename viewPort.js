@@ -67,7 +67,7 @@ ViewPort.prototype.drawParticles = function() {
   var particles = app.particles;
 
   var currColor = particles[0].drawColor;
-  app.FOLLOWXY = [app.particles[app.FOLLOW].x, app.particles[app.FOLLOW].y];
+  app.FOLLOWXY = [app.particles[app.FOLLOW].position.x, app.particles[app.FOLLOW].position.y];
   app.ctx.strokeStyle = currColor;
   for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
@@ -85,13 +85,13 @@ ViewPort.prototype.drawParticle = function(particle) {
 
 
   if(app.DRAWSTATE === 0) {
-    obj = app.viewPort.project(particle.x, particle.y, 0);
+    obj = app.viewPort.project(particle.position.x, particle.position.y, particle.position.z);
     obj.x = obj.x - app.VIEWSHIFT.x;
     obj.y = obj.y - app.VIEWSHIFT.y;
   } else {
-    obj = {x: particle.x, y: particle.y};
-    obj.x = (particle.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (particle.x - app.FOLLOWXY[0]) * app.VIEWSHIFT.zoom;
-    obj.y = (particle.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (particle.y - app.FOLLOWXY[1]) * app.VIEWSHIFT.zoom;
+    obj = {x: particle.position.x, y: particle.position.y};
+    obj.x = (obj.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (obj.x - app.FOLLOWXY[0]) * app.VIEWSHIFT.zoom;
+    obj.y = (obj.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (obj.y - app.FOLLOWXY[1]) * app.VIEWSHIFT.zoom;
   }
 
   if(particle.radius > 1) {
@@ -244,12 +244,13 @@ ViewPort.prototype.frameClock = function() {
         if (list.length) {
           this.appendLine("Items between " + (lastBucket / 100) + " and " + num + " apart: ");
 
+          // BROKEN
           for (var pair in list) {
-            pair = list[pair];
-            var a = app.particles[pair[0]];
-            var b = app.particles[pair[1]];
+            var a = app.particles[list[pair][0]];
+            var b = app.particles[list[pair][1]];
             this.appendLine("    " + a.name + " and " + b.name);
           }
+          // BROKEN
         }
       }
 
@@ -308,7 +309,7 @@ ViewPort.prototype.setClock = function() {
 };
 
 ViewPort.prototype.setIntegrate = function() {
-  app.viewPort.center = {x: (app.particles[app.FOLLOW].x - app.halfWidth), y: (app.particles[app.FOLLOW].y - app.halfHeight)};
+  app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
   app.viewPort.drawParticles();
   // for (i = 0; i < app.particles.length; i++) {
   //   //current = app.particles[i];

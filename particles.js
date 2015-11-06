@@ -112,25 +112,23 @@ Particles.prototype.buildInitialParticles = function() {
 Particles.prototype.finalize = function() {
   //Find momentum of system
   var particles = app.particles,
-    px = 0,
-    py = 0,
-    pz = 0;
+    system_momentum = new Vector3d(0., 0., 0.);
     
   for (var i = 0; i < particles.length; i++) {
       var me = particles[i];
-      px += me.mass * me.velx;
-      py += me.mass * me.vely;
-      pz += me.mass * me.velz;
+      system.momentum.x += me.mass * me.vel.x;
+      system.momentum.y += me.mass * me.vel.y;
+      system.momentum.z += me.mass * me.vel.z;
   }
   //Give the Sun a little kick to zero out the system's momentum:
   var sun = app.particles[0];
-  sun.velx += -px / sun.mass;
-  sun.vely += -py / sun.mass;
-  sun.velz += -pz / sun.mass;
+  sun.vel.x -= system_momentum.x / sun.mass;
+  sun.vel.y -= system_momentum.y / sun.mass;
+  sun.vel.z -= system_momentum.z / sun.mass;
 
   //This has to be done once before integration can occur. Prime The Pump!
   for (var i = 0; i < app.particles.length; i++) {
-    app.particles[i].calcAcceleration();
+    app.particles[i].calcAcceleration(app.physics.variables.TIME_STEP_INTEGRATOR);
   }
 
   app.PARTICLECOUNT = app.particles.length -1;
