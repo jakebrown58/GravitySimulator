@@ -1,13 +1,7 @@
-function Particle(id, x, y, z) {
+function Particle(id, x, y) {
   this.id = id; 
-  this.position = new Vector3d(x,y,z);
-  this.vel = new Vector3d(0., 0., 0.);
-  this.acc = new Vector3d(0., 0., 0.);
-  this.acc_old = new Vector3d(0., 0., 0.);
-  this.acc_Swap = this.acc; //To flip flop back and forth, re-using the vectors.
-  this.r = new Vector3d(0., 0., 0.); //Vector pointing from self to another.
-  this.dt = app.physics.variables.TIME_STEP_INTEGRATOR;
-  this.dt_old = this.dt;
+  this.x = x;
+  this.y = y;
   this.remove = false;
 
   this.mass = 2;
@@ -16,68 +10,56 @@ function Particle(id, x, y, z) {
     b:  205 + 50 * Math.floor(Math.random() * 3)};
 };
 
-Particle.prototype.speed_squared = function(){
-  return this.vel.sumsq() / (this.dt*this.dt);
-}
-
-Particle.prototype.velocity = function(){
-  return new Vector3d(this.vel.x, this.vel.y, this.vel.z).scale(1./this.dt);
-}
-
-Particle.prototype.acceleration = function(){
-
-  return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2./(dt*dt));
-}
-
-Particle.prototype.updateTimeStep = function(dt_new){
-  this.dt_old = this.dt;
-  this.dt = dt_new;
-  var f = this.dt / this.dt_old;
-  var f_sq = f*f;
-
-  this.vel.x *= f;
-  this.vel.y *= f;
-  this.vel.z *= f;
-
-  this.acc.x *= f_sq;
-  this.acc.y *= f_sq;
-  this.acc.z *= f_sq;
-
-  //Leapfrog will discard these contents, but if anthing else needs them, they'll be correct.
-
-  this.acc_old.x *= f_sq;
-  this.acc_old.y *= f_sq;
-  this.acc_old.z *= f_sq;
-}
-
-
 Particle.prototype.calcAcceleration = function(){
+  if(app.physics.variables.CALC_STYLE === 'real') {
+    this.calcAccelerationOpen(this.d3Real);
+  } else {
+    this.calcAccelerationOpen(this.d3Spyro);
+  }
+};
+
+Particle.prototype.d3Real = function(dx, dy, dz) {
+  var tmp = dx * dx + dy * dy + dz * dz;
+  return Math.sqrt(tmp) * tmp;
+};
+
+Particle.prototype.d3Spyro = function(dx, dy, dz) {
+  //var tmp = Math.sqrt(dx * dx + dy * dy);
+  //return tmp * tmp;
+  var tmp = dx * dx + dy * dy + dz * dz;
+  return Math.sqrt(tmp) * tmp;
+};
+
+
+Particle.prototype.calcAccelerationOpen = function(d3Fn){
   var curr,
+    dx,
+    dy,
+    dz,
     grav,
-    i;
-  var d, d2, d3;
-  var dt_sq_over2 = (this.dt*this.dt)/2.;
-  this.accSwap = this.acc_old; //To Re-use.
-  this.acc_old = this.acc;
-  this.acc = this.accSwap;
-  this.acc.zero();
+    i,
+    d3;
+
+  this.oldaccx = this.accx;
+  this.oldaccy = this.accy;
+  this.oldaccz = this.accz;
+
+  this.accx = 0;
+  this.accy = 0;
+  this.accz = 0;
 
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if(curr.id !== this.id ) {
-      this.r.x = curr.position.x - this.position.x;
-      this.r.y = curr.position.y - this.position.y;
-      this.r.z = curr.position.z - this.position.z;
-      //Recommend replacing all tests of d3 with tests against d2.
-      d2 =  this.r.x * this.r.x + 
-            this.r.y * this.r.y + 
-            this.r.z * this.r.z;
-      d  = Math.sqrt(d2);
-      d3 = d2 * d;
+      dx = curr.x - this.x;
+      dy = curr.y - this.y;
+      dz = curr.z - this.z;
+      d3 = d3Fn(dx, dy, dz);
 
       if (d3 < app.COLLISION_IMMENENCE_RANGE) {
         this.checkPotentialCollision(d3, curr);
       }
+
       // if(d3 < app.closestPair.d || app.closestPair === 0) {
       //   app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
       //   app.closestPair.d = app.closestPair.d * app.closestPair.d;
@@ -85,13 +67,14 @@ Particle.prototype.calcAcceleration = function(){
       //   app.closestPair.y = curr;
       // }
 
-      if(d3 > 0) {
-        this.r.scale(curr.mass / d3);
-        this.acc.increment(this.r);
+      if(d3 != 0) {
+        grav = curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3;
+        this.accx += grav * dx;
+        this.accy += grav * dy;
+        this.accz += grav * dz;
       }
     }
   }
-  this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
 Particle.prototype.checkPotentialCollision = function(d3, curr) {
@@ -111,40 +94,49 @@ Particle.prototype.checkPotentialCollision = function(d3, curr) {
 };
 
 Particle.prototype.updatePosition = function() {
-  this.position.x += this.acc.x;
-  this.position.y += this.acc.y;
-  this.position.z += this.acc.z;
-
-  this.position.x += this.vel.x;
-  this.position.y += this.vel.y;
-  this.position.z += this.vel.z;
+  var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
+  this.oldx = this.x; //Not used by leapfrog itself.
+  this.oldy = this.y; //Not used by leapfrog itself.
+  this.oldz = this.z;
+  this.x += (this.velx + 0.5 * this.accx * dt) * dt;
+  this.y += (this.vely + 0.5 * this.accy * dt) * dt;
+  this.z += (this.velz + 0.5 * this.accz * dt) * dt;
 };
 
 Particle.prototype.updateVelocity = function() {
-  this.oldDirection = this.vel.phi() * 180 / Math.PI;
-
-  this.vel.x += (this.acc_old.x + this.acc.x);
-  this.vel.y += (this.acc_old.y + this.acc.y);
-  this.vel.z += (this.acc_old.z + this.acc.z);
-
-  this.direction = this.vel.phi() * 180 / Math.PI;
+  var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
+  this.oldvelx = this.velx; //Not used by leapfrog itself.
+  this.oldvely = this.vely; //Not used by leapfrog itself.
+  this.oldvelz = this.velz;
+  this.oldDirection = app.physics.getParticleDirection(this);
+  this.velx += 0.5 * (this.oldaccx + this.accx) * dt;
+  this.vely += 0.5 * (this.oldaccy + this.accy) * dt;
+  this.velz += 0.5 * (this.oldaccz + this.accz) * dt;
+  this.direction = app.physics.getParticleDirection(this);
 };
 
 Particle.prototype.kineticE = function(){
-  return this.mass * this.speed_squared()/ 2;
+  return (1/2) * this.mass * (this.velx * this.velx + this.vely * this.vely + this.velz * this.velz);
 }
 
 Particle.prototype.isBoundTo = function(p2){
-  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
-  v2 = this.velocity().dist_squared(p2.velocity());
-  d  = this.position.distance(p2.position);
-  energy = 0;
+  var mu = (this.mass * p2.mass) / (this.mass + p2.mass),
+   velx = this.velx - p2.velx,
+   vely = this.vely - p2.vely,
+   velz = this.velz - p2.velz,
+   dx = this.x - p2.x,
+   dy = this.y - p2.y,
+   dz = this.z - p2.z,
+   sqrtD2 = Math.sqrt(dx * dx + dy * dy + dz * dz),
+   v2 = velx * velx + vely * vely + velz * velz,
+   energy = 0;
 
-  if(d > 0) {
-    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / d);
+  if(sqrtD2 > 0) {
+    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / sqrtD2);
   }
-  return energy < 0;
-};
+
+  return energy > 0;
+}
 
 Particle.prototype.checkClock = function() {
     return Math.abs((this.oldDirection - this.direction)) > 10;
@@ -156,7 +148,7 @@ Particle.prototype.configure = function(config) {
     localRadius = config.distance || 0;
 
   if(config.arc === undefined) {
-    config.arc = Math.random() * 2 * Math.PI;
+    config.arc = Math.random() * 6.28;
   }
   if(config.color) {
     particle.color = config.color;
@@ -191,22 +183,17 @@ Particle.prototype.configure = function(config) {
   particle.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.physics.constants.KM_PER_AU;
   particle.name = config.name;
   particle.mass = config.mass;
+  particle.x = app.halfWidth - localRadius * Math.cos(config.arc);
+  particle.y = app.halfHeight - localRadius * Math.sin(config.arc);
+  particle.z = 0;
 
-  particle.position.x = app.halfWidth - localRadius * Math.cos(config.arc);
-  particle.position.y = app.halfHeight - localRadius * Math.sin(config.arc);
-  particle.position.z = 0.0;
-  
-  particle.vel.x = localOrbitalVelocity * Math.sin(config.arc);
-  particle.vel.y = localOrbitalVelocity * (-Math.cos(config.arc));
-  particle.vel.z = 0.0;
+  particle.velx = localOrbitalVelocity * Math.sin(config.arc);
+  particle.vely = localOrbitalVelocity * -Math.cos(config.arc);
+  particle.velz = 0;
 
-  particle.vel.scale(app.physics.variables.TIME_STEP_INTEGRATOR);
-  
-  //Just for safety, initialize to zero.  
-  particle.acc.x = 0.;
-  particle.acc.y = 0.;
-  particle.acc.z = 0.;
-
+  particle.accx = 0.0;
+  particle.accy = 0.0;
+  particle.accz = 0;
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);

@@ -25,14 +25,13 @@ Thrust.prototype.updateHeading = function(headingAdjustment) {
 
 Thrust.prototype.getThrustVector = function() {
   if(!this.burning) {
-    return {x: 0, y:0, z:0};
+    return {x: 0, y:0};
   }
 
 
   return { 
     x: this.thrust * Math.cos(Math.PI * this.heading / 180),
-    y: this.thrust * Math.sin(Math.PI * this.heading / 180),
-    z: 0.
+    y: this.thrust * Math.sin(Math.PI * this.heading / 180)
   };
 }
 
