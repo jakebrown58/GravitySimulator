@@ -1,75 +1,155 @@
-Array.prototype.v_dot = function(v){
-	return this[0]*v[0] + this[1]*v[1] + this[2]*v[2];
+function Vector3d(x, y, z){
+	this.x = x;
+	this.y = y;
+	this.z = z;
+}
+
+Vector3d.prototype.setcoords = function(x, y, z){
+	this.x = x;
+	this.y = y;
+	this.z = z;
+}
+
+Vector3d.prototype.zero = function(){
+    this.setcoords(0., 0., 0.);
+}
+
+
+Vector3d.prototype.sumsq = function(){
+	//The cheapest "size" measure of a vector.
+	return  this.x*this.x +
+			this.y*this.y +
+			this.z*this.z;
 };
 
-Array.prototype.v_sumsq = function(){
-	return this.v_dot(this);
+Vector3d.prototype.magnitude = function(){
+	return Math.sqrt(this.sumsq());
+}
+
+
+Vector3d.prototype.dot = function(v){
+	return  this.x*v.x + 
+			this.y*v.y + 
+			this.z*v.z;
 };
 
-Array.prototype.v_length = function(){
-	return Math.sqrt(this.v_sumsq());
+Vector3d.prototype.dist_squared = function(v){
+	var dx, dy, dz;
+	dx = this.x - v.x;
+	dy = this.y - v.y;
+	dz = this.z - v.z;
+	return dx*dx + dy*dy + dz*dz;
 };
 
-Array.prototype.v_dist2to = function(v){
-	return [this[0] - v[0],
-			this[1] - v[1],
-			this[2] - v[2] ].v_sumsq();
+Vector3d.prototype.distance = function(v){
+	return Math.sqrt(this.dist_squared(v));
 };
 
-Array.prototype.v_distanceto = function(v){
-	return Math.sqrt(this.v_dist2to(v));
+Vector3d.prototype.dist_cubed = function(v){
+	var d = this.distance(v);
+	return d*d*d;
 };
 
-Array.prototype.v_dist3to = function(v){
-	return this.v_distanceto(v)*this.v_distanceto(v)*this.v_distanceto(v);
+Vector3d.prototype.rOverRCubed_in_place = function(){
+	//Takes a vector and _overwrites_ it with r_vector/r^3
+	//This is exactly the gravity vector dependence.
+	var r_sq = this.sumsq();
+	var r_cubed = r_sq * Math.sqrt(r_sq);
+	this.x /= r_cubed;
+	this.y /= r_cubed;
+	this.z /= r_cubed;
+}
+
+Vector3d.prototype.FasterSqrt = function(xsq){
+	//No Error Checking whatsoever.  Also, not optimized yet, so do not expect actual speed yet.
+	var Numbuffer = new ArrayBuffer(4); //Bytes; float's typical size.
+	var f32View = new Float32Array(Numbuffer);
+	var bitsView = new Uint32Array(Numbuffer);
+	var one = new ArrayBuffer(4);
+	var float32_one = new Float32Array(one);
+	var bits_one = new Uint32Array(one);
+    
+    float32_one[0] = 1.;
+
+	f32View[0] = xsq;
+	bitsView[0] = (bitsView[0] + bits_one[0]) / 2;
+
+	x = f32View[0];
+	x = (x+xsq/x) / 2.
+	return (x+xsq/x)/2;
+}
+
+
+Vector3d.prototype.increment = function(v){
+	this.x += v.x;
+	this.y += v.y;
+	this.z += v.z;
 };
 
-
-Array.prototype.v_lencube = function(){
-	return this.v_length() * this.v_sumsq();
+Vector3d.prototype.decrement = function(v){
+	this.x -= v.x;
+	this.y -= v.y;
+	this.z -= v.z;
 };
 
-Array.prototype.v_add = function(v, result){
-	result[0] = this[0] + v[0];
-	result[1] = this[1] + v[1];
-	result[2] = this[2] + v[2];
+Vector3d.prototype.scale = function(a){
+	this.x *= a;
+	this.y *= a;
+	this.z *= a;
 };
 
-Array.prototype.v_inc_by = function(v){
-	this[0] += v[0];
-	this[1] += v[1];
-	this[2] += v[2];
-};
-
-Array.prototype.v_dec_by = function(v){
-	this[0] -= v[0];
-	this[1] -= v[1];
-	this[2] -= v[2];
-};
-
-Array.prototype.v_minus = function(v, result){
-	result[0] = this[0] - v[0];
-	result[1] = this[1] - v[1];
-	result[2] = this[2] - v[2];
-};
-
-Array.prototype.v_scale = function(a){
-	this[0] *= a;
-	this[1] *= a;
-	this[2] *= a;
-};
-
-Array.prototype.unitRandom = function(){
+Vector3d.prototype.unitRandom = function(){
 	// Randomly directed uniformly over sphere.
 	var costheta = 2 * Math.random() - 1.;
 	var sintheta = Math.sqrt(1. - costheta*costheta);
 	var phi = 2*Math.PI*Math.random();
-	return [Math.cos(phi)*sintheta,
-	 		Math.sin(phi)*sintheta, 
-	 		costheta];
+	return new Vector3d(Math.cos(phi)*sintheta, Math.sin(phi)*sintheta, costheta);
 };
 
-Array.prototype.lRandom = function(l){
-	//Randomly directed, of length x
-	return [].unitRandom().v_scale(l);
+Vector3d.prototype.random_of_magnitude = function(magnitude){
+	//Randomly directed, but fixed magnitude:
+	return Vector3d.unitRandom().scale(magnitude);
 };
+
+Vector3d.prototype.unitFromAngles = function(theta, phi){
+	// Phi is the angle in the x-y plane (called azimuth, like longitude)
+	// theta is the angle from the north celestial pole (like latitude, but starts at 0 at pole)
+	costheta = Math.cos(theta);
+	sintheta = Math.sqrt(1-costheta*costheta); //Guaranteed positive.
+	cosphi = Math.cos(phi);
+	sinphi = Math.sin(phi);
+	return Vector3d(cosphi*sintheta, sinphi*sintheta,costheta);
+}
+
+Vector3d.prototype.unitVector = function(){
+	return Vector3d(this.x, this.y, this.z).scale(1. / this.magnitude());
+}
+
+Vector3d.prototype.angles = function(){
+	//Should I set these and carry them around?... No?
+	v = this.unitVector();
+	theta = Math.acos(v.z);
+	phi   = Math.atan2(v.y, v.x);
+	return [theta, phi];
+}
+
+Vector3d.prototype.phi = function(){
+	//Azimuthal angle.
+	//Extremely cheap relative to getting both theta and phi.
+	return Math.atan2(this.y, this.x);
+}
+
+Vector3d.prototype.theta = function(){
+	//Theta meaured from north pole.
+	// This method avoids a Math.sqrt() call.
+	
+	if (this.z == 0) {
+		return Math.PI / 2.;
+	}else{
+		var sgn = this.z / abs(this.z);
+		//Since cos(x)**2 = 1/2 (cos(2 x)+1)
+		cos_sq_theta = this.z*this.z/ this.sumsq();
+		abstheta = Math.acos(2. * cos_sq_theta - 1.) / 2.;
+		return sgn * abstheta;
+	}
+}

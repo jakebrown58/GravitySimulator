@@ -1,6 +1,13 @@
 function Particle(id, x, y, z) {
   this.id = id; 
-  this.position = [x, y, z]
+  this.position = new Vector3d(x,y,z);
+  this.vel = new Vector3d(0., 0., 0.);
+  this.acc = new Vector3d(0., 0., 0.);
+  this.acc_old = new Vector3d(0., 0., 0.);
+  this.acc_Swap = this.acc; //To flip flop back and forth, re-using the vectors.
+  this.r = new Vector3d(0., 0., 0.); //Vector pointing from self to another.
+  this.dt = app.physics.variables.TIME_STEP_INTEGRATOR;
+  this.dt_old = this.dt;
   this.remove = false;
 
   this.mass = 2;
@@ -9,54 +16,64 @@ function Particle(id, x, y, z) {
     b:  205 + 50 * Math.floor(Math.random() * 3)};
 };
 
+Particle.prototype.speed_squared = function(){
+  return this.vel.sumsq() / (this.dt*this.dt);
+}
+
+Particle.prototype.velocity = function(){
+  return new Vector3d(this.vel.x, this.vel.y, this.vel.z).scale(1./this.dt);
+}
+
+Particle.prototype.acceleration = function(){
+
+  return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2./(dt*dt));
+}
+
+Particle.prototype.updateTimeStep = function(dt_new){
+  this.dt_old = this.dt;
+  this.dt = dt_new;
+  var f = this.dt / this.dt_old;
+  var f_sq = f*f;
+
+  this.vel.x *= f;
+  this.vel.y *= f;
+  this.vel.z *= f;
+
+  this.acc.x *= f_sq;
+  this.acc.y *= f_sq;
+  this.acc.z *= f_sq;
+
+  //Leapfrog will discard these contents, but if anthing else needs them, they'll be correct.
+
+  this.acc_old.x *= f_sq;
+  this.acc_old.y *= f_sq;
+  this.acc_old.z *= f_sq;
+}
+
+
 Particle.prototype.calcAcceleration = function(){
-  if(app.physics.variables.CALC_STYLE === 'real') {
-    this.calcAccelerationOpen(this.d3Real);
-  } else {
-    this.calcAccelerationOpen(this.d3Spyro);
-  }
-};
-
-Particle.prototype.d3to = function(p2){
-  return this.position.v_dist3to(p2.position);
-};
-
-Particle.prototype.d2to = function(p2){
-  //Note that this (distance squared) is the cheapest
-  //Of the distance functions to calculate.
-  return this.position.v_dist2to(p2.position);
-};
-
-Particle.prototype.distanceto = function(p2){
-  return this.position.v_distanceto(p2.position);
-};
-
-
-Particle.prototype.d3Spyro = function(dx, dy, dz) {
-  //var tmp = Math.sqrt(dx * dx + dy * dy);
-  //return tmp * tmp;
-  var tmp = dx * dx + dy * dy + dz * dz;
-  return Math.sqrt(tmp) * tmp;
-};
-
-
-Particle.prototype.calcAccelerationOpen = function(d3Fn){
   var curr,
     grav,
-    i,
-    d3;
-
-  this.oldacc = this.acc.slice(0);
-  this.acc    = [0., 0., 0.];
-
+    i;
+  var d, d2, d3;
+  var dt_sq_over2 = (this.dt*this.dt)/2.;
+  this.accSwap = this.acc_old; //To Re-use.
+  this.acc_old = this.acc;
+  this.acc = this.accSwap;
+  this.acc.zero();
 
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if(curr.id !== this.id ) {
-      rel = [curr.position[0] - this.position[0],
-             curr.position[1] - this.position[1],
-             curr.position[2] - this.position[2]]
-      d3 = curr.d3to(this);
+      this.r.x = curr.position.x - this.position.x;
+      this.r.y = curr.position.y - this.position.y;
+      this.r.z = curr.position.z - this.position.z;
+      //Recommend replacing all tests of d3 with tests against d2.
+      d2 =  this.r.x * this.r.x + 
+            this.r.y * this.r.y + 
+            this.r.z * this.r.z;
+      d  = Math.sqrt(d2);
+      d3 = d2 * d;
 
       if (d3 < app.COLLISION_IMMENENCE_RANGE) {
         this.checkPotentialCollision(d3, curr);
@@ -68,12 +85,13 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
       //   app.closestPair.y = curr;
       // }
 
-      if(d3 != 0) {
-        rel.v_scale(curr.mass * app.physics.constants.GRAVITY_CONSTANT / d3);
-        this.acc.v_inc_by(rel);
+      if(d3 > 0) {
+        this.r.scale(curr.mass / d3);
+        this.acc.increment(this.r);
       }
     }
   }
+  this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
 Particle.prototype.checkPotentialCollision = function(d3, curr) {
@@ -93,41 +111,33 @@ Particle.prototype.checkPotentialCollision = function(d3, curr) {
 };
 
 Particle.prototype.updatePosition = function() {
-  var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
+  this.position.x += this.acc.x;
+  this.position.y += this.acc.y;
+  this.position.z += this.acc.z;
 
-  this.oldpos = this.position.slice(0); //Not used by leapfrog itself.
-
-  delta_position = this.acc.slice(0);
-
-  delta_position.v_scale (  dt/2    );
-  delta_position.v_inc_by( this.vel );
-  delta_position.v_scale (  dt      );
-  
-  this.position.v_inc_by(delta_position)
+  this.position.x += this.vel.x;
+  this.position.y += this.vel.y;
+  this.position.z += this.vel.z;
 };
 
 Particle.prototype.updateVelocity = function() {
-  var dt = app.physics.variables.TIME_STEP_INTEGRATOR;
-  this.oldvel = this.vel.slice(0);//Not used by leapfrog itself.
+  this.oldDirection = this.vel.phi() * 180 / Math.PI;
 
-  this.oldDirection = app.physics.getParticleDirection(this);
-  
-  delta_v = this.oldacc.slice(0);
-  delta_v.v_inc_by ( this.acc );
-  delta_v.v_scale  ( dt / 2.  );
-  this.vel.v_inc_by( delta_v  );
+  this.vel.x += (this.acc_old.x + this.acc.x);
+  this.vel.y += (this.acc_old.y + this.acc.y);
+  this.vel.z += (this.acc_old.z + this.acc.z);
 
-  this.direction = app.physics.getParticleDirection(this);
+  this.direction = this.vel.phi() * 180 / Math.PI;
 };
 
 Particle.prototype.kineticE = function(){
-  return (1./2.) * this.mass * this.vel.v_sumsq();
+  return this.mass * this.speed_squared()/ 2;
 }
 
 Particle.prototype.isBoundTo = function(p2){
-  var mu = (this.mass * p2.mass) / (this.mass + p2.mass),
-  v2 = this.vel.v_dist2to(p2.vel);
-  d = this.distanceto(p2);
+  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
+  v2 = this.velocity().dist_squared(p2.velocity());
+  d  = this.position.distance(p2.position);
   energy = 0;
 
   if(d > 0) {
@@ -181,15 +191,22 @@ Particle.prototype.configure = function(config) {
   particle.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * particle.radius / app.physics.constants.KM_PER_AU;
   particle.name = config.name;
   particle.mass = config.mass;
-  particle.position = [app.halfWidth - localRadius * Math.cos(config.arc),
-                      app.halfHeight - localRadius * Math.sin(config.arc),
-                      0.0];
 
-  particle.vel = [localOrbitalVelocity * Math.sin(config.arc),
-                      localOrbitalVelocity * -Math.cos(config.arc),
-                      0.0];
+  particle.position.x = app.halfWidth - localRadius * Math.cos(config.arc);
+  particle.position.y = app.halfHeight - localRadius * Math.sin(config.arc);
+  particle.position.z = 0.0;
+  
+  particle.vel.x = localOrbitalVelocity * Math.sin(config.arc);
+  particle.vel.y = localOrbitalVelocity * (-Math.cos(config.arc));
+  particle.vel.z = 0.0;
 
-  particle.acc = [0., 0., 0.];
+  particle.vel.scale(app.physics.variables.TIME_STEP_INTEGRATOR);
+  
+  //Just for safety, initialize to zero.  
+  particle.acc.x = 0.;
+  particle.acc.y = 0.;
+  particle.acc.z = 0.;
+
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);

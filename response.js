@@ -151,16 +151,20 @@ Response.prototype.follow = function(xy){
     var j = 0,
       curr,
       currIndex = 0,
-      currLoc = {x: 0, y: 0},
+      // currLoc = {x: 0, y: 0},
+      currLoc = new Vector3d(0., 0., 0.),
       currDist = 10000000000000000000,
       tmpDist;
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
       if (curr && app.viewPort && app.viewPort.center) {
-        currLoc.x = (curr.position[0] - app.viewPort.center.x) + (curr.position[0] - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-        currLoc.y = (curr.position[1] - app.viewPort.center.y) + (curr.position[1] - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
-        tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
+        currLoc.x = (curr.position.x - app.viewPort.center.x) + (curr.position.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+        currLoc.y = (curr.position.y - app.viewPort.center.y) + (curr.position.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+        // currLoc.z = (curr.position.z - app.viewPort.center.z) + (curr.position.z - app.particles[app.FOLLOW].z) * app.VIEWSHIFT.zoom;
+
+        tmpDist = currLoc.dist_squared(new Vector3d(xy.x, xy.y, 0.));
+        // (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
         if(tmpDist < currDist ){
           currDist = tmpDist;
           currIndex = j;
@@ -180,18 +184,22 @@ Response.prototype.destroy = function(xy){
     var j = 0,
       curr,
       currIndex = 0,
-      currLoc = [0., 0., 0.]
+      currLoc = new Vector3d(0., 0., 0.);
       currDist2 = 1.0e19;
       tmpDist;
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
-      currLoc = curr.position.slice();
-      currLoc.v_dec_by(app.particles[app.FOLLOW].position);
-      currLoc.v_scale(app.VIEWSHIFT.zoom);
-      currLoc.v_inc_by(curr.position);
-      currLoc.v_dec_by([app.viewPort.center.x, app.viewPort.center.y, 0.]);
+      currLoc.setcoords(curr.position.x, curr.position.y, curr.position.z);
 
+      currLoc.decrement(app.particles[app.FOLLOW].position);
+      currLoc.scale(app.VIEWSHIFT.zoom);
+      currLoc.increment(curr.position);
+      currLoc.x -= app.viewPort.center.x;
+      currLoc.y -= app.viewPort.center.y;
+      currLoc.z -= 0.;
+
+      
       tmpDist2 = currLoc.v_dist2to([xy.x, xy.y, 0.]);
 
       if(tmpDist2 < currDist ){
@@ -225,15 +233,25 @@ Response.prototype.rocket = function(){
     newGuy.name = 'PHOTON' + app.particles.length;
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
-    newGuy.position = app.particles[0].position.slice(0);
-    newGuy.vel = [5000 * Math.cos(arc), 5000 * Math.sin(arc), 0.];
+    
+    newGuy.position.setcoords(app.particles[0].position.x,
+                        app.particles[0].position.y,
+                        app.particles[0].position.z);
+
+    newGuy.vel.setcoords(5000 * Math.cos(arc),
+                          5000 * Math.sin(arc), 
+                        0.);
 
   } else {
-    newGuy.position = app.particles[app.FOLLOW].position.slice(0);
-    newGuy.position.v_inc_by([].lRandom(0.3 * Math.random()));
+    newGuy.position.setcoords(app.particles[app.FOLLOW].position.x,
+                        app.particles[app.FOLLOW].position.y,
+                        app.particles[app.FOLLOW].position.z);
+    newGuy.position.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
 
-    newGuy.vel      = app.particles[app.FOLLOW].vel.slice(0);
-    newGuy.vel.v_inc_by([].lRandom(0.32 * Math.random()));
+    newGuy.vel.setcoords(app.particles[app.FOLLOW].vel.x,
+                        app.particles[app.FOLLOW].vel.y,
+                        app.particles[app.FOLLOW].vel.z);
+    newGuy.vel.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
   }
   
   app.PARTICLECOUNT = app.particles.length - 1;

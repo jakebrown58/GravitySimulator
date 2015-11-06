@@ -19,11 +19,13 @@ function Physics() {
   this.variables = {};
   this.variables.TIME_STEP = 1;
   this.variables.TIME_STEP_INTEGRATOR = this.variables.TIME_STEP * this.constants.TIME_STEP_NORMALIZER;
+  this.variables.TIME_STEP_INTEGRATOR_OLD = this.variables.TIME_STEP_INTEGRATOR;
   this.variables.CALC_STYLE = 'real';
   this.variables.CALC_STYLE_VELOCITY_MOD = 1;
 }
 
 Physics.prototype.updateTimeStep = function(newTimeStep) {
+  this.variables.TIME_STEP_INTEGRATOR_OLD = this.variables.TIME_STEP_INTEGRATOR;
   this.variables.TIME_STEP = newTimeStep;
   this.variables.TIME_STEP_INTEGRATOR = newTimeStep * this.constants.TIME_STEP_NORMALIZER;
 }
@@ -33,24 +35,32 @@ Physics.prototype.reverseTime = function() {
 }
 
 Physics.prototype.leapFrog = function () {
+  dt_this_iteration= this.variables.TIME_STEP_INTEGRATOR;
+
   var ps = app.particles,
     i;
+  if (dt_this_iteration != this.TIME_STEP_INTEGRATOR_OLD){
+    for (i = 0; i < ps.length; i++) {
+      ps[i].updateTimeStep(dt_this_iteration);
+    }  
+  }
+
   for (i = 0; i < ps.length; i++) {
     ps[i].updatePosition();
   }
+
   for (i = 0; i < ps.length; i++) {
-    ps[i].calcAcceleration();
+    ps[i].calcAcceleration(dt_this_iteration);
   }
+
   for (i = 0; i < ps.length; i++) {
     ps[i].updateVelocity();
   }  
 
   if(app.response.MODE === 'ROCKET') {
-    ps[app.FOLLOW].vel.v_inc_by([
-      -app.thrust.getThrustVector().x / 3000,
-      -app.thrust.getThrustVector().y / 3000,
-      -app.thrust.getThrustVector().z / 3000
-      ])
+    ps[app.FOLLOW].vel.x -= app.thrust.getThrustVector().x / 3000;
+    ps[app.FOLLOW].vel.y -= app.thrust.getThrustVector().y / 3000;
+    ps[app.FOLLOW].vel.z -= app.thrust.getThrustVector().z / 3000;
   }
 };
 
@@ -66,12 +76,12 @@ Physics.prototype.collide_glom = function(p1, p2) {
   var mass  = big.mass + little.mass;
   var fracB = big.mass / mass;
   var fracL = little.mass / mass;
-
+// Why do we do this to the little particle?
   little.mass = 0.00000000000001;
-  little.vel = [0., 0., 0.];
-  little.acc = [0., 0., 0.];
+  little.vel = new Vector3d(0., 0., 0.);
+  little.acc = new Vector3d(0., 0., 0.);
   // little.pos.v_inc_by([5000 + Math.random() * 10000, 5000 + Math.random() * 10000, 5000 + Math.random() * 10000 ])
-  little.position = [].lRandom(5000 + 5000 * Math.random());
+  little.position = Vector3d.random_of_magnitude(5000 + 5000 * Math.random());
   little.color = {r: 0, b: 0, g: 0};
   little.destroyed = true;
 
@@ -83,29 +93,29 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
   big.mass = mass;
   
-  big.position.v_scale(fracB);
-  little.position.v_scale(fracL);
-  big.position.v_inc_by(little.position);
+  big.position.scale(fracB);
+  little.position.scale(fracL);
+  big.position.increment(little.position);
   
-  big.oldpos.v_scale(fracB);
-  little.oldpos.v_scale(fracL);
-  big.oldpos.v_inc_by(little.oldpos);
+  // big.oldpos.scale(fracB);
+  // little.oldpos.scale(fracL);
+  // big.oldpos.v_inc_by(little.oldpos);
 
-  big.vel.v_scale(fracB);
-  little.vel.v_scale(fracL);
-  big.vel.v_inc_by(little.vel);
+  big.vel.scale(fracB);
+  little.vel.scale(fracL);
+  big.vel.increment(little.vel);
 
-  big.oldvel.v_scale(fracB);
-  little.oldvel.v_scale(fracL);
-  big.oldvel.v_inc_by(little.oldvel);
+  // big.oldvel.v_scale(fracB);
+  // little.oldvel.v_scale(fracL);
+  // big.oldvel.v_inc_by(little.oldvel);
   
-  big.acc.v_scale(fracB);
-  little.acc.v_scale(fracL);
-  big.acc.v_inc_by(little.acc);
+  big.acc.scale(fracB);
+  little.acc.scale(fracL);
+  big.acc.increment(little.acc);
 
-  big.oldacc.v_scale(fracB);
-  little.oldacc.v_scale(fracL);
-  big.oldacc.v_inc_by(little.oldacc);
+  big.acc_old.scale(fracB);
+  little.acc_old.scale(fracL);
+  big.acc_old.increment(little.oldacc);
 
 
   // cfg.U = 0;
@@ -122,7 +132,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
 };
 
 Physics.prototype.getParticleSpeed = function (particle) {
-  return particle.vel.v_length();
+  return Math.sqrt(particle.speed_squared());
 };
 
 Physics.prototype.getParticleDirection = function (particle) {
@@ -200,7 +210,7 @@ Physics.prototype.areParticlesVeryClose = function(p1,p2) {
   dlimit2 = p1.normalizedRadius + p2.normalizedRadius;
   dlimit2 *= dlimit2;
 
-  return p1.d2to(p2) < dlimit2;
+  return p1.position.dist_squared(p2.position) < dlimit2;
 };
 
 

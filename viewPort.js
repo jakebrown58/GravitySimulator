@@ -67,7 +67,7 @@ ViewPort.prototype.drawParticles = function() {
   var particles = app.particles;
 
   var currColor = particles[0].drawColor;
-  app.FOLLOWXY = [app.particles[app.FOLLOW].position[0], app.particles[app.FOLLOW].position[1]];
+  app.FOLLOWXY = [app.particles[app.FOLLOW].position.x, app.particles[app.FOLLOW].position.y];
   app.ctx.strokeStyle = currColor;
   for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
@@ -85,11 +85,11 @@ ViewPort.prototype.drawParticle = function(particle) {
 
 
   if(app.DRAWSTATE === 0) {
-    obj = app.viewPort.project(particle.position[0], particle.position[1], particle.position[2]);
+    obj = app.viewPort.project(particle.position.x, particle.position.y, particle.position.z);
     obj.x = obj.x - app.VIEWSHIFT.x;
     obj.y = obj.y - app.VIEWSHIFT.y;
   } else {
-    obj = {x: particle.position[0], y: particle.position[1]};
+    obj = {x: particle.position.x, y: particle.position.y};
     obj.x = (obj.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (obj.x - app.FOLLOWXY[0]) * app.VIEWSHIFT.zoom;
     obj.y = (obj.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (obj.y - app.FOLLOWXY[1]) * app.VIEWSHIFT.zoom;
   }
@@ -309,7 +309,7 @@ ViewPort.prototype.setClock = function() {
 };
 
 ViewPort.prototype.setIntegrate = function() {
-  app.viewPort.center = {x: (app.particles[app.FOLLOW].position[0] - app.halfWidth), y: (app.particles[app.FOLLOW].position[1] - app.halfHeight)};
+  app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
   app.viewPort.drawParticles();
   // for (i = 0; i < app.particles.length; i++) {
   //   //current = app.particles[i];
