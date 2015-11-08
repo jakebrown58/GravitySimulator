@@ -71,11 +71,55 @@ BruteFrog.prototype.Leap = function(){
 	for (i=0; i < 3*this.N; i++) this.vels[i] += this.accs_old[i];
 }
 
+BruteFrog.prototype.DeadDumbLeapWrapper = function(particles){
+	if (particles.length > this.MaxNumParticles){
+		//Fail so hard.
+		return false;
+	}else{
+		this.N = particles.length;
+		for (i=0; i<this.N; i++){
+			this.positions_x = particles[i].position.x;
+			this.positions_y = particles[i].position.y;
+			this.positions_z = particles[i].position.z;
+			this.vels_x      = particles[i].vel.x;
+			this.vels_y      = particles[i].vel.y;
+			this.vels_z      = particles[i].vel.z;
+			this.accs_x      = particles[i].acc.x;
+			this.accs_y      = particles[i].acc.y;
+			this.accs_z      = particles[i].acc.z;
+			this.accs_old_x  = particles[i].acc_old.x;
+			this.accs_old_y  = particles[i].acc_old.y;
+			this.accs_old_z  = particles[i].acc_old.z;
+			this.masses      = particles[i].mass;
+			this.dts         = particles[i].dt;
+		}
+		this.Leap();
+		for (i=0; i<this.N; i++){
+			particles[i].position.x = this.positions_x;
+			particles[i].position.y = this.positions_y;
+			particles[i].position.z = this.positions_z;
+			particles[i].vel.x      = this.vels_x;
+			particles[i].vel.y      = this.vels_y;
+			particles[i].vel.z      = this.vels_z;
+			particles[i].acc.x      = this.accs_x;
+			particles[i].acc.y      = this.accs_y;
+			particles[i].acc.z      = this.accs_z;
+			particles[i].acc_old.x  = this.accs_old_x;
+			particles[i].acc_old.y  = this.accs_old_y;
+			particles[i].acc_old.z  = this.accs_old_z;
+			particles[i].mass       = this.masses;
+			particles[i].dt         = this.dts; 
+		}
+	}
+}
+
+
+
 BruteFrog.prototype.MapToParticleArray = function(particles){
-	//Particles has to be an array of length NumParticles, of type Particle.
-		//Expose (as views) to particle class through its constructor^^^
+	//Particles has to be an array of Particle s.
+	//Expose (as views) to particle class through its constructor^^^
 	//Something like:
-	// particle[i].thing.x = Float32Array(thing_x[i]) etc.
+	//particle[i].thing.x = Float64Array(thing_x[i]) etc.
 
 
 	var i;
