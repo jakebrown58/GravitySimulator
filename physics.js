@@ -35,10 +35,11 @@ Physics.prototype.reverseTime = function() {
 }
 
 Physics.prototype.leapFrog = function () {
-  dt_this_iteration= this.variables.TIME_STEP_INTEGRATOR;
-
   var ps = app.particles,
     i;
+  var dt_this_iteration= this.variables.TIME_STEP_INTEGRATOR;
+
+
   if (dt_this_iteration != this.TIME_STEP_INTEGRATOR_OLD){
     for (i = 0; i < ps.length; i++) {
       ps[i].updateTimeStep(dt_this_iteration);

@@ -1,5 +1,5 @@
 function Particle(id, x, y, z) {
-  this.id = id; 
+  this.id = id;
   this.position = new Vector3d(x,y,z);
   this.vel = new Vector3d(0., 0., 0.);
   this.acc = new Vector3d(0., 0., 0.);
@@ -9,8 +9,10 @@ function Particle(id, x, y, z) {
   this.dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.dt_old = this.dt;
   this.remove = false;
-
+  this.acceleration_to_beat = 0.;
+  this.rank_to_beat = 10;
   this.mass = 2;
+  this.toProfile = true;
   this.color = {r: 205 + 50 * Math.floor(Math.random() * 3), 
     g:  205 + 50 * Math.floor(Math.random() * 3),
     b:  205 + 50 * Math.floor(Math.random() * 3)};
@@ -47,8 +49,33 @@ Particle.prototype.updateTimeStep = function(dt_new){
   this.acc_old.x *= f_sq;
   this.acc_old.y *= f_sq;
   this.acc_old.z *= f_sq;
+
+  this.acceleration_to_beat *= f_sq;
+
 }
 
+Particle.prototype.profileAcceleration = function(){
+  //Finds distance**2, magnitude of gravity accelerations (in length units)
+  accelerations = [];
+  for (var i=0;i< app.particles.length; i++){
+    curr = app.particles[i];
+    
+    if(curr.id === this.id ) {continue;}
+
+    this.r.x = curr.position.x - this.position.x;
+    this.r.y = curr.position.y - this.position.y;
+    this.r.z = curr.position.z - this.position.z;
+
+    d2 =  this.r.x * this.r.x + 
+          this.r.y * this.r.y + 
+          this.r.z * this.r.z;
+    accelerations.push(curr.mass / d2);
+  }
+  accelerations.sort(function(a, b){return b-a});
+  this.rank_to_beat = Math.min(accelerations.length, Math.ceil(Math.sqrt(app.particles.length)), this.rank_to_beat);
+  this.acceleration_to_beat = accelerations[this.rank_to_beat-1];
+  this.toProfile = false;
+}
 
 Particle.prototype.calcAcceleration = function(){
   var curr,
@@ -56,44 +83,66 @@ Particle.prototype.calcAcceleration = function(){
     i;
   var d, d2, d3;
   var dt_sq_over2 = (this.dt*this.dt)/2.;
+  var acceleration = 0.;
+  var heavy_hitters = 0.;
+
   this.accSwap = this.acc_old; //To Re-use.
   this.acc_old = this.acc;
   this.acc = this.accSwap;
   this.acc.zero();
 
+  if (this.toProfile) {this.profileAcceleration();}
+
+
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
-    if(curr.id !== this.id ) {
-      this.r.x = curr.position.x - this.position.x;
-      this.r.y = curr.position.y - this.position.y;
-      this.r.z = curr.position.z - this.position.z;
-      //Recommend replacing all tests of d3 with tests against d2.
-      d2 =  this.r.x * this.r.x + 
-            this.r.y * this.r.y + 
-            this.r.z * this.r.z;
+    if (curr.id === this.id) {continue;}
+  
+    this.r.x = curr.position.x - this.position.x;
+    this.r.y = curr.position.y - this.position.y;
+    this.r.z = curr.position.z - this.position.z;
+
+    d2 =  this.r.x * this.r.x + 
+          this.r.y * this.r.y + 
+          this.r.z * this.r.z;
+    
+
+    if (d2 < app.COLLISION_IMMENENCE_RANGE2){
+      this.checkPotentialCollision(d2, curr);
+    }
+
+    acceleration = curr.mass / d2;
+
+    if (acceleration > this.acceleration_to_beat){
+      heavy_hitters++;
       d  = Math.sqrt(d2);
       d3 = d2 * d;
+      this.r.x *= (acceleration / d);
+      this.r.y *= (acceleration / d);
+      this.r.z *= (acceleration / d);
 
-      if (d3 < app.COLLISION_IMMENENCE_RANGE) {
-        this.checkPotentialCollision(d3, curr);
-      }
-      // if(d3 < app.closestPair.d || app.closestPair === 0) {
-      //   app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
-      //   app.closestPair.d = app.closestPair.d * app.closestPair.d;
-      //   app.closestPair.x = this;
-      //   app.closestPair.y = curr;
-      // }
-
-      if(d3 > 0) {
-        this.r.scale(curr.mass / d3);
-        this.acc.increment(this.r);
-      }
+      this.acc.x += this.r.x;
+      this.acc.y += this.r.y;
+      this.acc.z += this.r.z;
     }
+  }
+/*  By recording and ranking recent acceleration strengths, a minimum
+threshold (10th strongest) must be beat before the particle will
+perform detailed calculations in reaction to another.  The acceleration
+threshold and threshold rank update when the particle experiences too
+many or too few interactions above its threshold.  For 44 Particles,
+most particles seem to settle on 7th strongest influences.*/
+  if (heavy_hitters > 2 * this.rank_to_beat){ //In a tough neighborhood!
+    this.rank_to_beat += 2;
+    this.toProfile = true;
+  }else if ((heavy_hitters < this.rank_to_beat / 2) && (this.rank_to_beat > 3)){
+    this.rank_to_beat = Math.ceil(this.rank_to_beat / 2);
+    this.toProfile = true;
   }
   this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
-Particle.prototype.checkPotentialCollision = function(d3, curr) {
+Particle.prototype.checkPotentialCollision = function(d2, curr) {
   // collision detection: if we're in range, add us (this particle and it's acceleration pair)
   // to the global list of potential collisions.  To avoid redundant work, only do this when
   // this particle has the lower id of the pair.  (don't do it twice when we calculate the inverse)
