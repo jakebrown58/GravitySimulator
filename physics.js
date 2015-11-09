@@ -22,6 +22,9 @@ function Physics() {
   this.variables.TIME_STEP_INTEGRATOR_OLD = this.variables.TIME_STEP_INTEGRATOR;
   this.variables.CALC_STYLE = 'real';
   this.variables.CALC_STYLE_VELOCITY_MOD = 1;
+  
+  this.bufferFrog = new BruteFrog(100);
+  this.bufferFrog.G = this.constants.ORIGINAL_GRAVITY_CONSTANT;
 }
 
 Physics.prototype.updateTimeStep = function(newTimeStep) {
@@ -47,17 +50,25 @@ Physics.prototype.leapFrog = function () {
   }
 
   for (i = 0; i < ps.length; i++) {
-    ps[i].updatePosition();
+    ps[i].oldDirection = ps[i].direction;
   }
-
-  for (i = 0; i < ps.length; i++) {
-    ps[i].calcAcceleration(dt_this_iteration);
+  this.bufferFrog.G = this.constants.GRAVITY_CONSTANT
+  if (! this.bufferFrog.DeadDumbLeapWrapper(ps)){
+    for (i = 0; i < ps.length; i++) {
+      ps[i].updatePosition();
+    }
+  
+    for (i = 0; i < ps.length; i++) {
+      ps[i].calcAcceleration(dt_this_iteration);
+    }
+  
+    for (i = 0; i < ps.length; i++) {
+      ps[i].updateVelocity();
+    }  
   }
-
   for (i = 0; i < ps.length; i++) {
-    ps[i].updateVelocity();
-  }  
-
+    ps[i].direction = ps[i].vel.phi() * 180 / Math.PI;
+  }
   if(app.response.MODE === 'ROCKET') {
     ps[app.FOLLOW].vel.x -= app.thrust.getThrustVector().x / 3000;
     ps[app.FOLLOW].vel.y -= app.thrust.getThrustVector().y / 3000;

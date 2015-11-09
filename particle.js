@@ -92,7 +92,7 @@ Particle.prototype.calcAcceleration = function(){
   this.acc = this.accSwap;
   this.acc.zero();
 
-  if (this.toProfile) {this.profileAcceleration();}
+  // if (this.toProfile) {this.profileAcceleration();}
 
 
   for (i = 0; i < app.particles.length; i++) {
@@ -164,13 +164,9 @@ Particle.prototype.updatePosition = function() {
 };
 
 Particle.prototype.updateVelocity = function() {
-  this.oldDirection = this.vel.phi() * 180 / Math.PI;
-
   this.vel.x += (this.acc_old.x + this.acc.x);
   this.vel.y += (this.acc_old.y + this.acc.y);
   this.vel.z += (this.acc_old.z + this.acc.z);
-
-  this.direction = this.vel.phi() * 180 / Math.PI;
 };
 
 Particle.prototype.kineticE = function(){
