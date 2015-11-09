@@ -129,6 +129,7 @@ BruteFrog.prototype.DeadDumbLeapWrapper = function(particles){
 			particles[i].mass       = this.masses[i];
 			particles[i].dt         = this.dts[i]; 
 		}
+		return true;
 	}
 }
 

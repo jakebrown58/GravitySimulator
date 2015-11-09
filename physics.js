@@ -23,7 +23,7 @@ function Physics() {
   this.variables.CALC_STYLE = 'real';
   this.variables.CALC_STYLE_VELOCITY_MOD = 1;
   
-  this.bufferFrog = new BruteFrog(100);
+  this.bufferFrog = new BruteFrog(50);
   this.bufferFrog.G = this.constants.ORIGINAL_GRAVITY_CONSTANT;
 }
 
