@@ -76,14 +76,18 @@ BruteFrog.prototype.Leap = function(){
 
 	this.batchCalcAcceleration();
 
-	for (i=0; i < this.N; i++) this.vels_x[i] += this.accs_x[i];
-	for (i=0; i < this.N; i++) this.vels_x[i] += this.accs_old_x[i];
-
-	for (i=0; i < this.N; i++) this.vels_y[i] += this.accs_y[i];
-	for (i=0; i < this.N; i++) this.vels_y[i] += this.accs_old_y[i];
-	
-	for (i=0; i < this.N; i++) this.vels_z[i] += this.accs_z[i];
-	for (i=0; i < this.N; i++) this.vels_z[i] += this.accs_old_z[i];
+	for (i=0; i < this.N; i++){
+		this.vels_x[i] += this.accs_x[i];
+		this.vels_x[i] += this.accs_old_x[i];
+	}
+		for (i=0; i < this.N; i++){
+		this.vels_y[i] += this.accs_y[i];
+		this.vels_y[i] += this.accs_old_y[i];
+	}
+		for (i=0; i < this.N; i++){
+		this.vels_z[i] += this.accs_z[i];
+		this.vels_z[i] += this.accs_old_z[i];
+	}
 }
 
 BruteFrog.prototype.DeadDumbLeapWrapper = function(particles){
@@ -169,8 +173,7 @@ BruteFrog.prototype.singleCalcAcceleration = function(index_current){
 	//Due to all particles (index j)
 	var j;
 
-	dt_sq_over_2 = this.dts[index_current];
-	dt_sq_over_2 *= dt_sq_over_2 / 2.;
+	dt_sq_over_2 = this.dts[index_current]*this.dts[index_current]/2;
 	
 	var x,y,z;
 	x = this.positions_x[index_current];
@@ -179,8 +182,8 @@ BruteFrog.prototype.singleCalcAcceleration = function(index_current){
 
 	//Find relative positions:
 	for(j=0; j < this.N; j++) this.delta_rs_x[j] = this.positions_x[j] - x;
-	for(j=0; j < this.N; j++) this.delta_rs_y[j] = this.positions_x[j] - y;
-	for(j=0; j < this.N; j++) this.delta_rs_z[j] = this.positions_x[j] - z;
+	for(j=0; j < this.N; j++) this.delta_rs_y[j] = this.positions_y[j] - y;
+	for(j=0; j < this.N; j++) this.delta_rs_z[j] = this.positions_z[j] - z;
 
 	//Find distances squared:
 	for(j=0; j < this.N; j++) this.dsquares[j]  = this.delta_rs_x[j] * this.delta_rs_x[j];

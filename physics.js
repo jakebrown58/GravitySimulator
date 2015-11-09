@@ -52,7 +52,7 @@ Physics.prototype.leapFrog = function () {
   for (i = 0; i < ps.length; i++) {
     ps[i].oldDirection = ps[i].direction;
   }
-  this.bufferFrog.G = this.constants.GRAVITY_CONSTANT
+  this.bufferFrog.G = app.physics.constants.GRAVITY_CONSTANT
   if (! this.bufferFrog.DeadDumbLeapWrapper(ps)){
     for (i = 0; i < ps.length; i++) {
       ps[i].updatePosition();
