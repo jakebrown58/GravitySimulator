@@ -6,9 +6,10 @@ function BruteFrog(MaxNumParticles){
 	this.tView           = Float64Array;
 	var rowSize          = this.MaxNumParticles * tView.BYTES_PER_ELEMENT;
 	this.b               = new ArrayBuffer(23 * rowSize);
-
-	this.N = 0; //No Particles.
+	this.allrows         = new tView(b, 0);
 	
+	this.N = 0; //No Particles.
+
 	var NMax = MaxNumParticles;
 	var row_offset=0;
 	this.positions   = new tView(b,  row_offset * rowSize, 3*NMax);
@@ -57,6 +58,8 @@ function BruteFrog(MaxNumParticles){
 
 	this.dsquares    = new tView(b, (row_offset++)*rowSize, NMax);
 	this.ds          = new tView(b, (row_offset++)*rowSize, NMax);
+
+	this.numRows     = row_offset;
 }
 
 BruteFrog.prototype.Leap = function(){
@@ -73,7 +76,7 @@ BruteFrog.prototype.Leap = function(){
 
 BruteFrog.prototype.DeadDumbLeapWrapper = function(particles){
 	if (particles.length > this.MaxNumParticles){
-		//Fail so hard.
+		console.log("Physics buffer too small, failing...")
 		return false;
 	}else{
 		this.N = particles.length;
@@ -113,6 +116,18 @@ BruteFrog.prototype.DeadDumbLeapWrapper = function(particles){
 	}
 }
 
+BruteFrog.prototype.resize = function(NewSize){
+	//Copy to either a larger or smaller buffer size.
+	var i;
+	newFrog = BruteFrog(NewSize);
+	newFrog.N = this.N;
+	for(j=0; j < this.numRows; j++){
+		for(i=0; i < this.N; i++){
+			newFrog.allrows[ j*newFrog.N + i] = this.allrows[ j*this.N + i];
+		}
+	}
+	return newFrog;
+}
 
 
 BruteFrog.prototype.MapToParticleArray = function(particles){
