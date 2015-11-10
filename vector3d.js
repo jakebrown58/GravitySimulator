@@ -118,10 +118,13 @@ Vector3d.prototype.unitRandom = function(){
 	return new Vector3d(Math.cos(phi)*sintheta, Math.sin(phi)*sintheta, costheta);
 };
 
-Vector3d.prototype.random_of_magnitude = function(magnitude){
+Vector3d.prototype.randomOfMagnitude = function(magnitude){
 	//Randomly directed, but fixed magnitude:
-	return Vector3d.unitRandom().scale(magnitude);
+	var u = Vector3d.prototype.unitRandom();
+	u.scale(magnitude);
+	return u;
 };
+
 
 Vector3d.prototype.unitFromAngles = function(theta, phi){
 	// Phi is the angle in the x-y plane (called azimuth, like longitude)
@@ -131,11 +134,13 @@ Vector3d.prototype.unitFromAngles = function(theta, phi){
 	cosphi = Math.cos(phi);
 	sinphi = Math.sin(phi);
 	return Vector3d(cosphi*sintheta, sinphi*sintheta,costheta);
-}
+};
 
 Vector3d.prototype.unitVector = function(){
-	return Vector3d(this.x, this.y, this.z).scale(1. / this.magnitude());
-}
+	var u =Vector3d(this.x, this.y, this.z);
+	u.scale(1. / this.magnitude());
+	return u;
+};
 
 Vector3d.prototype.angles = function(){
 	//Should I set these and carry them around?... No?
@@ -143,13 +148,13 @@ Vector3d.prototype.angles = function(){
 	theta = Math.acos(v.z);
 	phi   = Math.atan2(v.y, v.x);
 	return [theta, phi];
-}
+};
 
 Vector3d.prototype.phi = function(){
 	//Azimuthal angle.
 	//Extremely cheap relative to getting both theta and phi.
 	return Math.atan2(this.y, this.x);
-}
+};
 
 Vector3d.prototype.theta = function(){
 	//Theta meaured from north pole.
@@ -164,4 +169,4 @@ Vector3d.prototype.theta = function(){
 		abstheta = Math.acos(2. * cos_sq_theta - 1.) / 2.;
 		return sgn * abstheta;
 	}
-}
+};

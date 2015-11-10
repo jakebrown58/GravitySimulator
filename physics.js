@@ -78,13 +78,12 @@ Physics.prototype.collide_glom = function(p1, p2) {
   var mass  = big.mass + little.mass;
   var fracB = big.mass / mass;
   var fracL = little.mass / mass;
-// Why do we do this to the little particle?
+// Why do we do this to the little particle?  -- bad bad hacky reasons.  better to Oblitterate it.
   little.mass = 0.00000000000001;
   little.vel = new Vector3d(0., 0., 0.);
   little.acc = new Vector3d(0., 0., 0.);
-  // little.pos.v_inc_by([5000 + Math.random() * 10000, 5000 + Math.random() * 10000, 5000 + Math.random() * 10000 ])
-  // little.position = Vector3d.random_of_magnitude(5000 + 5000 * Math.random());
-  // little.color = {r: 0, b: 0, g: 0};
+  little.position = Vector3d.prototype.randomOfMagnitude(5000 + 5000 * Math.random());
+  little.color = {r: 0, b: 0, g: 0};
   little.destroyed = true;
 
 
@@ -96,7 +95,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.mass = mass;
   
   big.position.scale(fracB);
-  //little.position.scale(fracL);
+  little.position.scale(fracL);
   big.position.increment(little.position);
   
 
@@ -119,8 +118,8 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.acc.increment(little.acc);
 
   big.acc_old.scale(fracB);
-  //little.acc_old.scale(fracL);
-  //big.acc_old.increment(little.acc_old);
+  little.acc_old.scale(fracL);
+  big.acc_old.increment(little.acc_old);
 
 
   // cfg.U = 0;

@@ -246,12 +246,12 @@ Response.prototype.rocket = function(){
     newGuy.position.setcoords(app.particles[app.FOLLOW].position.x,
                         app.particles[app.FOLLOW].position.y,
                         app.particles[app.FOLLOW].position.z);
-    newGuy.position.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
+    newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3 * Math.random()));
 
     newGuy.vel.setcoords(app.particles[app.FOLLOW].vel.x,
                         app.particles[app.FOLLOW].vel.y,
                         app.particles[app.FOLLOW].vel.z);
-    newGuy.vel.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
+    newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.3 * Math.random()));
     app.FOLLOW = app.particles.length - 1;
   }
   
