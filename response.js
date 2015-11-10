@@ -152,18 +152,18 @@ Response.prototype.follow = function(xy){
       curr,
       currIndex = 0,
       // currLoc = {x: 0, y: 0},
-      currLoc = new Vector3d(0., 0., 0.),
+      currLoc = Vector3d.make(0., 0., 0.),
       currDist = 10000000000000000000,
       tmpDist;
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
       if (curr && app.viewPort && app.viewPort.center) {
-        currLoc.x = (curr.position.x - app.viewPort.center.x) + (curr.position.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-        currLoc.y = (curr.position.y - app.viewPort.center.y) + (curr.position.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
-        // currLoc.z = (curr.position.z - app.viewPort.center.z) + (curr.position.z - app.particles[app.FOLLOW].z) * app.VIEWSHIFT.zoom;
+        currLoc[0] = (curr.x[0] - app.viewPort.center.x) + (curr.x[0] - app.particles[app.FOLLOW].x[0]) * app.VIEWSHIFT.zoom;
+        currLoc[1] = (curr.x[1] - app.viewPort.center.y) + (curr.x[1] - app.particles[app.FOLLOW].x[1]) * app.VIEWSHIFT.zoom;
+        // currLoc.z = (curr.x[2] - app.viewPort.center.z) + (curr.x[2] - app.particles[app.FOLLOW].z) * app.VIEWSHIFT.zoom;
 
-        tmpDist = currLoc.dist_squared(new Vector3d(xy.x, xy.y, 0.));
+        tmpDist = Vector3d.distSquared(currLoc, [xy.x, xy.y, 0.]);
         // (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
         if(tmpDist < currDist ){
           currDist = tmpDist;
@@ -184,23 +184,23 @@ Response.prototype.destroy = function(xy){
     var j = 0,
       curr,
       currIndex = 0,
-      currLoc = new Vector3d(0., 0., 0.);
+      currLoc = Vector3d.make(0., 0., 0.);
       currDist2 = 1.0e19;
       tmpDist;
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
-      currLoc.setcoords(curr.position.x, curr.position.y, curr.position.z);
+      currLoc.set( curr.x );
 
-      currLoc.decrement(app.particles[app.FOLLOW].position);
-      currLoc.scale(app.VIEWSHIFT.zoom);
-      currLoc.increment(curr.position);
-      currLoc.x -= app.viewPort.center.x;
-      currLoc.y -= app.viewPort.center.y;
-      currLoc.z -= 0.;
+      Vector3d.decrement(currLoc, app.particles[app.FOLLOW].x);
+      Vector3d.scale(currLoc, app.VIEWSHIFT.zoom);
+      Vector3d.increment(currLoc, curr.x);
+      currLoc.x[0] -= app.viewPort.center.x;
+      currLoc.x[1] -= app.viewPort.center.y;
+      currLoc.x[2] -= 0.;
 
       
-      tmpDist2 = currLoc.v_dist2to([xy.x, xy.y, 0.]);
+      tmpDist2 = Vector3d.distSquared(currLoc, [xy.x, xy.y, 0.]);
 
       if(tmpDist2 < currDist ){
         currDist = tmpDist2;
@@ -234,24 +234,21 @@ Response.prototype.rocket = function(){
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
     
-    newGuy.position.setcoords(app.particles[0].position.x,
-                        app.particles[0].position.y,
-                        app.particles[0].position.z);
+    newGuy.x.set( app.particles[0].x );
 
-    newGuy.vel.setcoords(5000 * Math.cos(arc),
-                          5000 * Math.sin(arc), 
-                        0.);
+    newGuy.v.set([5000 * Math.cos(arc),
+      5000 * Math.sin(arc),
+      0.]);
 
   } else {
-    newGuy.position.setcoords(app.particles[app.FOLLOW].position.x,
-                        app.particles[app.FOLLOW].position.y,
-                        app.particles[app.FOLLOW].position.z);
-    newGuy.position.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
+    newGuy.x.set( app.particles[app.FOLLOW].x );
+    scatter = Vector3d.make();
+    Vector3d.randomizeWithMagnitude(scatter, 0.3 * Math.random());
+    newGuy.x.increment(scatter);
 
-    newGuy.vel.setcoords(app.particles[app.FOLLOW].vel.x,
-                        app.particles[app.FOLLOW].vel.y,
-                        app.particles[app.FOLLOW].vel.z);
-    newGuy.vel.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
+    newGuy.v.set( app.particles[app.FOLLOW].v );
+    Vector3d.randomizeWithMagnitude(scatter, 0.3 * Math.random());
+    newGuy.v.increment(scatter);
     app.FOLLOW = app.particles.length - 1;
   }
   
