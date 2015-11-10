@@ -98,7 +98,7 @@ Vector3d.prototype.scale = function(a){
 	this.z *= a;
 };
 
-Vector3d.unitRandom = function(){
+Vector3d.newRandomUnit = function(){
 	// Randomly directed uniformly over sphere.
 	var costheta = 2 * Math.random() - 1.;
 	var sintheta = Math.sqrt(1. - costheta*costheta);
@@ -106,9 +106,9 @@ Vector3d.unitRandom = function(){
 	return new Vector3d(Math.cos(phi)*sintheta, Math.sin(phi)*sintheta, costheta);
 };
 
-Vector3d.randomOfMagnitude = function(magnitude){
+Vector3d.newRandomWithMagnitude = function(magnitude){
 	//Randomly directed, but fixed magnitude:
-	var u = Vector3d.unitRandom();
+	var u = Vector3d.newRandomUnit();
 	u.scale(magnitude);
 	return u;
 };
