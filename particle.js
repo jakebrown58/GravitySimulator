@@ -27,7 +27,6 @@ Particle.prototype.velocity = function(){
 }
 
 Particle.prototype.acceleration = function(){
-
   return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2./(dt*dt));
 }
 
@@ -98,42 +97,47 @@ Particle.prototype.calcAcceleration = function(){
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if (curr.id === this.id) {continue;}
+      this.r.x = curr.position.x - this.position.x;
+      this.r.y = curr.position.y - this.position.y;
+      this.r.z = curr.position.z - this.position.z;
   
-    this.r.x = curr.position.x - this.position.x;
-    this.r.y = curr.position.y - this.position.y;
-    this.r.z = curr.position.z - this.position.z;
-
-    d2 =  this.r.x * this.r.x + 
-          this.r.y * this.r.y + 
-          this.r.z * this.r.z;
-    
-
-    if (d2 < app.COLLISION_IMMENENCE_RANGE2){
-      this.checkPotentialCollision(d2, curr);
+      d2 =  this.r.x * this.r.x + 
+            this.r.y * this.r.y + 
+            this.r.z * this.r.z;
+            // d2 = this.r.sumsq();    
+      
+      if (d2 < app.COLLISION_IMMENENCE_RANGE2){
+        this.checkPotentialCollision(d2, curr);
+      }
+      
+      acceleration = curr.mass / d2;
+      
+      if (acceleration > this.acceleration_to_beat){
+        heavy_hitters++;      
+          d  = Math.sqrt(d2);
+          d3 = d2 * d;
+          this.r.x *= (acceleration / d);
+          this.r.y *= (acceleration / d);
+          this.r.z *= (acceleration / d);
+  
+          this.acc.x += this.r.x;
+          this.acc.y += this.r.y;
+          this.acc.z += this.r.z;
+      }
+/*  By recording and ranking recent acceleration strengths, a minimum
+threshold (10th strongest) must be beat before the particle will
+perform detailed calculations in reaction to another.  The acceleration
+threshold and threshold rank update when the particle experiences too
+many or too few interactions above its threshold.  For 44 Particles,
+most particles seem to settle on 7th strongest influences.*/
+  // if (heavy_hitters > 2 * this.rank_to_beat){ //In a tough neighborhood!
+  //   this.rank_to_beat += 2;
+  //   this.toProfile = true;
+  // }else if ((heavy_hitters < this.rank_to_beat / 2) && (this.rank_to_beat > 3)){
+  //   this.rank_to_beat = Math.ceil(this.rank_to_beat / 2);
+  //   this.toProfile = true;
+  // }
     }
-
-    acceleration = curr.mass / d2;
-
-    if (acceleration > this.acceleration_to_beat){
-      heavy_hitters++;
-      d  = Math.sqrt(d2);
-      d3 = d2 * d;
-      this.r.x *= (acceleration / d);
-      this.r.y *= (acceleration / d);
-      this.r.z *= (acceleration / d);
-
-      this.acc.x += this.r.x;
-      this.acc.y += this.r.y;
-      this.acc.z += this.r.z;
-    }
-  }
-  if (heavy_hitters > 2 * this.rank_to_beat){ //In a tough neighborhood!
-    this.rank_to_beat += 2;
-    this.toProfile = true;
-  }else if ((heavy_hitters < this.rank_to_beat / 2) && (this.rank_to_beat > 3)){
-    this.rank_to_beat = Math.ceil(this.rank_to_beat / 2);
-    this.toProfile = true;
-  }
   this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
@@ -141,11 +145,12 @@ Particle.prototype.checkPotentialCollision = function(d2, curr) {
   // collision detection: if we're in range, add us (this particle and it's acceleration pair)
   // to the global list of potential collisions.  To avoid redundant work, only do this when
   // this particle has the lower id of the pair.  (don't do it twice when we calculate the inverse)
+  var d3 = d2; // TODO: set to d3?
   if (this.id < curr.id) {
     var lastBucket = -1;
     for (var bucket in app.potentialCollisions) {
       var num = (new Number(bucket) / 100);
-      if (lastBucket < d3 && d3 < num)
+      if (lastBucket < d2 && d2 < num)
         app.potentialCollisions[(lastBucket * 100).toString()].push([this.id, curr.id]);
 
       lastBucket = num;
@@ -174,15 +179,11 @@ Particle.prototype.kineticE = function(){
 }
 
 Particle.prototype.isBoundTo = function(p2){
-  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
-  v2 = this.velocity().dist_squared(p2.velocity());
-  d  = this.position.distance(p2.position);
-  energy = 0;
-
-  if(d > 0) {
-    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / d);
-  }
-  return energy < 0;
+  //The expression is equivalent to Mechanical Energy < 0
+  var vSq = this.velocity().dist_squared(p2.velocity());
+  var d  = this.position.distance(p2.position);
+  var GM = app.Physics.GRAVITY_CONSTANT*(this.mass+p2.mass);
+  return (d * (vSq/2.) < GM);
 };
 
 Particle.prototype.checkClock = function() {

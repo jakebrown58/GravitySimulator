@@ -93,7 +93,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.vel = new Vector3d(0., 0., 0.);
   little.acc = new Vector3d(0., 0., 0.);
   // little.pos.v_inc_by([5000 + Math.random() * 10000, 5000 + Math.random() * 10000, 5000 + Math.random() * 10000 ])
-  little.position = Vector3d.random_of_magnitude(5000 + 5000 * Math.random());
+  little.position = Vector3d.randomOfMagnitude(5000 + 5000 * Math.random());
   little.color = {r: 0, b: 0, g: 0};
   little.destroyed = true;
 
@@ -127,7 +127,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
   big.acc_old.scale(fracB);
   little.acc_old.scale(fracL);
-  big.acc_old.increment(little.oldacc);
+  big.acc_old.increment(little.acc_old);
 
 
   // cfg.U = 0;

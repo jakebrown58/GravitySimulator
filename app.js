@@ -18,6 +18,7 @@ app.init = function () {
   app.eventListener = {};
   app.collisions = 0;
   app.COLLISION_IMMENENCE_RANGE = .1;
+  app.COLLISION_IMMENENCE_RANGE2 = Math.pow(app.COLLISION_IMMENENCE_RANGE, 2/3);
   app.potentialCollisions = app.resetPotentialCollisions();
   app.thrust = new Thrust();
 

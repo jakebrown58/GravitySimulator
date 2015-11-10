@@ -252,6 +252,7 @@ Response.prototype.rocket = function(){
                         app.particles[app.FOLLOW].vel.y,
                         app.particles[app.FOLLOW].vel.z);
     newGuy.vel.increment(Vector3d.prototype.random_of_magnitude(0.3 * Math.random()));
+    app.FOLLOW = app.particles.length - 1;
   }
   
   app.PARTICLECOUNT = app.particles.length - 1;
