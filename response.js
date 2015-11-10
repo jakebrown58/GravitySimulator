@@ -227,13 +227,12 @@ Response.prototype.rocket = function(){
     var arc = 0;//Math.random() * 2 * Math.PI;
     newGuy.position = app.particles[0].position.slice(0);
     newGuy.vel = [5000 * Math.cos(arc), 5000 * Math.sin(arc), 0.];
-
   } else {
-    newGuy.position = app.particles[app.FOLLOW].position.slice(0);
-    newGuy.position.v_inc_by([].lRandom(0.3 * Math.random()));
-
-    newGuy.vel      = app.particles[app.FOLLOW].vel.slice(0);
-    newGuy.vel.v_inc_by([].lRandom(0.32 * Math.random()));
+    newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .25;
+    newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .25;
+    newGuy.velx = app.particles[app.FOLLOW].velx + Math.random() * .12;
+    newGuy.vely = app.particles[app.FOLLOW].vely + Math.random() * .12;
+    app.FOLLOW = app.particles.length - 1;
   }
   
   app.PARTICLECOUNT = app.particles.length - 1;
