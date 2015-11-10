@@ -146,6 +146,7 @@ Particle.prototype.checkPotentialCollision = function(d2, curr) {
   // collision detection: if we're in range, add us (this particle and it's acceleration pair)
   // to the global list of potential collisions.  To avoid redundant work, only do this when
   // this particle has the lower id of the pair.  (don't do it twice when we calculate the inverse)
+  var d3 = d2; // TODO: set to d3?
   if (this.id < curr.id) {
     var lastBucket = -1;
     for (var bucket in app.potentialCollisions) {
