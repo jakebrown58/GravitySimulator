@@ -228,8 +228,9 @@ Response.prototype.rocket = function(){
   } else {
     newGuy.x = app.particles[app.FOLLOW].x - Math.random() * .10 + Math.random() * .25;
     newGuy.y = app.particles[app.FOLLOW].y - Math.random() * .10 + Math.random() * .25;
-    newGuy.velx = app.particles[app.FOLLOW].velx + Math.random() * .32;
-    newGuy.vely = app.particles[app.FOLLOW].vely + Math.random() * .32;
+    newGuy.velx = app.particles[app.FOLLOW].velx + Math.random() * .12;
+    newGuy.vely = app.particles[app.FOLLOW].vely + Math.random() * .12;
+    app.FOLLOW = app.particles.length - 1;
   }
   
   app.PARTICLECOUNT = app.particles.length - 1;
