@@ -1,5 +1,8 @@
 /* ******************* RESPONSE ******************************************************* */
 var keyMap = {
+  // reference: https://css-tricks.com/snippets/javascript/javascript-keycodes/
+  // also, difference between keyCode and charCode:
+  // http://stackoverflow.com/questions/1772179/get-character-value-from-keycode-in-javascript-then-trim
   86: 'viewToggle', // v
   32: 'trace',  // '<space>'
   82: 'reset', // 'R'
@@ -14,7 +17,7 @@ var keyMap = {
   70: 'follow', // 'F'
   88: 'speedItUp', // 'X'
   90: 'slowItDown', // 'Z'
-  192: 'toggleCommandMode', // '`'
+  192: 'toggleCommandMode', // '` or ~'
   188: 'zoomOut', // '<'
   190: 'zoomIn', // '>'
   72: 'switchToDefaultView', // 'H'
@@ -27,7 +30,7 @@ var keyMap = {
 function Response() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
   app.eventListener.addEventListener('click', this.onClick);
-  app.eventListener.addEventListener('keydown', this.onKeyDown, this);
+  app.eventListener.addEventListener('keydown', this.onKeyDown);
   this.MODE = 'FOLLOW';
   this.CommandMode = 'COMMAND';
   app.textParser = new TextParser();
@@ -47,6 +50,8 @@ Response.prototype.onKeyDown = function(e, ref) {
   } else {
     //app.response.handleConsole(e);
   }
+
+  return false;
 };
 
 Response.prototype.onClick = function(e) {
@@ -79,7 +84,7 @@ Response.prototype.onMousemove = function(e) {
 
 Response.prototype.handleCommand = function(e) {
   var action = keyMap[e.keyCode];
-  if(action === 'toggleCommandMode') { app.response.switchCommandMode();  return ;}
+  if(action === 'toggleCommandMode') { app.response.switchCommandMode(); return;}
   if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
   if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
   if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
@@ -108,19 +113,20 @@ Response.prototype.handleConsole = function(e) {
 }
 
 Response.prototype.onCommandExit = function() {
-//  app.response.pause();
   app.response.CommandMode = 'COMMAND';
-  //app.eventListener.addEventListener("keydown", app.response.onKeyDown);
+  app.display.focus();
+  app.eventListener.addEventListener("keydown", app.response.eventHandle);
+
+  app.toggleConsoleVisibility(false);
 }
 
 
 Response.prototype.switchCommandMode = function() {
   app.response.CommandMode = 'shell';
   app.eventListener.removeEventListener("keydown", app.response.eventHandle);
-//  app.ctx.clearRect(0, 0, app.width, app.height);
-//  app.response.pause();
-//  app.ctx.clearRect(0, 0, app.width, app.height);
-  shellJs.init(app.display, app.response.onCommandExit, app.response.commands, true);
+
+  app.toggleConsoleVisibility(true);
+  shellJs.init(app.console, app.response.onCommandExit, app.response.commands, true, { keyCode: 192, displayText: "~ or `" } );
 }
 
 Response.prototype.changeMode = function() {
@@ -151,12 +157,14 @@ Response.prototype.follow = function(xy){
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
-      currLoc.x = (curr.x - app.viewPort.center.x) + (curr.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-      currLoc.y = (curr.y - app.viewPort.center.y) + (curr.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
-      tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
-      if(tmpDist < currDist ){
-        currDist = tmpDist;
-        currIndex = j;
+      if (curr && app.viewPort && app.viewPort.center) {
+        currLoc.x = (curr.x - app.viewPort.center.x) + (curr.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
+        currLoc.y = (curr.y - app.viewPort.center.y) + (curr.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
+        tmpDist = (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
+        if(tmpDist < currDist ){
+          currDist = tmpDist;
+          currIndex = j;
+        }
       }
     }
 
