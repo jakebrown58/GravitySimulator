@@ -1,13 +1,13 @@
 function Particle(id, x, y, z) {
   this.id = id;
-  this.position = new Vector3d(x,y,z);
-  this.vel = new Vector3d(0., 0., 0.);
-  this.acc = new Vector3d(0., 0., 0.);
-  this.acc_old = new Vector3d(0., 0., 0.);
-  this.acc_Swap = this.acc; //To flip flop back and forth, re-using the vectors.
-  this.r = new Vector3d(0., 0., 0.); //Vector pointing from self to another.
+  this.x = Vector3d.make(x, y, z);
+  this.v = Vector3d.make(0., 0., 0.);
+  this.a = Vector3d.make(0., 0., 0.);
+  this.aOld = Vector3d.make(0., 0., 0.);
+  this.aSwap = this.a; //To flip flop back and forth, re-using the vectors.
+  this.r = Vector3d.make(0., 0., 0.); //Vector pointing from self to another.
   this.dt = app.physics.variables.TIME_STEP_INTEGRATOR;
-  this.dt_old = this.dt;
+  this.dtOld = this.dt;
   this.remove = false;
   this.acceleration_to_beat = 0.;
   this.rank_to_beat = 10;
@@ -19,36 +19,40 @@ function Particle(id, x, y, z) {
 };
 
 Particle.prototype.speed_squared = function(){
-  return this.vel.sumsq() / (this.dt*this.dt);
+  return Vector3d.sumsq(this.v) / (this.dt*this.dt);
 }
 
 Particle.prototype.velocity = function(){
-  return new Vector3d(this.vel.x, this.vel.y, this.vel.z).scale(1./this.dt);
+  v = this.v.slice();
+  Vector3d.scale(v, 1./this.dt);
+  return v;
 }
 
 Particle.prototype.acceleration = function(){
-  return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2./(dt*dt));
+  a = this.a.slice();
+  Vector3d.scale(a, 2./(dt*dt));
+  return a;
 }
 
-Particle.prototype.updateTimeStep = function(dt_new){
-  this.dt_old = this.dt;
-  this.dt = dt_new;
-  var f = this.dt / this.dt_old;
+Particle.prototype.updateTimeStep = function(dtNew){
+  this.dtOld = this.dt;
+  this.dt = dtNew;
+  var f = this.dt / this.dtOld;
   var f_sq = f*f;
 
-  this.vel.x *= f;
-  this.vel.y *= f;
-  this.vel.z *= f;
+  this.v[0] *= f;
+  this.v[1] *= f;
+  this.v[2] *= f;
 
-  this.acc.x *= f_sq;
-  this.acc.y *= f_sq;
-  this.acc.z *= f_sq;
+  this.a[0] *= f_sq;
+  this.a[1] *= f_sq;
+  this.a[2] *= f_sq;
 
   //Leapfrog will discard these contents, but if anthing else needs them, they'll be correct.
 
-  this.acc_old.x *= f_sq;
-  this.acc_old.y *= f_sq;
-  this.acc_old.z *= f_sq;
+  this.aOld[0] *= f_sq;
+  this.aOld[1] *= f_sq;
+  this.aOld[2] *= f_sq;
 
   this.acceleration_to_beat *= f_sq;
 
@@ -62,13 +66,13 @@ Particle.prototype.profileAcceleration = function(){
     
     if(curr.id === this.id ) {continue;}
 
-    this.r.x = curr.position.x - this.position.x;
-    this.r.y = curr.position.y - this.position.y;
-    this.r.z = curr.position.z - this.position.z;
+    this.r[0] = curr.x[0] - this.x[0];
+    this.r[1] = curr.x[1] - this.x[1];
+    this.r[2] = curr.x[2] - this.x[2];
 
-    d2 =  this.r.x * this.r.x + 
-          this.r.y * this.r.y + 
-          this.r.z * this.r.z;
+    d2 =  this.r[0] * this.r[0] + 
+          this.r[1] * this.r[1] + 
+          this.r[2] * this.r[2];
     accelerations.push(curr.mass / d2);
   }
   accelerations.sort(function(a, b){return b-a});
@@ -86,10 +90,10 @@ Particle.prototype.calcAcceleration = function(){
   var acceleration = 0.;
   var heavy_hitters = 0.;
 
-  this.accSwap = this.acc_old; //To Re-use.
-  this.acc_old = this.acc;
-  this.acc = this.accSwap;
-  this.acc.zero();
+  this.aSwap = this.aOld; //To Re-use.
+  this.aOld = this.a;
+  this.a = this.aSwap;
+  this.a.set([0.,0.,0.]);
 
   // if (this.toProfile) {this.profileAcceleration();}
 
@@ -97,14 +101,14 @@ Particle.prototype.calcAcceleration = function(){
   for (i = 0; i < app.particles.length; i++) {
     curr = app.particles[i];
     if (curr.id === this.id) {continue;}
-      this.r.x = curr.position.x - this.position.x;
-      this.r.y = curr.position.y - this.position.y;
-      this.r.z = curr.position.z - this.position.z;
+      this.r[0] = curr.x[0] - this.x[0];
+      this.r[1] = curr.x[1] - this.x[1];
+      this.r[2] = curr.x[2] - this.x[2];
   
-      d2 =  this.r.x * this.r.x + 
-            this.r.y * this.r.y + 
-            this.r.z * this.r.z;
-            // d2 = this.r.sumsq();    
+      d2 =  this.r[0] * this.r[0] + 
+            this.r[1] * this.r[1] + 
+            this.r[2] * this.r[2];
+      // d2 = Vector3d.sumsq(this.r);
       
       if (d2 < app.COLLISION_IMMENENCE_RANGE2){
         this.checkPotentialCollision(d2, curr);
@@ -116,13 +120,13 @@ Particle.prototype.calcAcceleration = function(){
         heavy_hitters++;      
           d  = Math.sqrt(d2);
           d3 = d2 * d;
-          this.r.x *= (acceleration / d);
-          this.r.y *= (acceleration / d);
-          this.r.z *= (acceleration / d);
+          this.r[0] *= (acceleration / d);
+          this.r[1] *= (acceleration / d);
+          this.r[2] *= (acceleration / d);
   
-          this.acc.x += this.r.x;
-          this.acc.y += this.r.y;
-          this.acc.z += this.r.z;
+          this.a[0] += this.r[0];
+          this.a[1] += this.r[1];
+          this.a[2] += this.r[2];
       }
 /*  By recording and ranking recent acceleration strengths, a minimum
 threshold (10th strongest) must be beat before the particle will
@@ -138,7 +142,7 @@ most particles seem to settle on 7th strongest influences.*/
   //   this.toProfile = true;
   // }
     }
-  this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
+  Vector3d.scale(this.a, app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
 Particle.prototype.checkPotentialCollision = function(d2, curr) {
@@ -159,19 +163,19 @@ Particle.prototype.checkPotentialCollision = function(d2, curr) {
 };
 
 Particle.prototype.updatePosition = function() {
-  this.position.x += this.acc.x;
-  this.position.y += this.acc.y;
-  this.position.z += this.acc.z;
+  this.x[0] += this.a[0];
+  this.x[1] += this.a[1];
+  this.x[2] += this.a[2];
 
-  this.position.x += this.vel.x;
-  this.position.y += this.vel.y;
-  this.position.z += this.vel.z;
+  this.x[0] += this.v[0];
+  this.x[1] += this.v[1];
+  this.x[2] += this.v[2];
 };
 
 Particle.prototype.updateVelocity = function() {
-  this.vel.x += (this.acc_old.x + this.acc.x);
-  this.vel.y += (this.acc_old.y + this.acc.y);
-  this.vel.z += (this.acc_old.z + this.acc.z);
+  this.v[0] += (this.aOld[0] + this.a[0]);
+  this.v[1] += (this.aOld[1] + this.a[1]);
+  this.v[2] += (this.aOld[2] + this.a[2]);
 };
 
 Particle.prototype.kineticE = function(){
@@ -180,8 +184,8 @@ Particle.prototype.kineticE = function(){
 
 Particle.prototype.isBoundTo = function(p2){
   //The expression is equivalent to Mechanical Energy < 0
-  var vSq = this.velocity().dist_squared(p2.velocity());
-  var d  = this.position.distance(p2.position);
+  var vSq = Vector3d.distSquared(this.v, p2.v);
+  var d   = Vector3d.distance(this.x, p2.x);
   var GM = app.Physics.GRAVITY_CONSTANT*(this.mass+p2.mass);
   return (d * (vSq/2.) < GM);
 };
@@ -232,20 +236,18 @@ Particle.prototype.configure = function(config) {
   particle.name = config.name;
   particle.mass = config.mass;
 
-  particle.position.x = app.halfWidth - localRadius * Math.cos(config.arc);
-  particle.position.y = app.halfHeight - localRadius * Math.sin(config.arc);
-  particle.position.z = 0.0;
+  particle.x.set([app.halfWidth - localRadius * Math.cos(config.arc),
+                  app.halfHeight - localRadius * Math.sin(config.arc),
+                  0.0]);
   
-  particle.vel.x = localOrbitalVelocity * Math.sin(config.arc);
-  particle.vel.y = localOrbitalVelocity * (-Math.cos(config.arc));
-  particle.vel.z = 0.0;
+  particle.v.set([localOrbitalVelocity * Math.sin(config.arc),
+                  localOrbitalVelocity * (-Math.cos(config.arc)),
+                  0.0]);
 
-  particle.vel.scale(app.physics.variables.TIME_STEP_INTEGRATOR);
+  Vector3d.scale(particle.v, app.physics.variables.TIME_STEP_INTEGRATOR);
   
   //Just for safety, initialize to zero.  
-  particle.acc.x = 0.;
-  particle.acc.y = 0.;
-  particle.acc.z = 0.;
+  particle.a.set([0., 0., 0.]);
 
 
   particle.size = config.drawSize;    
