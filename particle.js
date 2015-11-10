@@ -25,7 +25,6 @@ Particle.prototype.velocity = function(){
 }
 
 Particle.prototype.acceleration = function(){
-
   return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2./(dt*dt));
 }
 
