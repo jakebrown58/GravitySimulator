@@ -67,7 +67,7 @@ ViewPort.prototype.drawParticles = function() {
   var particles = app.particles;
 
   var currColor = particles[0].drawColor;
-  app.FOLLOWXY = [app.particles[app.FOLLOW].position.x, app.particles[app.FOLLOW].position.y];
+  app.FOLLOWXY = app.particles[app.FOLLOW].position.asXYZ();
   app.ctx.strokeStyle = currColor;
   for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
@@ -82,16 +82,17 @@ ViewPort.prototype.drawParticles = function() {
 ViewPort.prototype.drawParticle = function(particle) {
   var obj,
     drawSize = particle.size;
-
+    position = particle.position.asXYZ();
 
   if(app.DRAWSTATE === 0) {
-    obj = app.viewPort.project(particle.position.x, particle.position.y, particle.position.z);
+
+    obj = app.viewPort.project(position.x, position.y, position.z);
     obj.x = obj.x - app.VIEWSHIFT.x;
     obj.y = obj.y - app.VIEWSHIFT.y;
   } else {
-    obj = {x: particle.position.x, y: particle.position.y};
-    obj.x = (obj.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (obj.x - app.FOLLOWXY[0]) * app.VIEWSHIFT.zoom;
-    obj.y = (obj.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (obj.y - app.FOLLOWXY[1]) * app.VIEWSHIFT.zoom;
+    obj = position;
+    obj.x = (obj.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (obj.x - app.FOLLOWXY.x) * app.VIEWSHIFT.zoom;
+    obj.y = (obj.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (obj.y - app.FOLLOWXY.y) * app.VIEWSHIFT.zoom;
   }
 
   if(particle.radius > 1) {
@@ -285,9 +286,10 @@ ViewPort.prototype.showRocketTelemetry = function() {
     this.appendLine("   targeting: " + app.particles[3].name);
     this.appendLine("     target speed: " + Math.round(app.physics.getParticleSpeed(app.particles[3]) * 1000, 0));
     this.appendLine("     target direction: " + Math.round(app.particles[3].direction, 0));
-
-    var d3Sol = Math.round(focusParticle.dist(focusParticle.x - app.particles[0].x, focusParticle.y - app.particles[0].y, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
-    var d3Target = Math.round(focusParticle.dist(focusParticle.x - app.particles[3].x, focusParticle.y - app.particles[3].y, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
+    var solPosition = app.particles[0].position.asXYZ();
+    var d3Sol = Math.round(focusParticle.dist(focusParticle.x - solPosition.x, focusParticle.y - solPosition, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
+    var earthPosition = app.particles[3].position.asXYZ();
+    var d3Target = Math.round(focusParticle.dist(focusParticle.x - earthPosition.x, focusParticle.y - earthPosition.y, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
     this.appendLine("     d(SOL): " + (d3Sol / 500));
     this.appendLine("     d(TAR): " + (d3Target / 500));
 

@@ -58,9 +58,11 @@ Physics.prototype.leapFrog = function () {
   }  
 
   if(app.response.MODE === 'ROCKET') {
-    ps[app.FOLLOW].vel.x -= app.thrust.getThrustVector().x / 3000;
-    ps[app.FOLLOW].vel.y -= app.thrust.getThrustVector().y / 3000;
-    ps[app.FOLLOW].vel.z -= app.thrust.getThrustVector().z / 3000;
+    rocketVel = ps[app.FOLLOW].vel.asXYZ();
+    rocketVel.x -= app.thrust.getThrustVector().x / 3000;
+    rocketVel.y -= app.thrust.getThrustVector().y / 3000;
+    rocketVel.z -= app.thrust.getThrustVector().z / 3000;
+    ps[app.FOLLOW].v.setXYZ(rocketVel.x, rocketVel.y, rocketVel.z);
   }
 };
 
