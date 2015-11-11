@@ -74,8 +74,8 @@ Particle.prototype.calcAcceleration = function(){
       d  = Math.sqrt(d2);
       d3 = d2 * d;
 
-      if (d3 < app.COLLISION_IMMENENCE_RANGE) {
-        this.checkPotentialCollision(d3, curr);
+      if (d < app.COLLISION_IMMENENCE_RANGE) {
+        this.checkPotentialCollision(d, curr);
       }
       // if(d3 < app.closestPair.d || app.closestPair === 0) {
       //   app.closestPair.d = Math.sqrt(dx * dx + dy * dy);
@@ -93,7 +93,7 @@ Particle.prototype.calcAcceleration = function(){
   this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
-Particle.prototype.checkPotentialCollision = function(d3, curr) {
+Particle.prototype.checkPotentialCollision = function(d, curr) {
   // collision detection: if we're in range, add us (this particle and it's acceleration pair)
   // to the global list of potential collisions.  To avoid redundant work, only do this when
   // this particle has the lower id of the pair.  (don't do it twice when we calculate the inverse)
@@ -101,7 +101,7 @@ Particle.prototype.checkPotentialCollision = function(d3, curr) {
     var lastBucket = -1;
     for (var bucket in app.potentialCollisions) {
       var num = (new Number(bucket) / 100);
-      if (lastBucket < d3 && d3 < num)
+      if (lastBucket < d && d < num)
         app.potentialCollisions[(lastBucket * 100).toString()].push([this.id, curr.id]);
 
       lastBucket = num;
