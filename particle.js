@@ -59,8 +59,13 @@ Particle.prototype.calcAccelerationOpen = function(d3Fn){
     if(curr.id !== this.id ) {
       rel = [curr.position[0] - this.position[0],
              curr.position[1] - this.position[1],
-             curr.position[2] - this.position[2]]
-      d3 = curr.d3to(this);
+             curr.position[2] - this.position[2]];
+      //Recommend replacing all tests of d3 with tests against d2.
+      d2 = rel[0] * rel[0] + 
+           rel[1] * rel[1] + 
+           rel[2] * rel[2];
+      d  = Math.sqrt(d2);
+      d3 = d2 * d;
 
       if (d < app.COLLISION_IMMENENCE_RANGE) {
         this.checkPotentialCollision(d, curr);
