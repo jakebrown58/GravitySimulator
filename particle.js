@@ -104,18 +104,18 @@ Particle.prototype.calcAcceleration = function(){
       d2 =  this.r.x * this.r.x + 
             this.r.y * this.r.y + 
             this.r.z * this.r.z;
-            // d2 = this.r.sumsq();    
       
-      if (d2 < app.COLLISION_IMMENENCE_RANGE2){
-        this.checkPotentialCollision(d2, curr);
+      d  = Math.sqrt(d2);
+      d3 = d2 * d;
+
+      if (d < app.COLLISION_IMMENENCE_RANGE) {
+        this.checkPotentialCollision(d, curr);
       }
       
       acceleration = curr.mass / d2;
       
       if (acceleration > this.acceleration_to_beat){
         heavy_hitters++;      
-          d  = Math.sqrt(d2);
-          d3 = d2 * d;
           this.r.x *= (acceleration / d);
           this.r.y *= (acceleration / d);
           this.r.z *= (acceleration / d);
@@ -141,7 +141,7 @@ most particles seem to settle on 7th strongest influences.*/
   this.acc.scale(app.physics.constants.GRAVITY_CONSTANT * dt_sq_over2);
 };
 
-Particle.prototype.checkPotentialCollision = function(d2, curr) {
+Particle.prototype.checkPotentialCollision = function(d, curr) {
   // collision detection: if we're in range, add us (this particle and it's acceleration pair)
   // to the global list of potential collisions.  To avoid redundant work, only do this when
   // this particle has the lower id of the pair.  (don't do it twice when we calculate the inverse)
@@ -150,7 +150,7 @@ Particle.prototype.checkPotentialCollision = function(d2, curr) {
     var lastBucket = -1;
     for (var bucket in app.potentialCollisions) {
       var num = (new Number(bucket) / 100);
-      if (lastBucket < d2 && d2 < num)
+      if (lastBucket < d && d < num)
         app.potentialCollisions[(lastBucket * 100).toString()].push([this.id, curr.id]);
 
       lastBucket = num;
