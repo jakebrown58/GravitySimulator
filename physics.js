@@ -75,16 +75,9 @@ Physics.prototype.collide_glom = function(p1, p2) {
     big = p2;
     little = p1;
   }
-  var mass  = big.mass + little.mass;
-  var fracB = big.mass / mass;
+  var mass  = big.mass    + little.mass;
+  var fracB = big.mass    / mass;
   var fracL = little.mass / mass;
-// Why do we do this to the little particle?  -- bad bad hacky reasons.  better to Oblitterate it.
-  little.mass = 0.00000000000001;
-  little.vel = new Vector3d(0., 0., 0.);
-  little.acc = new Vector3d(0., 0., 0.);
-  little.position = Vector3d.prototype.randomOfMagnitude(5000 + 5000 * Math.random());
-  little.color = {r: 0, b: 0, g: 0};
-  little.destroyed = true;
 
 
   var vol = 1.33 * Math.PI * Math.pow(big.radius, 3);
@@ -98,9 +91,6 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.position.scale(fracL);
   big.position.increment(little.position);
   
-
-  little.position = new Vector3d(-152115125, Math.random() * -125125427, Math.random() * 12500);
-
   // big.oldpos.scale(fracB);
   // little.oldpos.scale(fracL);
   // big.oldpos.v_inc_by(little.oldpos);
@@ -128,6 +118,17 @@ Physics.prototype.collide_glom = function(p1, p2) {
   // cfg.U += big.kineticE() + little.kineticE() - cfg.kenetic;  //Leftover energy becomes thermal E of new thingy.
 
   // cfg.kenetic = (1/2) * cfg.mass * (cfg.velx * cfg.velx + cfg.vely * cfg.vely)
+
+
+// Why do we do this to the little particle?  -- bad bad hacky reasons.  better to Oblitterate it.
+  little.mass = 0.00000000000001;
+  little.vel = new Vector3d(0., 0., 0.);
+  little.acc = new Vector3d(0., 0., 0.);
+
+  little.position = Vector3d.prototype.randomOfMagnitude(5000 + 5000 * Math.random());
+  little.color = {r: 0, b: 0, g: 0};
+  little.destroyed = true;
+
 
   if(app.FOLLOW === little.id) {
     app.FOLLOW = big.id;
