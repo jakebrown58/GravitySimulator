@@ -4,14 +4,26 @@ function Vector3d(x, y, z){
 	this.z = z;
 }
 
-Vector3d.prototype.setcoords = function(x, y, z){
+Vector3d.prototype.setXYZ = function(x, y, z){
 	this.x = x;
 	this.y = y;
 	this.z = z;
-}
+};
+
+Vector3d.prototype.setFromV = function(v){
+	this.x = v.x;
+	this.y = v.y;
+	this.z = v.z;
+};
+
+Vector3d.prototype.asXYZ = function(){
+	return { x: this.x,
+			y: this.y,
+			z: this.z}
+};
 
 Vector3d.prototype.zero = function(){
-    this.setcoords(0., 0., 0.);
+    this.setXYZ(0., 0., 0.);
 }
 
 
