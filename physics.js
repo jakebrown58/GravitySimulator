@@ -7,6 +7,7 @@ function Physics() {
   this.constants.JUPITER_MASS = 1;
   this.constants.EARTH_MASS = 1 / 317;
   this.constants.ASTRONOMICAL_UNIT = 50;  // astronomical unit / ie, 1 Earth distance from the sun.
+  //Or, 50 simulation units = 1AU, or sim unit = 0.02 AU;
   this.constants.MILES_PER_AU = 92560000;
   this.constants.KM_PER_AU = 149586761;
   this.constants.LIGHTYEAR_PER_AU = 63239.72;

@@ -9,6 +9,16 @@ function ViewPort(){
   this.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
   this.colorSorted = false;
+  this.DRAW_STATE_NORTHSTAR = 0;
+  this.DRAW_STATE_ISOMETRIC = 1;
+  this.MAX_DRAW_STATE       = 1;
+  this.DRAW_STATE_SPLASH    = 4;
+  this.drawState = this.DRAW_STATE_SPLASH;
+}
+
+ViewPort.prototype.cycleState = function(){
+  this.drawState++;
+  if (this.drawState > this.MAX_DRAW_STATE) this.drawState = 0;
 }
 
 ViewPort.prototype.splash = function() {
@@ -81,10 +91,10 @@ ViewPort.prototype.drawParticles = function() {
 
 ViewPort.prototype.drawParticle = function(particle) {
   var obj,
-    drawSize = particle.size;
+    drawSize = particle.size,
     position = particle.position.asXYZ();
 
-  if(app.DRAWSTATE === 0) {
+  if(this.drawState === this.DRAW_STATE_ISOMETRIC) {//Isometric
 
     obj = app.viewPort.project(position.x, position.y, position.z);
     obj.x = obj.x - app.VIEWSHIFT.x;
@@ -153,7 +163,7 @@ ViewPort.prototype.frame = function() {
 };
 
 ViewPort.prototype.frameActions = function() {
-  if(app.DRAWSTATE === 4) {
+  if(this.drawState === this.DRAW_STATE_SPLASH) {
     app.ctx.lineWidth = 1;
 
     app.ctx.font="20px Arial";

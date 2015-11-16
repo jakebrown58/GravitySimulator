@@ -301,15 +301,16 @@ Response.prototype.pause = function() {
 }
 
 Response.prototype.changeView = function() {
-  app.DRAWSTATE += 1;
+  app.viewPort.cycleState();
+  // app.DRAWSTATE += 1;
   app.ctx.font="12px Calibri";
 
-  if(app.DRAWSTATE === 3) {
-    app.DRAWSTATE = 0;
-  }
-  if(app.DRAWSTATE > 3) {
-    app.DRAWSTATE = 1;
-  }
+  // if(app.DRAWSTATE === 3) {
+  //   app.DRAWSTATE = 0;
+  // }
+  // if(app.DRAWSTATE > 3) {
+  //   app.DRAWSTATE = 1;
+  // }
   app.ctx.clearRect(0, 0, app.width, app.height);  
 }
 

@@ -5,7 +5,6 @@ app.init = function () {
   app.particles = [];
   app.mouse = { x: app.halfWidth, y: app.halfHeight };
   app.TRACE = false;
-  app.DRAWSTATE = 4;
   app.VIEWSHIFT = {x: -50, y: 0, z: 0, zoom: 0};
   app.GO = true;
   app.VIEWANGLE = .75;
