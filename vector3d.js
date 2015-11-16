@@ -45,6 +45,23 @@ Vector3d.prototype.dot = function(v){
 			this.z*v.z;
 };
 
+Vector3d.prototype.cross = function(v2){
+	v1Xv2 = new Vector3d(this.y*v2.z - this.z*v2.y,
+						-this.x*v2.z + this.z*v2.x,
+						 this.x*v2.y - this.y*v2.x);
+	return v1Xv2;
+}
+
+Vector3d.prototype.projectPlane = function(plane){
+	//Plane is a Vector3d perpendicular to that plane.
+	var projectedV = new Vector3d(this.x, this.y, this.z);
+	var z = plane.dot(projectedV);
+	projectedV.x -= z * plane.x;
+	projectedV.y -= z * plane.y;
+	projectedV.z -= z * plane.z;
+	return projectedV;
+}
+
 Vector3d.prototype.dist_squared = function(v){
 	var dx, dy, dz;
 	dx = this.x - v.x;
@@ -127,10 +144,11 @@ Vector3d.prototype.unitFromAngles = function(theta, phi){
 	// Phi is the angle in the x-y plane (called azimuth, like longitude)
 	// theta is the angle from the north celestial pole (like latitude, but starts at 0 at pole)
 	costheta = Math.cos(theta);
-	sintheta = Math.sqrt(1-costheta*costheta); //Guaranteed positive.
+	sintheta = Math.sin(theta);
 	cosphi = Math.cos(phi);
 	sinphi = Math.sin(phi);
-	return Vector3d(cosphi*sintheta, sinphi*sintheta,costheta);
+	u = new Vector3d(cosphi*sintheta, sinphi*sintheta,costheta);
+	return u;
 }
 
 Vector3d.prototype.unitVector = function(){

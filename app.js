@@ -7,7 +7,6 @@ app.init = function () {
   app.TRACE = false;
   app.VIEWSHIFT = {x: -50, y: 0, z: 0, zoom: 0};
   app.GO = true;
-  app.VIEWANGLE = .75;
   app.FOLLOW = 0;
   app.CLOCK = {j: 0, e: 0, n: 0, ticks: 0};
   app.SHOWCLOCK = false;
