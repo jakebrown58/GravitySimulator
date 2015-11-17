@@ -168,8 +168,8 @@ Response.prototype.getNearest = function(clickXY){
     
     jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
 
-    dx   = jXY.x - clickXY.x;
-    dy   = jXY.y - clickXY.y;
+    dx   = jXY.x - clickXY.x + app.ctx.canvas.offsetLeft;
+    dy   = jXY.y - clickXY.y + app.ctx.canvas.offsetTop;
     dSq  = dx * dx + dy * dy;
 
     if (dSq < dSqClosest){
