@@ -234,24 +234,24 @@ Response.prototype.rocket = function(){
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
     
-    newGuy.position.setcoords(app.particles[0].position.x,
+    newGuy.position.setXYZ(app.particles[0].position.x,
                         app.particles[0].position.y,
                         app.particles[0].position.z);
 
-    newGuy.vel.setcoords(5000 * Math.cos(arc),
+    newGuy.vel.setXYZ(5000 * Math.cos(arc),
                           5000 * Math.sin(arc), 
                         0.);
 
   } else {
-    newGuy.position.setcoords(app.particles[app.FOLLOW].position.x,
+    newGuy.position.setXYZ(app.particles[app.FOLLOW].position.x,
                         app.particles[app.FOLLOW].position.y,
                         app.particles[app.FOLLOW].position.z);
-    newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3 * Math.random()));
+    newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3));
 
-    newGuy.vel.setcoords(app.particles[app.FOLLOW].vel.x,
+    newGuy.vel.setXYZ(app.particles[app.FOLLOW].vel.x,
                         app.particles[app.FOLLOW].vel.y,
                         app.particles[app.FOLLOW].vel.z);
-    newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.3 * Math.random()));
+    newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.0003 * Math.random()));
     app.FOLLOW = app.particles.length - 1;
   }
   

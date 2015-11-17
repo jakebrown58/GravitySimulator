@@ -62,7 +62,7 @@ Physics.prototype.leapFrog = function () {
     rocketVel.x -= app.thrust.getThrustVector().x / 3000;
     rocketVel.y -= app.thrust.getThrustVector().y / 3000;
     rocketVel.z -= app.thrust.getThrustVector().z / 3000;
-    ps[app.FOLLOW].v.setXYZ(rocketVel.x, rocketVel.y, rocketVel.z);
+    ps[app.FOLLOW].vel.setXYZ(rocketVel.x, rocketVel.y, rocketVel.z);
   }
 };
 
