@@ -215,6 +215,7 @@ ViewPort.prototype.frameClock = function() {
 
     var frameRate = Math.floor((1000 * (app.CLOCK.ticks - app.CLOCK.splitTicks)/ (new Date() - new Date(app.splitTime))));
     var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP_INTEGRATOR;
+    hoursPerTick = Math.abs(hoursPerTick);
     var daysPerSecond = frameRate * (hoursPerTick / 24);
     this.appendLine("Simulation Speed: " + app.physics.variables.TIME_STEP);
 
