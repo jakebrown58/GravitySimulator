@@ -54,39 +54,11 @@ ViewPort.prototype.splash = function() {
  this.appendLine('....rocketIncreaseThrust - UP');
 };
 
-// ViewPort.prototype.project = function(flatX, flatY, flatZ) {
-//   var point = app.viewPort.iso(flatX, flatY);
-//   var x0 = app.width * 0.5;
-//   var y0 = app.height * 0.2;
-//   var z = app.size * 0.5 - flatZ + point.y * Math.sin(app.VIEWANGLE);
-//   var x = (point.x - app.size * 0.5) * 6;
-//   var y = (app.size - point.y) * 0.005 + 1;
-
-//   return {
-//     x: this.shift.x + x0 + x / y,
-//     y: this.shift.y + y0 + z / y
-//   };
-// };
-
-// ViewPort.prototype.iso = function(x, y) {
-//   return {
-//     x: 0.5 * (app.size + x - y),
-//     y: 0.5 * (x + y)
-//   };
-// };
-//A viewport can be thought of as a map from
-//Objects in sim units
-//Landmarks in sim units (such as object we're following)
-//to app(screen coords)
-//response.js will tell us the details of the window
-//It also draws them there.
-
 
 ViewPort.prototype.drawParticles = function() {
   var particles = app.particles;
 
   var currColor = particles[0].drawColor;
-  // app.FOLLOWXY = app.particles[app.FOLLOW].position.asXYZ();
   app.ctx.strokeStyle = currColor;
   for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
@@ -99,15 +71,20 @@ ViewPort.prototype.drawParticles = function() {
 };
 
 
-ViewPort.prototype.XY = function(position){
-  //Takes the position and maps it to viewport x, y coordinates.
-  var r = new Vector3d(0., 0., 0.);
+ViewPort.prototype.MapPositionToViewPortXY = function(position){
+  /*Takes the position and maps it to viewport x, y coordinates, by 
+  finding it's position relative to the currently followed particle,
+  projecting that position onto 2 axes, described by vectors.*/
+  var r, xy;
+  
+  r = new Vector3d(0., 0., 0.);
   r.setFromV(position);
   r.decrement(app.particles[app.FOLLOW].position);
 
-  var xy = {x: r.dot(this.xAxis), y:r.dot(this.yAxis)};
+  xy   = {x: r.dot(this.xAxis), y:r.dot(this.yAxis)};
   xy.x = (xy.x)*(1+this.shift.zoom) + app.halfWidth  - this.shift.x;
   xy.y = (xy.y)*(1+this.shift.zoom) + app.halfHeight - this.shift.y;
+
   return xy;
 }
 
@@ -118,7 +95,7 @@ ViewPort.prototype.drawParticle = function(particle) {
   var obj,
     drawSize = particle.size;
 
-  obj = this.XY(particle.position);
+  obj = this.MapPositionToViewPortXY(particle.position);
 
   if(particle.radius > 1) {
     var pctOfViewport = particle.radius / app.viewPort.viewPortSizeInKm;
