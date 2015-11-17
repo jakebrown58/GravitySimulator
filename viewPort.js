@@ -6,9 +6,21 @@ function ViewPort(){
   this.txtOffset = 25;
   this.lineHeight = 20;
   this.draw = true;
-  this.viewPortSize = (app.width / (app.VIEWSHIFT.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
+  this.viewAngle   = Math.PI/3.;
+  this.shift   = {x: -50, y: 0, z: 0, zoom: 0};
+  this.viewPortSize = (app.width / (this.shift.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
   this.colorSorted = false;
+  this.DRAW_STATE_TOP_DOWN = 0;
+  this.DRAW_STATE_ISOMETRIC = 1;
+  this.MAX_DRAW_STATE       = 1;
+  this.DRAW_STATE_SPLASH    = 4;
+  this.drawState = this.DRAW_STATE_SPLASH;
+}
+
+ViewPort.prototype.cycleState = function(){
+  this.drawState++;
+  if (this.drawState > this.MAX_DRAW_STATE) this.drawState = 0;
 }
 
 ViewPort.prototype.splash = function() {
@@ -42,32 +54,39 @@ ViewPort.prototype.splash = function() {
  this.appendLine('....rocketIncreaseThrust - UP');
 };
 
-ViewPort.prototype.project = function(flatX, flatY, flatZ) {
-  var point = app.viewPort.iso(flatX, flatY);
-  var x0 = app.width * 0.5;
-  var y0 = app.height * 0.2;
-  var z = app.size * 0.5 - flatZ + point.y * Math.sin(app.VIEWANGLE);
-  var x = (point.x - app.size * 0.5) * 6;
-  var y = (app.size - point.y) * 0.005 + 1;
+// ViewPort.prototype.project = function(flatX, flatY, flatZ) {
+//   var point = app.viewPort.iso(flatX, flatY);
+//   var x0 = app.width * 0.5;
+//   var y0 = app.height * 0.2;
+//   var z = app.size * 0.5 - flatZ + point.y * Math.sin(app.VIEWANGLE);
+//   var x = (point.x - app.size * 0.5) * 6;
+//   var y = (app.size - point.y) * 0.005 + 1;
 
-  return {
-    x: app.VIEWSHIFT.x + x0 + x / y,
-    y: app.VIEWSHIFT.y + y0 + z / y
-  };
-};
+//   return {
+//     x: this.shift.x + x0 + x / y,
+//     y: this.shift.y + y0 + z / y
+//   };
+// };
 
-ViewPort.prototype.iso = function(x, y) {
-  return {
-    x: 0.5 * (app.size + x - y),
-    y: 0.5 * (x + y)
-  };
-};
+// ViewPort.prototype.iso = function(x, y) {
+//   return {
+//     x: 0.5 * (app.size + x - y),
+//     y: 0.5 * (x + y)
+//   };
+// };
+//A viewport can be thought of as a map from
+//Objects in sim units
+//Landmarks in sim units (such as object we're following)
+//to app(screen coords)
+//response.js will tell us the details of the window
+//It also draws them there.
+
 
 ViewPort.prototype.drawParticles = function() {
   var particles = app.particles;
 
   var currColor = particles[0].drawColor;
-  app.FOLLOWXY = app.particles[app.FOLLOW].position.asXYZ();
+  // app.FOLLOWXY = app.particles[app.FOLLOW].position.asXYZ();
   app.ctx.strokeStyle = currColor;
   for(var i = 0 ; i < app.particles.length; i++ ){
     if(particles[i].drawColor != currColor) {
@@ -79,21 +98,27 @@ ViewPort.prototype.drawParticles = function() {
   }
 };
 
+
+ViewPort.prototype.XY = function(position){
+  //Takes the position and maps it to viewport x, y coordinates.
+  var r = new Vector3d(0., 0., 0.);
+  r.setFromV(position);
+  r.decrement(app.particles[app.FOLLOW].position);
+
+  var xy = {x: r.dot(this.xAxis), y:r.dot(this.yAxis)};
+  xy.x = (xy.x)*(1+this.shift.zoom) + app.halfWidth  - this.shift.x;
+  xy.y = (xy.y)*(1+this.shift.zoom) + app.halfHeight - this.shift.y;
+  return xy;
+}
+
+
+
+
 ViewPort.prototype.drawParticle = function(particle) {
   var obj,
     drawSize = particle.size;
-    position = particle.position.asXYZ();
 
-  if(app.DRAWSTATE === 0) {
-
-    obj = app.viewPort.project(position.x, position.y, position.z);
-    obj.x = obj.x - app.VIEWSHIFT.x;
-    obj.y = obj.y - app.VIEWSHIFT.y;
-  } else {
-    obj = position;
-    obj.x = (obj.x - app.viewPort.center.x - app.VIEWSHIFT.x) + (obj.x - app.FOLLOWXY.x) * app.VIEWSHIFT.zoom;
-    obj.y = (obj.y - app.viewPort.center.y - app.VIEWSHIFT.y) + (obj.y - app.FOLLOWXY.y) * app.VIEWSHIFT.zoom;
-  }
+  obj = this.XY(particle.position);
 
   if(particle.radius > 1) {
     var pctOfViewport = particle.radius / app.viewPort.viewPortSizeInKm;
@@ -153,7 +178,7 @@ ViewPort.prototype.frame = function() {
 };
 
 ViewPort.prototype.frameActions = function() {
-  if(app.DRAWSTATE === 4) {
+  if(this.drawState === this.DRAW_STATE_SPLASH) {
     app.ctx.lineWidth = 1;
 
     app.ctx.font="20px Arial";
@@ -327,6 +352,15 @@ ViewPort.prototype.setClock = function() {
 
 ViewPort.prototype.setIntegrate = function() {
   app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
+
+  if(this.drawState == this.DRAW_STATE_ISOMETRIC){
+    this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, Math.PI/2);
+    this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, 0);
+  }else{
+    this.xAxis = new Vector3d(1., 0., 0.);
+    this.yAxis = new Vector3d(0., 1., 0.);    
+  }
+  this.zAxis = this.xAxis.cross(this.yAxis);
   app.viewPort.drawParticles();
   // for (i = 0; i < app.particles.length; i++) {
   //   //current = app.particles[i];
@@ -338,41 +372,41 @@ ViewPort.prototype.setIntegrate = function() {
 
 
 ViewPort.prototype.adjustZoom = function(direction) {
-  var nearZero = app.VIEWSHIFT.zoom < .0001 && app.VIEWSHIFT.zoom > -.0001;
+  var nearZero = this.shift.zoom < .0001 && this.shift.zoom > -.0001;
   if(nearZero === true) {
-    app.VIEWSHIFT.zoom = 0;
+    this.shift.zoom = 0;
 
     if(direction === 'in') {
-      app.VIEWSHIFT.zoom = .5;
+      this.shift.zoom = .5;
     }
     if(direction === 'out') {
-      app.VIEWSHIFT.zoom = -.015625;
+      this.shift.zoom = -.015625;
     }
 
     return;
   }
 
   if(direction === 'in') {
-    if(app.VIEWSHIFT.zoom > 0) {
-      app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom * 2;
+    if(this.shift.zoom > 0) {
+      this.shift.zoom = this.shift.zoom * 2;
     } else {
-      app.VIEWSHIFT.zoom = -1 - ((-1 - app.VIEWSHIFT.zoom) * 4 / 3);
+      this.shift.zoom = -1 - ((-1 - this.shift.zoom) * 4 / 3);
     }
   } else {
-    if(app.VIEWSHIFT.zoom > 0) {
-      app.VIEWSHIFT.zoom = app.VIEWSHIFT.zoom / 2;
+    if(this.shift.zoom > 0) {
+      this.shift.zoom = this.shift.zoom / 2;
     } else {
-      app.VIEWSHIFT.zoom = -1 - ((-1 - app.VIEWSHIFT.zoom) * 3 / 4);
+      this.shift.zoom = -1 - ((-1 - this.shift.zoom) * 3 / 4);
     }
     
   }
 
-  if(app.VIEWSHIFT.zoom <= -.99995) {
-    app.VIEWSHIFT.zoom = -.99995;
+  if(this.shift.zoom <= -.99995) {
+    this.shift.zoom = -.99995;
   } 
 
-  if(app.VIEWSHIFT.zoom !== -1) {
-    app.viewPort.viewPortSize = (app.width / (1 + app.VIEWSHIFT.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
+  if(this.shift.zoom !== -1) {
+    app.viewPort.viewPortSize = (app.width / (1 + this.shift.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
     app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
   }
 
