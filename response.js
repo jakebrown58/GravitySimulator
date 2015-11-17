@@ -69,13 +69,13 @@ Response.prototype.onClick = function(e) {
 Response.prototype.onMousemove = function(e) {
   var up = app.mouse.y > e.clientY;
 
-  app.VIEWANGLE = up ? app.VIEWANGLE + Math.PI / 32 : app.VIEWANGLE - Math.PI / 32;
+  app.viewPort.viewAngle = up ? app.viewPort.viewAngle + Math.PI / 32 : app.viewPort.viewAngle - Math.PI / 32;
 
-  if(app.VIEWANGLE < 0) {
-    app.VIEWANGLE = 0;
+  if(app.viewPort.viewAngle < 0) {
+    app.viewPort.viewAngle = 0;
   }
-  if(app.VIEWANGLE > Math.PI / 2) {
-    app.VIEWANGLE = Math.PI / 2;
+  if(app.viewPort.viewAngle > Math.PI) {
+    app.viewPort.viewAngle = Math.PI;
   }
 
   app.mouse.x = e.clientX;
@@ -96,10 +96,10 @@ Response.prototype.handleCommand = function(e) {
   if(action === 'trace') { app.TRACE = !app.TRACE; }
   if(action === 'reset') { app.response.reset(); }
   if(action === 'reverseTime') { app.physics.reverseTime(); } 
-  if(action === 'viewShiftUp') { app.VIEWSHIFT.y -= 5; }
-  if(action === 'viewShiftDown') { app.VIEWSHIFT.y += 5; }
-  if(action === 'viewShiftLeft') { app.VIEWSHIFT.x -= 5; }
-  if(action === 'viewShiftRight') { app.VIEWSHIFT.x += 5; }
+  if(action === 'viewShiftUp') { app.viewPort.shift.y -= 5; }
+  if(action === 'viewShiftDown') { app.viewPort.shift.y += 5; }
+  if(action === 'viewShiftLeft') { app.viewPort.shift.x -= 5; }
+  if(action === 'viewShiftRight') { app.viewPort.shift.x += 5; }
   if(action === 'switchClickAction') { app.response.changeMode(); }
   if(action === 'pause') { app.response.pause(); }  
   if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
@@ -159,9 +159,9 @@ Response.prototype.follow = function(xy){
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
       if (curr && app.viewPort && app.viewPort.center) {
-        currLoc.x = (curr.position.x - app.viewPort.center.x) + (curr.position.x - app.particles[app.FOLLOW].x) * app.VIEWSHIFT.zoom;
-        currLoc.y = (curr.position.y - app.viewPort.center.y) + (curr.position.y - app.particles[app.FOLLOW].y) * app.VIEWSHIFT.zoom;
-        // currLoc.z = (curr.position.z - app.viewPort.center.z) + (curr.position.z - app.particles[app.FOLLOW].z) * app.VIEWSHIFT.zoom;
+        currLoc.x = (curr.position.x - app.viewPort.center.x) + (curr.position.x - app.particles[app.FOLLOW].x) * app.viewPort.shift.zoom;
+        currLoc.y = (curr.position.y - app.viewPort.center.y) + (curr.position.y - app.particles[app.FOLLOW].y) * app.viewPort.shift.zoom;
+        // currLoc.z = (curr.position.z - app.viewPort.center.z) + (curr.position.z - app.particles[app.FOLLOW].z) * app.viewPort.shift.zoom;
 
         tmpDist = currLoc.dist_squared(new Vector3d(xy.x, xy.y, 0.));
         // (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
@@ -180,6 +180,12 @@ Response.prototype.input = function() {
   app.GO = false;
 };
 
+Response.prototype.getNearest = function(x, y){
+  //Perform this in viewport coordinates.
+  //It's viewport's job to furnish the viewport coordinates of any object of interest.
+  return index;
+}
+
 Response.prototype.destroy = function(xy){
     var j = 0,
       curr,
@@ -190,10 +196,10 @@ Response.prototype.destroy = function(xy){
 
     for(j = 0; j < app.particles.length; j++ ) {
       curr = app.particles[j];
-      currLoc.setcoords(curr.position.x, curr.position.y, curr.position.z);
+      currLoc.setFromV(curr.position);
 
       currLoc.decrement(app.particles[app.FOLLOW].position);
-      currLoc.scale(app.VIEWSHIFT.zoom);
+      currLoc.scale(app.viewPort.shift.zoom);
       currLoc.increment(curr.position);
       currLoc.x -= app.viewPort.center.x;
       currLoc.y -= app.viewPort.center.y;
@@ -234,23 +240,16 @@ Response.prototype.rocket = function(){
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
     
-    newGuy.position.setXYZ(app.particles[0].position.x,
-                        app.particles[0].position.y,
-                        app.particles[0].position.z);
-
+    newGuy.position.setFromV(app.particles[0].position);
     newGuy.vel.setXYZ(5000 * Math.cos(arc),
                           5000 * Math.sin(arc), 
                         0.);
 
   } else {
-    newGuy.position.setXYZ(app.particles[app.FOLLOW].position.x,
-                        app.particles[app.FOLLOW].position.y,
-                        app.particles[app.FOLLOW].position.z);
+    newGuy.position.setFromV(app.particles[app.FOLLOW].position);
     newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3));
 
-    newGuy.vel.setXYZ(app.particles[app.FOLLOW].vel.x,
-                        app.particles[app.FOLLOW].vel.y,
-                        app.particles[app.FOLLOW].vel.z);
+    newGuy.vel.setFromV(app.particles[app.FOLLOW].vel);
     newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.0003 * Math.random()));
     app.FOLLOW = app.particles.length - 1;
   }
@@ -301,22 +300,15 @@ Response.prototype.pause = function() {
 }
 
 Response.prototype.changeView = function() {
-  app.DRAWSTATE += 1;
+  app.viewPort.cycleState();
   app.ctx.font="12px Calibri";
-
-  if(app.DRAWSTATE === 3) {
-    app.DRAWSTATE = 0;
-  }
-  if(app.DRAWSTATE > 3) {
-    app.DRAWSTATE = 1;
-  }
   app.ctx.clearRect(0, 0, app.width, app.height);  
 }
 
 Response.prototype.incrementFollow = function () {
   app.FOLLOW += 1;
-  app.VIEWSHIFT.x = 0;
-  app.VIEWSHIFT.y= 0;
+  app.viewPort.shift.x = 0;
+  app.viewPort.shift.y= 0;
   if(app.FOLLOW >= app.particles.length) {
     app.FOLLOW = 0;
   }
@@ -357,11 +349,11 @@ Response.prototype.destroyAll = function() {
 }
 
 Response.prototype.resetViewToHome = function() {
-  app.VIEWSHIFT.x = 0;
-  app.VIEWSHIFT.y= 0;
-  app.VIEWANGLE = .75;
+  app.viewPort.shift.x = 0;
+  app.viewPort.shift.y= 0;
+  app.viewPort.viewAngle = .75;
   app.FOLLOW = 0;
-  app.VIEWSHIFT.zoom = 0;
+  app.viewPort.shift.zoom = 0;
   app.physics.updateTimeStep(1);
 }
 
