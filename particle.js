@@ -145,15 +145,11 @@ Particle.prototype.kineticE = function(){
 }
 
 Particle.prototype.isBoundTo = function(p2){
-  var mu = (this.mass * p2.mass) / (this.mass + p2.mass);
-  v2 = this.velocity().dist_squared(p2.velocity());
-  d  = this.position.distance(p2.position);
-  energy = 0;
-
-  if(d > 0) {
-    energy = (mu * v2 / 2.0) - (app.Physics.GRAVITY_CONSTANT * this.mass * p2.mass / d);
-  }
-  return energy < 0;
+  //The expression is equivalent to Mechanical Energy < 0
+  var vSq = this.velocity().dist_squared(p2.velocity());
+  var d  = this.position.distance(p2.position);
+  var GM = app.Physics.GRAVITY_CONSTANT*(this.mass+p2.mass);
+  return (d * (vSq/2.) < GM);
 };
 
 Particle.prototype.checkClock = function() {
