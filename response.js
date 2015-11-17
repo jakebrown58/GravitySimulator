@@ -181,48 +181,18 @@ Response.prototype.getNearest = function(clickXY){
 }
 
 Response.prototype.destroy = function(xy){
-    var j = 0,
-      curr,
-      currIndex = 0,
-      currLoc = new Vector3d(0., 0., 0.);
-      currDist2 = 1.0e19;
-      tmpDist;
+  var currIndex = Response.prototype.getNearest(xy);
 
-    for(j = 0; j < app.particles.length; j++ ) {
-      curr = app.particles[j];
-      currLoc.setFromV(curr.position);
-
-      currLoc.decrement(app.particles[app.FOLLOW].position);
-      currLoc.scale(app.viewPort.shift.zoom);
-      currLoc.increment(curr.position);
-      currLoc.x -= app.viewPort.center.x;
-      currLoc.y -= app.viewPort.center.y;
-      currLoc.z -= 0.;
-
-      
-      tmpDist2 = currLoc.v_dist2to([xy.x, xy.y, 0.]);
-
-      if(tmpDist2 < currDist ){
-        currDist = tmpDist2;
-        currIndex = j;
-      }
+  var tmp = [];
+  for(var j = 0; j < app.particles.length; j++) {
+    if(j != currIndex) {
+      tmp.push(app.particles[j]);
     }
+  }
 
-    var tmp = [];
-    for(var j = 0; j < app.particles.length; j++) {
-      if(j != currIndex) {
-        tmp.push(app.particles[j]);
-      }
-    }
+  app.particles = tmp;
 
-    app.particles = tmp;
-
-    //app.ABSLOCATION = [app.particles[currIndex].x, app.particles[currIndex].y];
-    app.ABSLOCATION = [0,0];
-
-    if(app.FOLLOW == currIndex) {
-      app.FOLLOW = 0;
-    }
+  if(app.FOLLOW == currIndex) app.FOLLOW = 0;
 };
 
 Response.prototype.rocket = function(){
