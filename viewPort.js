@@ -21,6 +21,7 @@ function ViewPort(){
 ViewPort.prototype.cycleState = function(){
   this.drawState++;
   if (this.drawState > this.MAX_DRAW_STATE) this.drawState = 0;
+  app.splitTime = Date();
 }
 
 ViewPort.prototype.splash = function() {
@@ -212,7 +213,7 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("Now:" + Date());
 
 
-    var frameRate = Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime))));
+    var frameRate = Math.floor((1000 * (app.CLOCK.ticks - app.CLOCK.splitTicks)/ (new Date() - new Date(app.splitTime))));
     var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP_INTEGRATOR;
     var daysPerSecond = frameRate * (hoursPerTick / 24);
     this.appendLine("Simulation Speed: " + app.physics.variables.TIME_STEP);
@@ -347,6 +348,7 @@ ViewPort.prototype.setClock = function() {
 
   if(app.CLOCK.ticks > 1000000) {
     app.CLOCK.ticks = 0;
+    app.CLOCK.splitTicks = app.CLOCK.ticks;
   }
 };
 

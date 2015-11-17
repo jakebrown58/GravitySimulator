@@ -284,6 +284,10 @@ Response.prototype.reset = function() {
   app.CLOCK.n = 0;
   app.collisions = 0;
 
+  app.CLOCK.splitTicks = app.CLOCK.ticks;
+  app.splitTime = new Date();
+
+
   app.resetPotentialCollisions();
 }
 
@@ -292,7 +296,7 @@ Response.prototype.pause = function() {
   if(app.GO === false) {
     app.GO = true;
     requestAnimationFrame(app.viewPort.frame);
-    app.CLOCK.ticks = 0;
+    app.CLOCK.splitTicks = app.CLOCK.ticks;
     app.splitTime = new Date();
   } else {
     app.GO = false;
@@ -301,6 +305,9 @@ Response.prototype.pause = function() {
 
 Response.prototype.changeView = function() {
   app.viewPort.cycleState();
+  app.CLOCK.splitTicks = app.CLOCK.ticks;
+  app.splitTime = new Date();
+
   app.ctx.font="12px Calibri";
   app.ctx.clearRect(0, 0, app.width, app.height);  
 }
