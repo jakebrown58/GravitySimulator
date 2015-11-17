@@ -21,7 +21,6 @@ function ViewPort(){
 ViewPort.prototype.cycleState = function(){
   this.drawState++;
   if (this.drawState > this.MAX_DRAW_STATE) this.drawState = 0;
-  app.splitTime = Date();
 }
 
 ViewPort.prototype.splash = function() {
