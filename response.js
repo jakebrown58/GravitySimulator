@@ -31,6 +31,7 @@ function Response() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
   app.eventListener.addEventListener('click', this.onClick);
   app.eventListener.addEventListener('keydown', this.onKeyDown);
+  app.eventListener.addEventListener('mousewheel', this.onMouseWheel);
   this.MODE = 'FOLLOW';
   this.CommandMode = 'COMMAND';
   app.textParser = new TextParser();
@@ -81,6 +82,15 @@ Response.prototype.onMousemove = function(e) {
   app.mouse.x = e.clientX;
   app.mouse.y = e.clientY;
 };
+
+Response.prototype.onMouseWheel = function(e){
+  if (e.deltaY > 0){
+    app.viewPort.adjustZoom('out');
+  }else{
+    app.viewPort.adjustZoom('in');
+  }
+  return false;
+}
 
 Response.prototype.handleCommand = function(e) {
   var action = keyMap[e.keyCode];

@@ -48,6 +48,7 @@ ViewPort.prototype.splash = function() {
   this.appendLine('....toggleCommandMode - ~');
   this.appendLine('....zoomOut - <');
   this.appendLine('....zoomIn - >');
+  this.appendLine('....zoom - Mousewheel');
  this.appendLine('....switchToDefaultView - H');
  this.appendLine('....rocketEnginesBurnToggle - B');
  this.appendLine('....rocketRotateLeft - LEFT');
