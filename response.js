@@ -148,31 +148,7 @@ Response.prototype.speedUp = function() {
 }
 
 Response.prototype.follow = function(xy){
-    var j = 0,
-      curr,
-      currIndex = 0,
-      // currLoc = {x: 0, y: 0},
-      currLoc = new Vector3d(0., 0., 0.),
-      currDist = 10000000000000000000,
-      tmpDist;
-
-    for(j = 0; j < app.particles.length; j++ ) {
-      curr = app.particles[j];
-      if (curr && app.viewPort && app.viewPort.center) {
-        currLoc.x = (curr.position.x - app.viewPort.center.x) + (curr.position.x - app.particles[app.FOLLOW].x) * app.viewPort.shift.zoom;
-        currLoc.y = (curr.position.y - app.viewPort.center.y) + (curr.position.y - app.particles[app.FOLLOW].y) * app.viewPort.shift.zoom;
-        // currLoc.z = (curr.position.z - app.viewPort.center.z) + (curr.position.z - app.particles[app.FOLLOW].z) * app.viewPort.shift.zoom;
-
-        tmpDist = currLoc.dist_squared(new Vector3d(xy.x, xy.y, 0.));
-        // (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
-        if(tmpDist < currDist ){
-          currDist = tmpDist;
-          currIndex = j;
-        }
-      }
-    }
-
-    app.FOLLOW = currIndex;
+    app.FOLLOW = Response.prototype.getNearest(xy);
 };
 
 Response.prototype.input = function() {
@@ -180,10 +156,28 @@ Response.prototype.input = function() {
   app.GO = false;
 };
 
-Response.prototype.getNearest = function(x, y){
+Response.prototype.getNearest = function(clickXY){
   //Perform this in viewport coordinates.
   //It's viewport's job to furnish the viewport coordinates of any object of interest.
-  return index;
+  var jXY, dx, dy,
+  indexClosest = 0, j,
+  dSqClosest   = Number.MAX_VALUE, dSq;
+  
+  for(j=0; j < app.particles.length; j++){
+    if (! app.particles[j]) {continue;}
+    
+    jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
+
+    dx   = jXY.x - clickXY.x;
+    dy   = jXY.y - clickXY.y;
+    dSq  = dx * dx + dy * dy;
+
+    if (dSq < dSqClosest){
+      dSqClosest    = dSq;
+      indexClosest  = j;
+    }
+  }
+  return indexClosest;
 }
 
 Response.prototype.destroy = function(xy){
