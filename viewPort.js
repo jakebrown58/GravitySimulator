@@ -355,8 +355,8 @@ ViewPort.prototype.setIntegrate = function() {
   app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
 
   if(this.drawState == this.DRAW_STATE_ISOMETRIC){
-    this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, Math.PI/2);
-    this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, 0);
+    this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, 0);
+    this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, Math.PI/2);
   }else{
     this.xAxis = new Vector3d(1., 0., 0.);
     this.yAxis = new Vector3d(0., 1., 0.);    
