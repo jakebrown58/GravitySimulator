@@ -49,13 +49,24 @@ Particle.prototype.updateTimeStep = function(dt_new){
   this.acc_old.z *= f_sq;
 }
 
+Particle.prototype.dist = function(p1) {
+  this.r.x = p1.position.x - this.position.x;
+  this.r.y = p1.position.y - this.position.y;
+  this.r.z = p1.position.z - this.position.z;
+
+  var d2 =  this.r.x * this.r.x + 
+      this.r.y * this.r.y + 
+      this.r.z * this.r.z;
+  return Math.sqrt(d2);
+}
+
 
 Particle.prototype.calcAcceleration = function(){
   var curr,
     grav,
     i;
   var d, d2, d3;
-  var dt_sq_over2 = (this.dt*this.dt)/2.;
+  var dt_sq_over2 = (this.dt * this.dt) / 2;
   this.accSwap = this.acc_old; //To Re-use.
   this.acc_old = this.acc;
   this.acc = this.accSwap;

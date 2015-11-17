@@ -30,8 +30,8 @@ Thrust.prototype.getThrustVector = function() {
 
 
   return { 
-    x: this.thrust * Math.cos(Math.PI * this.heading / 180),
-    y: this.thrust * Math.sin(Math.PI * this.heading / 180),
+    x: this.thrust * Math.cos(Math.PI * this.heading / 180) / 1000,
+    y: this.thrust * Math.sin(Math.PI * this.heading / 180) / 1000,
     z: 0.
   };
 }

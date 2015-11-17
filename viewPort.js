@@ -287,9 +287,9 @@ ViewPort.prototype.showRocketTelemetry = function() {
     this.appendLine("     target speed: " + Math.round(app.physics.getParticleSpeed(app.particles[3]) * 1000, 0));
     this.appendLine("     target direction: " + Math.round(app.particles[3].direction, 0));
     var solPosition = app.particles[0].position.asXYZ();
-    var d3Sol = Math.round(focusParticle.dist(focusParticle.x - solPosition.x, focusParticle.y - solPosition, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
+    var d3Sol = Math.round(focusParticle.dist(app.particles[0]) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
     var earthPosition = app.particles[3].position.asXYZ();
-    var d3Target = Math.round(focusParticle.dist(focusParticle.x - earthPosition.x, focusParticle.y - earthPosition.y, 0) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
+    var d3Target = Math.round(focusParticle.dist(app.particles[3]) / app.physics.constants.ASTRONOMICAL_UNIT * 500);
     this.appendLine("     d(SOL): " + (d3Sol / 500));
     this.appendLine("     d(TAR): " + (d3Target / 500));
 
