@@ -1,11 +1,7 @@
 GravitySimulator
 ================
 
-## Demo
-
-See a live example on JS Fiddle:  http://jsfiddle.net/uSJbm/15/
-
-Or in a full-screen view served up on a vm - http://starfield-brownb42.rhcloud.com/
+Run it! https://rawgit.com/jakebrown58/GravitySimulator/master/particles.html
 
 ## About
 
@@ -24,6 +20,7 @@ Play around with it and enjoy.
 
 ## Versions
 
+2.1 - flying, vectors, et cetera
 2.0 - current (in the future new versions will list major features).
     - splash screen with basic instructions.
 1.9 - cloud version
