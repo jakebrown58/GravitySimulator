@@ -91,6 +91,7 @@ Response.prototype.onMousemove = function(e) {
 };
 
 Response.prototype.onMouseWheel = function(e){
+  e.preventDefault();
   if (e.deltaY > 0){
     app.viewPort.adjustZoom('out');
   }else{
