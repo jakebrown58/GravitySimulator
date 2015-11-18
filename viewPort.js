@@ -169,12 +169,8 @@ ViewPort.prototype.frame = function() {
     if(!app.TRACE) {
       app.ctx.clearRect(0, 0, app.width, app.height);
     }
-
     app.viewPort.frameActions();
-
   }
-
-
 };
 
 ViewPort.prototype.frameActions = function() {
@@ -212,7 +208,7 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("Now:" + Date());
 
 
-    var frameRate = Math.floor((1000 * (app.CLOCK.ticks - app.CLOCK.splitTicks)/ (new Date() - new Date(app.splitTime))));
+    var frameRate = Math.floor((1000 * (app.CLOCK.ticks)/ (new Date() - new Date(app.splitTime))));
     var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP_INTEGRATOR;
     hoursPerTick = Math.abs(hoursPerTick);
     var daysPerSecond = frameRate * (hoursPerTick / 24);
@@ -342,9 +338,6 @@ ViewPort.prototype.integrateWrapper = function() {
 
 ViewPort.prototype.setClock = function() {
   app.CLOCK.ticks += 1;
-  //app.CLOCK.e += app.particles[3].checkClock() ? 1 : 0;
-  //app.CLOCK.j += app.particles[5].checkClock() ? 1 : 0;
-  //app.CLOCK.n += app.particles[7].checkClock() ? 1 : 0; 
 
   if(app.CLOCK.ticks > 1000000) {
     app.CLOCK.ticks = 0;
