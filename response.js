@@ -165,31 +165,7 @@ Response.prototype.speedUp = function() {
 }
 
 Response.prototype.follow = function(xy){
-    var j = 0,
-      curr,
-      currIndex = 0,
-      // currLoc = {x: 0, y: 0},
-      currLoc = new Vector3d(0., 0., 0.),
-      currDist = 10000000000000000000,
-      tmpDist;
-
-    for(j = 0; j < app.particles.length; j++ ) {
-      curr = app.particles[j];
-      if (curr && app.viewPort && app.viewPort.center) {
-        currLoc.x = (curr.position.x - app.viewPort.center.x) + (curr.position.x - app.particles[app.FOLLOW].x) * app.viewPort.shift.zoom;
-        currLoc.y = (curr.position.y - app.viewPort.center.y) + (curr.position.y - app.particles[app.FOLLOW].y) * app.viewPort.shift.zoom;
-        // currLoc.z = (curr.position.z - app.viewPort.center.z) + (curr.position.z - app.particles[app.FOLLOW].z) * app.viewPort.shift.zoom;
-
-        tmpDist = currLoc.dist_squared(new Vector3d(xy.x, xy.y, 0.));
-        // (currLoc.x - xy.x) * (currLoc.x - xy.x) + (currLoc.y - xy.y) * (currLoc.y - xy.y);
-        if(tmpDist < currDist ){
-          currDist = tmpDist;
-          currIndex = j;
-        }
-      }
-    }
-
-    app.FOLLOW = currIndex;
+    app.FOLLOW = Response.prototype.getNearest(xy);
 };
 
 Response.prototype.input = function() {
@@ -197,55 +173,43 @@ Response.prototype.input = function() {
   app.GO = false;
 };
 
-Response.prototype.getNearest = function(x, y){
+Response.prototype.getNearest = function(clickXY){
   //Perform this in viewport coordinates.
   //It's viewport's job to furnish the viewport coordinates of any object of interest.
-  return index;
+  var jXY, dx, dy,
+  indexClosest = 0, j,
+  dSqClosest   = Number.MAX_VALUE, dSq;
+  
+  for(j=0; j < app.particles.length; j++){
+    if (! app.particles[j]) {continue;}
+    
+    jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
+
+    dx   = jXY.x - clickXY.x + app.ctx.canvas.offsetLeft;
+    dy   = jXY.y - clickXY.y + app.ctx.canvas.offsetTop;
+    dSq  = dx * dx + dy * dy;
+
+    if (dSq < dSqClosest){
+      dSqClosest    = dSq;
+      indexClosest  = j;
+    }
+  }
+  return indexClosest;
 }
 
 Response.prototype.destroy = function(xy){
-    var j = 0,
-      curr,
-      currIndex = 0,
-      currLoc = new Vector3d(0., 0., 0.);
-      currDist2 = 1.0e19;
-      tmpDist;
+  var currIndex = Response.prototype.getNearest(xy);
 
-    for(j = 0; j < app.particles.length; j++ ) {
-      curr = app.particles[j];
-      currLoc.setFromV(curr.position);
-
-      currLoc.decrement(app.particles[app.FOLLOW].position);
-      currLoc.scale(app.viewPort.shift.zoom);
-      currLoc.increment(curr.position);
-      currLoc.x -= app.viewPort.center.x;
-      currLoc.y -= app.viewPort.center.y;
-      currLoc.z -= 0.;
-
-      
-      tmpDist2 = currLoc.v_dist2to([xy.x, xy.y, 0.]);
-
-      if(tmpDist2 < currDist ){
-        currDist = tmpDist2;
-        currIndex = j;
-      }
+  var tmp = [];
+  for(var j = 0; j < app.particles.length; j++) {
+    if(j != currIndex) {
+      tmp.push(app.particles[j]);
     }
+  }
 
-    var tmp = [];
-    for(var j = 0; j < app.particles.length; j++) {
-      if(j != currIndex) {
-        tmp.push(app.particles[j]);
-      }
-    }
+  app.particles = tmp;
 
-    app.particles = tmp;
-
-    //app.ABSLOCATION = [app.particles[currIndex].x, app.particles[currIndex].y];
-    app.ABSLOCATION = [0,0];
-
-    if(app.FOLLOW == currIndex) {
-      app.FOLLOW = 0;
-    }
+  if(app.FOLLOW == currIndex) app.FOLLOW = 0;
 };
 
 Response.prototype.rocket = function(){
