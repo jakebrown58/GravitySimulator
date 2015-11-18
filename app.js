@@ -8,7 +8,7 @@ app.init = function () {
   app.VIEWSHIFT = {x: -50, y: 0, z: 0, zoom: 0};
   app.GO = true;
   app.FOLLOW = 0;
-  app.CLOCK = {j: 0, e: 0, n: 0, ticks: 0};
+  app.CLOCK = {ticks: 0};
   app.SHOWCLOCK = false;
   app.realTime = Date();
   app.splitTime = Date();
@@ -92,6 +92,11 @@ app.flattenPotentialCollisions = function() {
   }
 
   return flat;
+};
+
+app.clockReset = function() {
+  app.CLOCK.ticks = 0;
+  app.splitTime = new Date();
 };
 
 
