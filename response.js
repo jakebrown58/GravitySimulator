@@ -31,6 +31,7 @@ function Response() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
   app.eventListener.addEventListener('click', this.onClick);
   app.eventListener.addEventListener('keydown', this.onKeyDown);
+  app.eventListener.addEventListener('mousewheel', this.onMouseWheel);
   this.MODE = 'FOLLOW';
   this.CommandMode = 'COMMAND';
   app.textParser = new TextParser();
@@ -68,8 +69,10 @@ Response.prototype.onClick = function(e) {
 
 Response.prototype.onMousemove = function(e) {
   var up = app.mouse.y > e.clientY;
-
-  app.viewPort.viewAngle = up ? app.viewPort.viewAngle + Math.PI / 32 : app.viewPort.viewAngle - Math.PI / 32;
+  var right = app.mouse.x > e.clientX;
+  
+  app.viewPort.viewAngle = up ? app.viewPort.viewAngle + Math.PI / 128 : app.viewPort.viewAngle - Math.PI / 128;
+  app.viewPort.viewPhi   = right? app.viewPort.viewPhi - Math.PI / 64 : app.viewPort.viewPhi + Math.PI / 64;
 
   if(app.viewPort.viewAngle < 0) {
     app.viewPort.viewAngle = 0;
@@ -78,9 +81,23 @@ Response.prototype.onMousemove = function(e) {
     app.viewPort.viewAngle = Math.PI;
   }
 
+  if (app.viewPort.viewPhi > 2 * Math.PI){
+    app.viewPort.viewPhi -= 2*Math.PI;
+  }else if (app.viewPort.viewPhi < -2 * Math.PI){
+    app.viewPort.viewPhi += 2*Math.PI;
+  }
   app.mouse.x = e.clientX;
   app.mouse.y = e.clientY;
 };
+
+Response.prototype.onMouseWheel = function(e){
+  if (e.deltaY > 0){
+    app.viewPort.adjustZoom('out');
+  }else{
+    app.viewPort.adjustZoom('in');
+  }
+  return false;
+}
 
 Response.prototype.handleCommand = function(e) {
   var action = keyMap[e.keyCode];

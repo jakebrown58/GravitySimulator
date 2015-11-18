@@ -7,6 +7,7 @@ function ViewPort(){
   this.lineHeight = 20;
   this.draw = true;
   this.viewAngle   = Math.PI/3.;
+  this.viewPhi     = 0 ;
   this.shift   = {x: -50, y: 0, z: 0, zoom: 0};
   this.viewPortSize = (app.width / (this.shift.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
@@ -48,6 +49,7 @@ ViewPort.prototype.splash = function() {
   this.appendLine('....toggleCommandMode - ~');
   this.appendLine('....zoomOut - <');
   this.appendLine('....zoomIn - >');
+  this.appendLine('....zoom - Mousewheel');
  this.appendLine('....switchToDefaultView - H');
  this.appendLine('....rocketEnginesBurnToggle - B');
  this.appendLine('....rocketRotateLeft - LEFT');
@@ -352,10 +354,9 @@ ViewPort.prototype.setClock = function() {
 
 ViewPort.prototype.setIntegrate = function() {
   app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
-
   if(this.drawState == this.DRAW_STATE_ISOMETRIC){
-    this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, Math.PI/2);
-    this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, 0);
+    this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, this.viewPhi);
+    this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, this.viewPhi + Math.PI/2);
   }else{
     this.xAxis = new Vector3d(1., 0., 0.);
     this.yAxis = new Vector3d(0., 1., 0.);    
