@@ -256,12 +256,15 @@ Response.prototype.reset = function() {
     app.physics.variables.CALC_STYLE = 'wacky';
     //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
   }
+
+  app.FOLLOW = 0;
   app.ctx.clearRect(0, 0, app.width, app.height);
   var x = new Particles().buildInitialParticles();
   app.viewPort.colorSorted = false;
   app.clockReset();
 
   app.resetPotentialCollisions();
+  app.FOLLOW = 0;
 }
 
 Response.prototype.pause = function() {
