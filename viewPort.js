@@ -208,9 +208,8 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("Now:" + Date());
 
 
-    var frameRate = Math.floor((1000 * (app.CLOCK.ticks)/ (new Date() - new Date(app.splitTime))));
+    var frameRate = Math.floor((1000 * app.CLOCK.ticks / (new Date() - new Date(app.splitTime))));
     var hoursPerTick = app.physics.constants.EARTH_HOURS_PER_TICK_AT_TIME_STEP_1 * app.physics.variables.TIME_STEP_INTEGRATOR;
-    hoursPerTick = Math.abs(hoursPerTick);
     var daysPerSecond = frameRate * (hoursPerTick / 24);
     this.appendLine("Simulation Speed: " + app.physics.variables.TIME_STEP);
 
@@ -341,7 +340,6 @@ ViewPort.prototype.setClock = function() {
 
   if(app.CLOCK.ticks > 1000000) {
     app.CLOCK.ticks = 0;
-    app.CLOCK.splitTicks = app.CLOCK.ticks;
   }
 };
 

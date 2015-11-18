@@ -296,7 +296,6 @@ Response.prototype.pause = function() {
 
 Response.prototype.changeView = function() {
   app.viewPort.cycleState();
-
   app.ctx.font="12px Calibri";
   app.ctx.clearRect(0, 0, app.width, app.height);  
 }
