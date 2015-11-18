@@ -107,7 +107,7 @@ app.freeTheDestroyed = function() {
     if (app.FOLLOW == j) app.FOLLOW = newId;
     if (app.particles[j] && app.particles[j].destroyed==false){
       survivors.push(app.particles[j]);
-      newId ++;
+      app.particles[j].id = newId ++;
     }
   }
 
