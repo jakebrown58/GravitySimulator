@@ -198,18 +198,9 @@ Response.prototype.getNearest = function(clickXY){
 }
 
 Response.prototype.destroy = function(xy){
-  var currIndex = Response.prototype.getNearest(xy);
-
-  var tmp = [];
-  for(var j = 0; j < app.particles.length; j++) {
-    if(j != currIndex) {
-      tmp.push(app.particles[j]);
-    }
-  }
-
-  app.particles = tmp;
-
-  if(app.FOLLOW == currIndex) app.FOLLOW = 0;
+  var target = app.particles[Response.prototype.getNearest(xy)];
+  target.die(target.name + " was destroyed by the creator.")
+  if(app.FOLLOW == target.id) app.FOLLOW = 0;
 };
 
 Response.prototype.rocket = function(){
@@ -285,12 +276,15 @@ Response.prototype.changeView = function() {
 }
 
 Response.prototype.incrementFollow = function () {
-  app.FOLLOW += 1;
+  var oldFollow = app.FOLLOW;
+  do{
+    app.FOLLOW += 1;
+    if(app.FOLLOW >= app.particles.length) app.FOLLOW = 0;
+  }while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
+
   app.viewPort.shift.x = 0;
-  app.viewPort.shift.y= 0;
-  if(app.FOLLOW >= app.particles.length) {
-    app.FOLLOW = 0;
-  }
+  app.viewPort.shift.y = 0;
+  
 }
 
 Response.prototype.changeProperty = function(id, propName, newValue) {

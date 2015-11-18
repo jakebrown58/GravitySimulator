@@ -92,18 +92,10 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.position.scale(fracL);
   big.position.increment(little.position);
   
-  // big.oldpos.scale(fracB);
-  // little.oldpos.scale(fracL);
-  // big.oldpos.v_inc_by(little.oldpos);
-
   big.vel.scale(fracB);
   little.vel.scale(fracL);
   big.vel.increment(little.vel);
 
-  // big.oldvel.v_scale(fracB);
-  // little.oldvel.v_scale(fracL);
-  // big.oldvel.v_inc_by(little.oldvel);
-  
   big.acc.scale(fracB);
   little.acc.scale(fracL);
   big.acc.increment(little.acc);
@@ -112,25 +104,7 @@ Physics.prototype.collide_glom = function(p1, p2) {
   little.acc_old.scale(fracL);
   big.acc_old.increment(little.acc_old);
 
-
-  // cfg.U = 0;
-  // cfg.U += big.U || 0;
-  // cfg.U += little.U || 0;
-  // cfg.U += big.kineticE() + little.kineticE() - cfg.kenetic;  //Leftover energy becomes thermal E of new thingy.
-
-  // cfg.kenetic = (1/2) * cfg.mass * (cfg.velx * cfg.velx + cfg.vely * cfg.vely)
-
-
-// Why do we do this to the little particle?  -- bad bad hacky reasons.  better to Oblitterate it.
-  little.mass = 0.00000000000001;
-  little.vel = new Vector3d(0., 0., 0.);
-  little.acc = new Vector3d(0., 0., 0.);
-
-  little.position = Vector3d.prototype.randomOfMagnitude(5000 + 5000 * Math.random());
-  little.color = {r: 0, b: 0, g: 0};
-  little.destroyed = true;
-
-
+  little.die(little.name + " was swallowed by " + big.name + ".");
   if(app.FOLLOW === little.id) {
     app.FOLLOW = big.id;
   }
@@ -187,23 +161,6 @@ Physics.prototype.glomParticles = function(set) {
     for(var i = 0; i < set.length; i++) {
       this.collide_glom(set[i].big, set[i].little);
     }
-    
-    // this is garbage collecter heaven here.... clean up at some point if we want a speed boost from post-collisions.
-    var newParticles = [];
-    for(i = 0; i < app.particles.length; i++){
-      if(app.particles[i].destroyed !== true) {
-        newParticles.push(app.particles[i]);
-      }
-    }
-
-    for(i = 0; i < newParticles.length; i++){
-      if(app.FOLLOW === newParticles[i].id) {
-        app.FOLLOW = i;
-      }
-      newParticles[i].id = i;
-    }
-
-    app.particles = newParticles;
   }
 };
 
