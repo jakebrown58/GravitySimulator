@@ -141,3 +141,20 @@ Particles.prototype.buildParticle = function(cfg) {
     tmp.configure(cfg);
     app.particles.push(tmp);
 };
+
+Particles.prototype.freeTheDestroyed = function() {
+  var survivors = [];
+  var newId = 0;
+
+  for(var j=0; j < app.particles.length; j++){
+    if (app.FOLLOW == j) app.FOLLOW = newId;
+    if (app.particles[j] && app.particles[j].destroyed==false){
+      survivors.push(app.particles[j]);
+      app.particles[j].id = newId ++;
+    }
+  }
+
+  if(app.FOLLOW >= survivors.length) app.FOLLOW = 0;
+
+  app.particles = survivors;
+};

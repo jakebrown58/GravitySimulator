@@ -312,7 +312,7 @@ ViewPort.prototype.integrateWrapper = function() {
   app.physics.leapFrog();
   app.physics.handleCollisions();
 
-  app.freeTheDestroyed();
+  Particles.prototype.freeTheDestroyed();
 
 };
 
