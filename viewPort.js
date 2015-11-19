@@ -37,7 +37,10 @@ ViewPort.prototype.reset = function(){
   this.setAxes(this.viewAngle, this.viewPhi);
 }
 
-ViewPort.prototype.reorient = function(deltaX, deltaY){
+ViewPort.prototype.reorient = function(pointerOld, pointerNew){
+  var deltaX = pointerNew.x - pointerOld.x;
+  var deltaY = pointerNew.y - pointerOld.y;
+  
   this.viewAngle += deltaY * Math.PI/128;
   this.viewPhi   -= deltaX * Math.PI/64;
 

@@ -69,7 +69,7 @@ Response.prototype.onClick = function(e) {
 
 Response.prototype.onMousemove = function(e) {
   if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
-    app.viewPort.reorient(app.mouse.x - e.clientX, app.mouse.y - e.clientY);
+    app.viewPort.reorient(app.mouse, {x: e.clientX, y: e.clientY});
   }
   app.mouse.x = e.clientX;
   app.mouse.y = e.clientY;
