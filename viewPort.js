@@ -12,8 +12,8 @@ function ViewPort(){
   this.viewPortSize = (app.width / (this.shift.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
   this.colorSorted = false;
-  this.DRAW_STATE_TOP_DOWN = 0;
-  this.DRAW_STATE_ISOMETRIC = 1;
+  this.DRAW_STATE_STATIC = 0;
+  this.DRAW_STATE_ROTATE = 1;
   this.MAX_DRAW_STATE       = 1;
   this.DRAW_STATE_SPLASH    = 4;
   this.drawState = this.DRAW_STATE_SPLASH;
@@ -24,15 +24,46 @@ ViewPort.prototype.cycleState = function(){
   if (this.drawState > this.MAX_DRAW_STATE) this.drawState = 0;
 }
 
+ViewPort.prototype.setAxes = function(theta, phi){
+  this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, this.viewPhi);
+  this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, this.viewPhi + Math.PI/2);
+  this.zAxis = this.xAxis.cross(this.yAxis);
+}
+
+ViewPort.prototype.reset = function(){
+  this.viewAngle   = Math.PI/3.;
+  this.viewPhi     = 0;
+  this.shift       = {x: -50, y: 0, z: 0, zoom: 0};
+  this.setAxes(this.viewAngle, this.viewPhi);
+}
+
+ViewPort.prototype.reorient = function(deltaX, deltaY){
+  this.viewAngle += deltaY * Math.PI/128;
+  this.viewPhi   -= deltaX * Math.PI/64;
+
+  if(this.viewAngle < 0) {
+    this.viewAngle = 0;
+  }else if(this.viewAngle > Math.PI) {
+    this.viewAngle = Math.PI;
+  }
+
+  if (this.viewPhi > 2 * Math.PI){
+    this.viewPhi -= 2*Math.PI;
+  }else if (this.viewPhi < -2 * Math.PI){
+    this.viewPhi += 2*Math.PI;
+  }
+}
+
+
 ViewPort.prototype.splash = function() {
   var version = "2.0";
   this.appendLine("Planetary Gravity Simulator");
   this.appendLine("v " + version);
   this.appendLine("");
-  this.appendLine("Type 'v' to exit the splash screen.");
-  this.appendLine("Type ' ' then '~' to enter console mode, and type help from there to learn about commands.");
+  this.appendLine("Type 'V' to exit the splash screen.");
+  this.appendLine("Type '~' to enter console mode, and type help from there to learn about commands.");
   this.appendLine("Also has one-key instant commands in direct mode: ");
-  this.appendLine('....viewToggle - v');
+  this.appendLine('....Toggle mouse rotation- V');
  this.appendLine('....trace - <space>');
  this.appendLine('....reset - R');
  this.appendLine('....reverseTime - T');
@@ -324,21 +355,8 @@ ViewPort.prototype.setClock = function() {
 
 ViewPort.prototype.setIntegrate = function() {
   app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
-  if(this.drawState == this.DRAW_STATE_ISOMETRIC){
-    this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, this.viewPhi);
-    this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, this.viewPhi + Math.PI/2);
-  }else{
-    this.xAxis = new Vector3d(1., 0., 0.);
-    this.yAxis = new Vector3d(0., 1., 0.);    
-  }
-  this.zAxis = this.xAxis.cross(this.yAxis);
+  this.setAxes(this.viewAngle, this.viewPhi);
   app.viewPort.drawParticles();
-  // for (i = 0; i < app.particles.length; i++) {
-  //   //current = app.particles[i];
-  //   //current.x = current.newX;
-  //   //current.y = current.newY;
-  //   app.viewPort.drawParticle(app.particles[i]);
-  // }
 };
 
 
