@@ -29,9 +29,10 @@ var keyMap = {
 
 function Response() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
-  app.eventListener.addEventListener('click', this.onClick);
+  app.eventListener.addEventListener('click', this.onClickSplash);
   app.eventListener.addEventListener('keydown', this.onKeyDown);
   app.eventListener.addEventListener('mousewheel', this.onMouseWheel);
+
   this.MODE = 'FOLLOW';
   this.CommandMode = 'COMMAND';
   app.textParser = new TextParser();
@@ -54,6 +55,16 @@ Response.prototype.onKeyDown = function(e, ref) {
 
   return false;
 };
+
+
+Response.prototype.onClickSplash = function(e){
+  if (app.viewPort.drawState !== app.viewPort.DRAW_STATE_SPLASH){
+    app.eventListener.removeEventListener('click', app.response.onClickSplash);
+    app.eventListener.addEventListener('click', app.response.onClick);
+    app.response.onClick(e);
+  }
+}
+
 
 Response.prototype.onClick = function(e) {
   var xy = {x: e.clientX, y: e.clientY};
