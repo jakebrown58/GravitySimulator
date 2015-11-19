@@ -68,11 +68,8 @@ Response.prototype.onClick = function(e) {
 };
 
 Response.prototype.onMousemove = function(e) {
-  var deltaX = app.mouse.x - e.clientX;
-  var deltaY = app.mouse.y - e.clientY;
-
   if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
-    app.viewPort.reorient(deltaX, deltaY);
+    app.viewPort.reorient(app.mouse.x - e.clientX, app.mouse.y - e.clientY);
   }
   app.mouse.x = e.clientX;
   app.mouse.y = e.clientY;
