@@ -179,12 +179,33 @@ Vector3d.prototype.cross = function(v2){
 	return v1Xv2;
 };
 
+
+Vector3d.prototype.rotateAbout = function(axis, alpha){
+	//Assumes axis is a unit vector perpendicular to the plane of rotation
+    var vAxisOfRotation = this.projectAxis(axis);
+
+    var vPlaneOfRotation  = this.projectPlane(axis);
+    vPlaneOfRotation.scale(Math.cos(alpha));
+
+    var vCounterclockwise = axis.cross(this);
+    vCounterclockwise.scale(Math.sin(alpha));
+
+    this.setFromV(vAxisOfRotation);
+    this.increment(vPlaneOfRotation);
+    this.increment(vCounterclockwise);
+}
+
+Vector3d.prototype.projectAxis = function(axis){
+	var l = this.dot(axis);
+	var projectedV = new Vector3d(l * axis.x, l * axis.y, l * axis.z);
+	return projectedV;
+}
+
+
 Vector3d.prototype.projectPlane = function(plane){
-	//Plane is a Vector3d perpendicular to that plane.
+	//plane is a Vector3d perpendicular to that plane.
 	var projectedV = new Vector3d(this.x, this.y, this.z);
-	var z = plane.dot(projectedV);
-	projectedV.x -= z * plane.x;
-	projectedV.y -= z * plane.y;
-	projectedV.z -= z * plane.z;
+	//Subtract off the part of the vector perpendicular to the plane:
+	projectedV.decrement(this.projectAxis(plane));
 	return projectedV;
 };
