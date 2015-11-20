@@ -30,8 +30,8 @@ ViewPort.prototype.setAxes = function(theta, phi){
   this.zAxis = this.xAxis.cross(this.yAxis);
 }
 
-ViewPort.prototype.reset = function(){
-  this.viewAngle   = Math.PI/3.;
+ViewPort.prototype.restoreDefault = function(){
+  this.viewAngle   = 0;
   this.viewPhi     = 0;
   this.shift       = {x: -50, y: 0, z: 0, zoom: 0};
   this.setAxes(this.viewAngle, this.viewPhi);

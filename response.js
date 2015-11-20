@@ -192,7 +192,7 @@ Response.prototype.getNearest = function(clickXY){
     }
   }
   return indexClosest;
-}
+};
 
 Response.prototype.destroy = function(xy){
   var target = app.particles[Response.prototype.getNearest(xy)];
@@ -248,7 +248,7 @@ Response.prototype.reset = function() {
   app.FOLLOW = 0;
   app.ctx.clearRect(0, 0, app.width, app.height);
   var x = new Particles().buildInitialParticles();
-  app.viewPort.colorSorted = false;
+  app.viewPort.colorSorted = false;  
   app.clockReset();
 
   app.resetPotentialCollisions();
@@ -321,7 +321,7 @@ Response.prototype.destroyAll = function() {
 Response.prototype.resetViewToHome = function() {
   app.FOLLOW = 0;
   app.physics.updateTimeStep(1);
-  app.viewPort.reset();
+  app.viewPort.restoreDefault();
 }
 
 
