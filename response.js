@@ -79,29 +79,15 @@ Response.prototype.onClick = function(e) {
 };
 
 Response.prototype.onMousemove = function(e) {
-  var up = app.mouse.y > e.clientY;
-  var right = app.mouse.x > e.clientX;
-  
-  app.viewPort.viewAngle = up ? app.viewPort.viewAngle + Math.PI / 128 : app.viewPort.viewAngle - Math.PI / 128;
-  app.viewPort.viewPhi   = right? app.viewPort.viewPhi - Math.PI / 64 : app.viewPort.viewPhi + Math.PI / 64;
-
-  if(app.viewPort.viewAngle < 0) {
-    app.viewPort.viewAngle = 0;
-  }
-  if(app.viewPort.viewAngle > Math.PI) {
-    app.viewPort.viewAngle = Math.PI;
-  }
-
-  if (app.viewPort.viewPhi > 2 * Math.PI){
-    app.viewPort.viewPhi -= 2*Math.PI;
-  }else if (app.viewPort.viewPhi < -2 * Math.PI){
-    app.viewPort.viewPhi += 2*Math.PI;
+  if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
+    app.viewPort.reorient(app.mouse, {x: e.clientX, y: e.clientY});
   }
   app.mouse.x = e.clientX;
   app.mouse.y = e.clientY;
 };
 
 Response.prototype.onMouseWheel = function(e){
+  e.preventDefault();
   if (e.deltaY > 0){
     app.viewPort.adjustZoom('out');
   }else{
@@ -333,12 +319,9 @@ Response.prototype.destroyAll = function() {
 }
 
 Response.prototype.resetViewToHome = function() {
-  app.viewPort.shift.x = 0;
-  app.viewPort.shift.y= 0;
-  app.viewPort.viewAngle = .75;
   app.FOLLOW = 0;
-  app.viewPort.shift.zoom = 0;
   app.physics.updateTimeStep(1);
+  app.viewPort.reset();
 }
 
 
