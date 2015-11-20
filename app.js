@@ -99,7 +99,6 @@ app.clockReset = function() {
   app.splitTime = new Date();
 };
 
-
 var mockCtx = function() {
 
   this.fillText = function() {

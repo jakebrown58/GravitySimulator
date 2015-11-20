@@ -8,13 +8,19 @@ function Particle(id, x, y, z) {
   this.r = new Vector3d(0., 0., 0.); //Vector pointing from self to another.
   this.dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.dt_old = this.dt;
-  this.remove = false;
+  this.destroyed = false;
 
   this.mass = 2;
   this.color = {r: 205 + 50 * Math.floor(Math.random() * 3), 
     g:  205 + 50 * Math.floor(Math.random() * 3),
     b:  205 + 50 * Math.floor(Math.random() * 3)};
 };
+
+Particle.prototype.die = function(message){
+  this.destroyed = true;
+  console.log(message);
+}
+
 
 Particle.prototype.speed_squared = function(){
   return this.vel.sumsq() / (this.dt*this.dt);
