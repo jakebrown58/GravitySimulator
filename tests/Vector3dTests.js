@@ -2,9 +2,9 @@ Math.relativeTol = 1E-5;
 Math.absoluteTol = 1E-8;
 
 Math.isClose = function(a, b){
-	//Based on Numpy implementation: 
+	//Based on Numpy implementation:
 	//http://docs.scipy.org/doc/numpy-dev/reference/generated/numpy.isclose.html
-	return (Math.abs(a-b) <= Math.absoluteTol + Math.relativeTol * Math.abs(b)); 
+	return (Math.abs(a-b) <= Math.absoluteTol + Math.relativeTol * Math.abs(b));
 };
 
 Vector3d.prototype.isClose = function(v){
@@ -15,12 +15,16 @@ Vector3d.prototype.isClose = function(v){
 Vector3d.prototype.tests = function(numSamples){
 /*	The usage of every test<Property> is that you expect that property to be "numerically true."
 	Failing the test logs to the console. Any output (other than all passed) should be considered a failure.
-*/	
+*/
+	var i, j;
+	var u, v;
+	var passed = true;
+	if(numSamples < 2) numSamples = 3;
 
 	function testLength(vector, expectedLength){
 		if(Math.isClose(vector.magnitude(), expectedLength)){
 			return true;
-		}else{
+		} else {
 			console.log("Expected length "+ expectedLength + " for vector " + vector.asString());
 			return false;
 		}
@@ -31,7 +35,7 @@ Vector3d.prototype.tests = function(numSamples){
 			return true;
 		}else if (testLength(vector, expectedVector.magnitude())){
 			console.log("Correct length, but wrong direction.");
-		}else{
+		} else {
 			console.log("Expected vector: " + expectedVector.asString());
 			console.log("Found vector: " + vector.asString());
 		}
@@ -46,7 +50,7 @@ Vector3d.prototype.tests = function(numSamples){
 		v1Dotv2 *= v1Dotv2;
 		if(Math.isClose(v1Squared*v2Squared - v1Dotv2, v1Squared*v2Squared)){
 			return true;
-		}else{
+		} else {
 			console.log("Failed perpendicularity: " + v1.asString() + ", " + v2.asString());
 			return false;
 		}
@@ -56,11 +60,11 @@ Vector3d.prototype.tests = function(numSamples){
 		if (testCoAxial(v1,v2)){
 			if (v1.dot(v2) > 0){
 				return true;
-			}else{
+			} else {
 				console.log("Vectors were anti-parallel.  (Did you want testCoAxial?)");
 				return false;
-			}			
-		}else{
+			}
+		} else {
 			return false;
 		}
 	}
@@ -72,7 +76,7 @@ Vector3d.prototype.tests = function(numSamples){
 
 		if(Math.isClose(v1Dotv2, v1.getSumSquares()*v2.getSumSquares())){
 			return true;
-		}else{
+		} else {
 			console.log("Failed to be parallel or anti-parallel: " + v1.asString() + ", " + v2.asString());
 			console.log("Opening angle: " + Math.acos(cosOpeningAngle));
 			return false;
@@ -82,10 +86,10 @@ Vector3d.prototype.tests = function(numSamples){
 	function testDot(v1, v2){
 		if (Math.isClose(v1.dot(v2), v2.dot(v1))){
 			return true;
-		}else{
+		} else {
 			console.log("Dot product failed commutivitiy.");
 			return false;
-		}			
+		}
 	}
 
 	function testCross(v1, v2){
@@ -118,7 +122,7 @@ Vector3d.prototype.tests = function(numSamples){
 		xAxis.original = xAxis.copy();
 		passed &= testEquality(xAxis.rotateMe({axis: zAxis, angle: Math.PI/2}), yAxis);
 		passed &= testEquality(xAxis.rotateMe({axis: xAxis.original, angle:Math.PI/2}), zAxis);
-		passed &= testEquality(xAxis.rotateMe({axis: yAxis, angle:Math.PI/2}), xAxis.original);	
+		passed &= testEquality(xAxis.rotateMe({axis: yAxis, angle:Math.PI/2}), xAxis.original);
 		return passed;
 	}
 
@@ -164,12 +168,12 @@ Vector3d.prototype.tests = function(numSamples){
 	var zAxis = new Vector3d(0, 0, 1);
 
 	specialVectors = [];
-	
+
 	if (testAxes(xAxis, yAxis, zAxis)){
 		specialVectors.push(xAxis);
 		specialVectors.push(yAxis);
 		specialVectors.push(zAxis);
-	}else{
+	} else {
 		passed = false;
 	}
 
@@ -232,7 +236,7 @@ Vector3d.prototype.tests = function(numSamples){
 			passed &= testCross(vectors[i], vectors[j]);
 			passed &= testDot(vectors[i], vectors[j]);
 		}
-	}	
+	}
 
 	//Triple Product identities.
 	//If these fail, but the above pass, likely indicates API problems, not math problem.
@@ -297,7 +301,7 @@ Vector3d.prototype.tests = function(numSamples){
 			if(!testEquality(v, v.original)){
 				console.log("Rotation of a point around a pivot of itself moved the vector.");
 				passed = false;
-			}	
+			}
 		}
 	}
 
@@ -340,9 +344,9 @@ Vector3d.prototype.tests = function(numSamples){
 
 numSamples = 10;
 //numSamples = 10000; This causes the page to become unresponsive, profiling hangs in chrome every time.
-if (Vector3d.prototype.tests(numSamples)){ 
+if (Vector3d.prototype.tests(numSamples)){
 	console.log("All Vector3d tests passed with sample size "+ numSamples +".");
-}else{
+} else {
 	console.log("Some Vector3d tests failed.");
 }
 
