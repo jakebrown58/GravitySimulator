@@ -24,8 +24,8 @@ Vector3d.prototype.asXYZ = function(){
 
 Vector3d.prototype.fromRThetaPhi = function(r, theta, phi){
 	return new Vector3d(
-		r * Math.sin(theta) * Math.cos(phi), 
-		r * Math.sin(theta) * Math.sin(phi), 
+		r * Math.sin(theta) * Math.cos(phi),
+		r * Math.sin(theta) * Math.sin(phi),
 		r * Math.cos(theta)
 		);
 };
@@ -82,6 +82,7 @@ Vector3d.prototype.getTheta = function(){
 };
 
 Vector3d.prototype.getPhi = function(){
+
 	//Azimuthal angle.
 	//Extremely cheap relative to getting both theta and phi.
 	return Math.atan2(this.y, this.x);
@@ -170,6 +171,17 @@ Vector3d.prototype.getOpeningAngle = function(v2){
 	var oppositeSide = u1.decrementMe(u2);
 	return Math.acos(1 - oppositeSide.getSumSquares()/2);
 };
+
+Vector3d.prototype.openingAngle_LawCosines = function(v2){
+	//Opening Angle refers to the angle between two vectors placed tail to tail.
+	var oppositeSide = this.copy().decrementMe(v2);
+	var length1 = this.magnitude();
+	var length2 = v2.magnitude();
+	var costheta = (oppositeSide.sumSquares() - this.sumSquares() - v2.sumSquares())/(2*length1*length2);
+	return Math.acos(costheta);
+};
+
+Vector3d.prototype.openingAngle = Vector3d.prototype.openingAngle_UnitLawOfCosines;
 
 Vector3d.prototype.cross = function(v2){
 	v1Xv2 = new Vector3d(this.y*v2.z - this.z*v2.y,

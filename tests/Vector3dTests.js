@@ -16,12 +16,23 @@ Vector3d.prototype.tests = function(numSamples){
 /*	The usage of every test<Property> is that you expect that property to be "numerically true."
 	Failing the test logs to the console. Any output (other than all passed) should be considered a failure.
 */	
+<<<<<<< HEAD
+=======
+	var i, j;
+	var u, v;
+	var passed = true;
+	if(numSamples < 2) numSamples = 3;
+>>>>>>> 553f373... Add vector math tests, standardize function names
 
 	function testLength(vector, expectedLength){
 		if(Math.isClose(vector.magnitude(), expectedLength)){
 			return true;
 		}else{
+<<<<<<< HEAD
 			console.log("Expected length "+ expectedLength + " for vector " + vector.asString());
+=======
+			console.log("Expected length "+ expectedLength + " for vector " + vector.toString());
+>>>>>>> 553f373... Add vector math tests, standardize function names
 			return false;
 		}
 	}
@@ -32,13 +43,19 @@ Vector3d.prototype.tests = function(numSamples){
 		}else if (testLength(vector, expectedVector.magnitude())){
 			console.log("Correct length, but wrong direction.");
 		}else{
+<<<<<<< HEAD
 			console.log("Expected vector: " + expectedVector.asString());
 			console.log("Found vector: " + vector.asString());
+=======
+			console.log("Expected vector: " + expectedVector.toString());
+			console.log("Found vector: " + vector.toString());
+>>>>>>> 553f373... Add vector math tests, standardize function names
 		}
 		return false;
 	}
 
 	function testPerpendicular(v1, v2){
+<<<<<<< HEAD
 		var v1Dotv2 = v1.dot(v2);
 		var v1Squared = v1.getSumSquares();
 		var v2Squared = v2.getSumSquares();
@@ -48,13 +65,25 @@ Vector3d.prototype.tests = function(numSamples){
 			return true;
 		}else{
 			console.log("Failed perpendicularity: " + v1.asString() + ", " + v2.asString());
+=======
+		if(Math.isClose(v1.dot(v2), 0)){
+			return true;
+		}else{
+			console.log("Failed perpendicularity: " + v1.toString() + ", " + v2.toString());
+>>>>>>> 553f373... Add vector math tests, standardize function names
 			return false;
 		}
 	}
 
 	function testParallel(v1, v2){
+<<<<<<< HEAD
 		if (testCoAxial(v1,v2)){
 			if (v1.dot(v2) > 0){
+=======
+		var cosOpeningAngle = v1.dot(v2) / (v1.magnitude() * v2.magnitude());
+		if (testCoAxial(v1,v2)){
+			if (cosOpeningAngle > 0){
+>>>>>>> 553f373... Add vector math tests, standardize function names
 				return true;
 			}else{
 				console.log("Vectors were anti-parallel.  (Did you want testCoAxial?)");
@@ -67,6 +96,7 @@ Vector3d.prototype.tests = function(numSamples){
 
 	function testCoAxial(v1, v2){
 		var cosOpeningAngle = v1.dot(v2) / (v1.magnitude() * v2.magnitude());
+<<<<<<< HEAD
 		var v1Dotv2 = v1.dot(v2);
 		v1Dotv2 *= v1Dotv2;
 
@@ -75,6 +105,13 @@ Vector3d.prototype.tests = function(numSamples){
 		}else{
 			console.log("Failed to be parallel or anti-parallel: " + v1.asString() + ", " + v2.asString());
 			console.log("Opening angle: " + Math.acos(cosOpeningAngle));
+=======
+		if(Math.isClose(Math.abs(cosOpeningAngle), 1)){
+			return true;
+		}else{
+			console.log("Failed to be parallel or anti-parallel: " + v1.toString() + ", " + v2.toString());
+			console.log("Opening angle): " + Math.acos(openingAngle));
+>>>>>>> 553f373... Add vector math tests, standardize function names
 			return false;
 		}
 	}
@@ -101,11 +138,21 @@ Vector3d.prototype.tests = function(numSamples){
 		return true;
 	}
 
+<<<<<<< HEAD
 	function testAxes(xAxis, yAxis, zAxis){
 	//Test known relationships with specific vectors.
 		var passed = true;
 		axes = [xAxis, yAxis, zAxis];
 
+=======
+	function testAxes(){
+	//Test known relationships with specific vectors.
+		var xAxis = new Vector3d(1, 0, 0);
+		var yAxis = new Vector3d(0, 1, 0);
+		var zAxis = new Vector3d(0, 0, 1);
+		var passed = true;
+		axes = [xAxis, yAxis, zAxis];
+>>>>>>> 553f373... Add vector math tests, standardize function names
 		for(i=0; i < axes.length; i++){
 			passed &= testLength(axes[i], 1);
 			passed &= testParallel(axes[i], axes[i]);
@@ -122,6 +169,7 @@ Vector3d.prototype.tests = function(numSamples){
 		return passed;
 	}
 
+<<<<<<< HEAD
 	function testTripleVector(v1, v2, v3){
 		var passed = true;
 		var tripleVector;
@@ -175,10 +223,14 @@ Vector3d.prototype.tests = function(numSamples){
 
 	var vZero = new Vector3d(0, 0, 0);
 	vZero.expectedLength = 0;
+=======
+	passed &= testAxes();
+>>>>>>> 553f373... Add vector math tests, standardize function names
 
 	var unitVectors = [];
 	var vectors = [];
 
+<<<<<<< HEAD
 	while(specialVectors.length){
 		v = specialVectors.pop();
 		v.expectedLength = v.magnitude();
@@ -206,6 +258,19 @@ Vector3d.prototype.tests = function(numSamples){
 	for(i=0; i < unitVectors.length; i++){
 		unitVectors[i].expectedLength = 1;
 		unitVectors[i].original = unitVectors[i].copy();
+=======
+	for(i=0; i < numSamples; i++){
+		u = Vector3d.prototype.unitRandom();
+		u.original = u.copy();
+		unitVectors.push(u);
+
+		var x = Math.random();// 0 <= x < 1
+		x = x / (1-x);// 0 <= x < Infinity
+		v = Vector3d.prototype.randomOfMagnitude(x);
+		v.expectedLength = x;
+		v.original = v.copy();
+		vectors.push(v);
+>>>>>>> 553f373... Add vector math tests, standardize function names
 	}
 
 	for(i=0; i < unitVectors.length; i++){
@@ -236,15 +301,33 @@ Vector3d.prototype.tests = function(numSamples){
 
 	//Triple Product identities.
 	//If these fail, but the above pass, likely indicates API problems, not math problem.
+<<<<<<< HEAD
 	for (i=0; i < vectors.length; i++){
 		j = Math.floor(vectors.length * Math.random());
 		k = Math.floor(vectors.length * Math.random());
 		passed &= testTripleScalar(vectors[i], vectors[j], vectors[k]);
 		passed &= testTripleVector(vectors[i], vectors[j], vectors[k]);
+=======
+	for (i=0; i < numSamples; i++){
+		j = Math.floor(vectors.length * Math.random());
+		k = Math.floor(vectors.length * Math.random());
+		
+		var vi=vectors[i],vj=vectors[j],vk=vectors[k];
+
+		var tripleScalar = vi.dot(vj.cross(vk));
+		passed &= Math.isClose(tripleScalar, vj.dot(vk.cross(vi)));
+		passed &= Math.isClose(tripleScalar, vk.dot(vi.cross(vj)));
+
+		var tripleVector = vi.cross(vj.cross(vk));
+		tripleVector.incrementMe(vj.cross(vk.cross(vi)));
+		tripleVector.incrementMe(vk.cross(vi.cross(vj)));
+		passed &= testEquality(tripleVector, new Vector3d(0,0,0));
+>>>>>>> 553f373... Add vector math tests, standardize function names
 	}
 
 	//Vector projections.
 	for (i=0; i < vectors.length; i++){
+<<<<<<< HEAD
 		v = vectors[i];
 		for(j=0; j < unitVectors.length; j++){
 			u = unitVectors[j];
@@ -265,28 +348,53 @@ Vector3d.prototype.tests = function(numSamples){
 
 	//Try some rotations:
 	for(i=0; i < vectors.length; i++){
+=======
+		u = unitVectors[i];
+		v = unitVectors[i];
+		var vPlane = v.projectOntoPlane(u);
+		var vAxial = v.projectOntoAxis(u);
+		var vExpected = vPlane.copy().incrementMe(vAxial);
+		passed &= testEquality(v, vExpected);
+		passed &= testPerpendicular(vPlane, u);
+		passed &= testCoAxial(vAxial, u);
+	}
+
+	//Try some rotations:
+	for(i=0; i< vectors.length; i++){
+>>>>>>> 553f373... Add vector math tests, standardize function names
 		v = vectors[i];
 		for(j=0; j < unitVectors.length; j++){
 			u = unitVectors[j];
 			v.rotateMe({axis:u, angle:0});
 			if(!testEquality(v, v.original)){
 				console.log("Rotation by zero failed to recover original vector.");
+<<<<<<< HEAD
 				console.log("Original: "  + v.original.asString());
 				console.log("Recovered: " + v.asString());
+=======
+				console.log("Original: "  + v.original.toString());
+				console.log("Recovered: " + v.toString());
+>>>>>>> 553f373... Add vector math tests, standardize function names
 				passed = false;
 			}
 
 			var rotationAngle = 2 * Math.PI * Math.random();
 			v.rotateMe({axis:u, angle:rotationAngle});
 
+<<<<<<< HEAD
 			if (! Math.isClose(v.dot(u), v.original.dot(u))){
 				console.log("Rotation failed to preserve opening angle between " + u.asString() + " and " + v.asString());
+=======
+			if (! Math.isClose(v.openingAngle(u), v.original.openingAngle(u))){
+				console.log("Rotation failed to preserve opening angle between " + u.toString() + "and " + v.toString());
+>>>>>>> 553f373... Add vector math tests, standardize function names
 				passed = false;
 			}
 
 			v.rotateMe({axis:u, angle:-rotationAngle});
 			if(!testEquality(v, v.original)){
 				console.log("Rotation followed by inverse rotation failed to recover original vector.");
+<<<<<<< HEAD
 				console.log("Original: " + v.original.asString());
 				console.log("Recovered: " + v.asString());
 				passed = false;
@@ -333,12 +441,24 @@ Vector3d.prototype.tests = function(numSamples){
 			console.log("Spherical: r:" + sphericalV.r + ", theta: "+sphericalV.theta + ", phi: " + sphericalV.phi);
 			console.log("New: " + vNew.asString());
 			passed = false;
+=======
+				console.log("Original: " + v.original.toString());
+				console.log("Recovered: " + v.toString());
+				passed = false;
+			}
+>>>>>>> 553f373... Add vector math tests, standardize function names
 		}
 	}
 	return passed;
 };
 
+<<<<<<< HEAD
 numSamples = 10;
+=======
+Vector3d.prototype.openingAngle = Vector3d.prototype.openingAngle_LawCosines;
+
+numSamples = 1000;
+>>>>>>> 553f373... Add vector math tests, standardize function names
 //numSamples = 10000; This causes the page to become unresponsive, profiling hangs in chrome every time.
 if (Vector3d.prototype.tests(numSamples)){ 
 	console.log("All Vector3d tests passed with sample size "+ numSamples +".");
