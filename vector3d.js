@@ -1,4 +1,4 @@
-Math.TAU = 2 * Math.PI;
+Math.TAU = Math.TAU || 2 * Math.PI;
 
 function Vector3d(x, y, z){
 	this.x = x;
@@ -17,7 +17,7 @@ Vector3d.prototype.setXYZ = function(x, y, z){
 };
 
 Vector3d.prototype.asXYZ = function(){
-	return { x: this.x,
+	return {x: this.x,
 			y: this.y,
 			z: this.z};
 };
@@ -27,14 +27,13 @@ Vector3d.prototype.fromRThetaPhi = function(r, theta, phi){
 };
 
 Vector3d.prototype.setRThetaPhi = function (r, theta, phi){
-	this.x = r*sin(theta)*cos(phi);
-	this.y = r*sin(theta)*sin(phi);
-	this.z = r*cos(theta);
+	this.x = r * Math.sin(theta) * Math.cos(phi);
+	this.y = r * Math.sin(theta) * Math.sin(phi);
+	this.z = r * Math.cos(theta);
 };
 
 Vector3d.prototype.asRThetaPhi = function(){
-	var u = this.unitVector();
-	return {r:this.magnitude(), theta:Math.acos(v.z), phi:Math.atan2(v.y, v.x)};
+	return {r:this.magnitude(), theta:this.theta(), phi:Math.atan2(this.y, this.x)};
 };
 
 Vector3d.prototype.setFromV = function(v){
@@ -67,11 +66,14 @@ Vector3d.prototype.theta = function(){
 	if (this.z === 0) {
 		return Math.PI / 2;
 	}else{
-		var sgn = this.z / abs(this.z);
+		var zPositive = this.z > 0;
 		//Since cos(x)**2 = 1/2 (cos(2 x)+1)
-		var cos_sq_theta = this.z*this.z/ this.sumSquares();
-		var abstheta = Math.acos(2 * cos_sq_theta - 1) / 2;
-		return sgn * abstheta;
+		var theta = Math.acos(2 * this.z*this.z/this.sumSquares() - 1) / 2;
+		if(zPositive){
+			return theta;
+		}else{
+			return Math.PI - theta;
+		}
 	}
 };
 

@@ -53,9 +53,8 @@ Vector3d.prototype.tests = function(numSamples){
 	}
 
 	function testParallel(v1, v2){
-		var cosOpeningAngle = v1.dot(v2) / (v1.magnitude() * v2.magnitude());
 		if (testCoAxial(v1,v2)){
-			if (cosOpeningAngle > 0){
+			if (v1.dot(v2) > 0){
 				return true;
 			}else{
 				console.log("Vectors were anti-parallel.  (Did you want testCoAxial?)");
@@ -294,11 +293,46 @@ Vector3d.prototype.tests = function(numSamples){
 			}
 
 			rotationAngle = 2 * Math.PI * Math.random();
-			v.rotateMe({pivotPoint: v.copy(), axis: u, angle:rotationAngle})
+			v.rotateMe({pivotPoint: v.copy(), axis: u, angle:rotationAngle});
 			if(!testEquality(v, v.original)){
 				console.log("Rotation of a point around a pivot of itself moved the vector.");
 				passed = false;
 			}	
+		}
+	}
+
+	//Test angular relations:
+	for (i=0; i < numSamples; i ++){
+		var theta = Math.PI * Math.random();
+		var phi   = Math.TAU * Math.random()-Math.PI;
+
+		u = Vector3d.prototype.unitFromAngles(theta, phi);
+		if (!Math.isClose(Math.cos(u.theta()), Math.cos(theta))){
+			console.log("Theta (" + theta + ") not recovered from unitFromAngles, got " + u.theta() + " instead.");
+			passed = false;
+		}else if (!Math.isClose(u.phi()*Math.sin(theta), phi*Math.sin(theta))){
+			console.log("Phi (" + phi + ")not recovered from unitFromAngles, got " + u.phi() + " instead.");
+			console.log("(Theta was " + theta + ".)");
+			passed = false;
+		}
+	}
+
+	//Test coordinate transforms:
+	for(i=0; i < vectors.length; i++){
+		if(! vectors[i].isClose(vectors[i].original)){
+			console.log("Unexpected mutation of v.");
+			console.log("v originally was: " + v.original.toString());
+			console.log("found as: " + v.toString());
+			passed = false;
+		}
+		var sphericalV = vectors[i].asRThetaPhi();
+		var vNew = Vector3d.prototype.fromRThetaPhi(sphericalV.r, sphericalV.theta, sphericalV.phi);
+		if(! vNew.isClose(vectors[i])){
+			console.log("Vector --> Spherical --> Vector failed.");
+			console.log("Original: " + vectors[i].toString());
+			console.log("Spherical: r:" + sphericalV.r + ", theta: "+sphericalV.theta + ", phi: " + sphericalV.phi);
+			console.log("New: " + vNew.toString());
+			passed = false;
 		}
 	}
 	return passed;
@@ -306,7 +340,7 @@ Vector3d.prototype.tests = function(numSamples){
 
 Vector3d.prototype.openingAngle = Vector3d.prototype.openingAngle_LawCosines;
 
-numSamples = 100;
+numSamples = 10;
 //numSamples = 10000; This causes the page to become unresponsive, profiling hangs in chrome every time.
 if (Vector3d.prototype.tests(numSamples)){ 
 	console.log("All Vector3d tests passed with sample size "+ numSamples +".");
