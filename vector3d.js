@@ -160,7 +160,12 @@ Vector3d.prototype.unitMe = function(){
 };
 
 Vector3d.prototype.unitVector = function(){
-	return this.copy().scale(1 / this.magnitude());
+	var l = this.magnitude();
+	if (l === 0){
+		return this.copy();
+	}else{
+		return this.copy().scale(1 / l );
+	}
 };
 
 Vector3d.prototype.openingAngle_UnitDot = function(v2){
@@ -248,7 +253,7 @@ Vector3d.prototype.projectOntoPlane = function(plane){
 };
 
 Vector3d.prototype.toString = function(){
-	return ("Vector3d(" + this.x + ", " + this.y + ", " + this.z + ")");
+	return ("Vector3d(" + this.x.toPrecision(3) + ", " + this.y.toPrecision(3) + ", " + this.z.toPrecision(3) + ")");
 };
 
 //Compatibility with old API:
