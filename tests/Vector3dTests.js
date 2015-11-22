@@ -121,6 +121,38 @@ Vector3d.prototype.tests = function(numSamples){
 		return passed;
 	}
 
+	function testTripleVector(v1, v2, v3){
+		var passed = true;
+		var tripleVector;
+		tripleVector = v1.cross(v2.cross(v3));
+		tripleVector.incrementMe(v2.cross(v3.cross(v1)));
+		tripleVector.incrementMe(v3.cross(v1.cross(v2)));
+		passed &= testEquality(tripleVector, new Vector3d(0,0,0));
+		if (!passed){
+			console.log("Triple Vector Product Failed for vectors:");
+			console.log("v1 : " + v1.toString());
+			console.log("v2 : " + v2.toString());
+			console.log("v3 : " + v3.toString());
+		}
+		return passed;
+	}
+
+	function testTripleScalar(v1, v2, v3){
+		var passed = true;
+
+		var tripleScalar = v1.dot(v2.cross(v3));
+		passed &= Math.isClose(tripleScalar, v2.dot(v3.cross(v1)));
+		passed &= Math.isClose(tripleScalar, v3.dot(v1.cross(v2)));
+		if (!passed){
+			console.log("Triple Scalar Product Failed for vectors:");
+			console.log("v1 : " + v1.toString());
+			console.log("v2 : " + v2.toString());
+			console.log("v3 : " + v3.toString());
+		}
+		return passed;
+	}
+
+
 	passed &= testAxes();
 
 	var unitVectors = [];
@@ -170,17 +202,8 @@ Vector3d.prototype.tests = function(numSamples){
 	for (i=0; i < numSamples; i++){
 		j = Math.floor(vectors.length * Math.random());
 		k = Math.floor(vectors.length * Math.random());
-		
-		var vi=vectors[i],vj=vectors[j],vk=vectors[k];
-
-		var tripleScalar = vi.dot(vj.cross(vk));
-		passed &= Math.isClose(tripleScalar, vj.dot(vk.cross(vi)));
-		passed &= Math.isClose(tripleScalar, vk.dot(vi.cross(vj)));
-
-		var tripleVector = vi.cross(vj.cross(vk));
-		tripleVector.incrementMe(vj.cross(vk.cross(vi)));
-		tripleVector.incrementMe(vk.cross(vi.cross(vj)));
-		passed &= testEquality(tripleVector, new Vector3d(0,0,0));
+		passed &= testTripleScalar(vectors[i], vectors[j], vectors[k]);
+		passed &= testTripleVector(vectors[i], vectors[j], vectors[k]);
 	}
 
 	//Vector projections.
