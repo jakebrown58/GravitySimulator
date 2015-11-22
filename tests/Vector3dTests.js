@@ -100,10 +100,12 @@ Vector3d.prototype.tests = function(numSamples){
 
 	function testAxes(){
 	//Test known relationships with specific vectors.
+		var passed = true;
+
 		var xAxis = new Vector3d(1, 0, 0);
 		var yAxis = new Vector3d(0, 1, 0);
 		var zAxis = new Vector3d(0, 0, 1);
-		var passed = true;
+
 		axes = [xAxis, yAxis, zAxis];
 		for(i=0; i < axes.length; i++){
 			passed &= testLength(axes[i], 1);
@@ -214,8 +216,14 @@ Vector3d.prototype.tests = function(numSamples){
 		var vAxial = v.projectOntoAxis(u);
 		var vExpected = vPlane.copy().incrementMe(vAxial);
 		passed &= testEquality(v, vExpected);
-		passed &= testPerpendicular(vPlane, u);
-		passed &= testCoAxial(vAxial, u);
+		if ( ! testPerpendicular(vPlane, u)){
+			console.log("Projection onto plane failed to be perpendicular to the normal of that plane.");
+			passed = false;
+		}
+		if ( ! testCoAxial(vAxial, u) ){
+			console.log("Projection of a vector onto an axis failed to produce a vector along that axis.");
+			passed = false;
+		}
 	}
 
 	//Try some rotations:
@@ -246,6 +254,13 @@ Vector3d.prototype.tests = function(numSamples){
 				console.log("Recovered: " + v.toString());
 				passed = false;
 			}
+
+			rotationAngle = 2 * Math.PI * Math.random();
+			v.rotateMe({pivotPoint: v.copy(), axis: u, angle:rotationAngle})
+			if(!testEquality(v, v.original)){
+				console.log("Rotation of a point around a pivot of itself moved the vector.");
+				passed = false;
+			}	
 		}
 	}
 	return passed;
