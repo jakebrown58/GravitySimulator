@@ -195,9 +195,11 @@ Response.prototype.getNearest = function(clickXY){
 };
 
 Response.prototype.destroy = function(xy){
-  var target = app.particles[Response.prototype.getNearest(xy)];
-  target.die(target.name + " was destroyed by the creator.")
-  if(app.FOLLOW == target.id) app.FOLLOW = 0;
+  if (app.particles.length){
+    var target = app.particles[Response.prototype.getNearest(xy)];
+    target.die(target.name + " was destroyed by the creator.")
+    if(app.FOLLOW == target.id) app.FOLLOW = 0;
+  }
 };
 
 Response.prototype.rocket = function(){
@@ -324,7 +326,7 @@ Response.prototype.resetViewToHome = function() {
 }
 
 Response.prototype.getFocusId = function(){
-  if (app.particles){
+  if (app.particles.length){
     if (!app.particles[app.FOLLOW]){
           app.FOLLOW = 0;
     }

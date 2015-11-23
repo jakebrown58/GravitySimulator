@@ -34,7 +34,13 @@ ViewPort.prototype.setAxes = function(theta, phi){
 
 ViewPort.prototype.setFocus = function(){
   this.focusId = app.response.getFocusId();
-  this.focusLocation.setFromV(app.particles[this.focusId].position);
+  if (app.particles[this.focusId]){
+    this.focusParticle = app.particles[this.focusId];
+    this.focusLocation.setFromV(this.focusParticle.position);
+    return true;
+  }else{
+    return false;
+  }
 }
 
 ViewPort.prototype.restoreDefault = function(){
@@ -248,14 +254,15 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));    
     this.appendLine("    FrameRate: " + frameRate);
 
-    var focusParticle = app.particles[this.focusId];
-    var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
-    this.appendLine("Following: " + focusParticle.name);
-    this.appendLine("     Energy: " + focusKE);
-    this.appendLine("     Speed: " + Math.round(app.physics.getParticleSpeed(focusParticle) * 1000, 0));
-    this.appendLine("     Direction: " + Math.round(focusParticle.direction, 0));
-    this.appendLine("        retro direction: " + Math.round(focusParticle.direction - 180, 0));
-    this.appendLine("     Mass: " + focusParticle.mass);
+    if(this.focusParticle){
+      var focusKE = Math.round(this.focusParticle.kineticE()*100000,0) === 0 ? Math.round(this.focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(this.focusParticle.kineticE()*100000,0);
+      this.appendLine("Following: " + this.focusParticle.name);
+      this.appendLine("     Energy: " + focusKE);
+      this.appendLine("     Speed: " + Math.round(app.physics.getParticleSpeed(this.focusParticle) * 1000, 0));
+      this.appendLine("     Direction: " + Math.round(this.focusParticle.direction, 0));
+      this.appendLine("        retro direction: " + Math.round(this.focusParticle.direction - 180, 0));
+      this.appendLine("     Mass: " + this.focusParticle.mass);
+    }
 
     var viewPort = app.physics.convertViewPortPixelsToUnits(app.viewPort.viewPortSize);
     this.appendLine("Viewport size: " + viewPort.size + viewPort.unit);
@@ -368,9 +375,10 @@ ViewPort.prototype.setClock = function() {
 };
 
 ViewPort.prototype.setIntegrate = function() {
-  this.setFocus();
   this.setAxes(this.viewAngle, this.viewPhi);
-  app.viewPort.drawParticles();
+  if (this.setFocus()){
+    app.viewPort.drawParticles();
+  }
 };
 
 
