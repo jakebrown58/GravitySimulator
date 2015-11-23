@@ -245,7 +245,6 @@ Response.prototype.reset = function() {
     //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
   }
 
-  app.FOLLOW = 0;
   app.ctx.clearRect(0, 0, app.width, app.height);
   var x = new Particles().buildInitialParticles();
   app.viewPort.colorSorted = false;  
@@ -324,6 +323,16 @@ Response.prototype.resetViewToHome = function() {
   app.viewPort.restoreDefault();
 }
 
+Response.prototype.getFocusId = function(){
+  if (app.particles){
+    if (!app.particles[app.FOLLOW]){
+          app.FOLLOW = 0;
+    }
+  }else{
+    app.response.reset();
+  }
+  return app.FOLLOW;
+}
 
 function TextParser() { 
 }

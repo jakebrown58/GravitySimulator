@@ -9,6 +9,8 @@ function ViewPort(){
   this.viewAngle   = Math.PI/3.;
   this.viewPhi     = 0 ;
   this.shift   = {x: -50, y: 0, z: 0, zoom: 0};
+  this.focusId = 0;
+  this.focusLocation = new Vector3d(0,0,0);
   this.viewPortSize = (app.width / (this.shift.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
   this.colorSorted = false;
@@ -30,11 +32,17 @@ ViewPort.prototype.setAxes = function(theta, phi){
   this.zAxis = this.xAxis.cross(this.yAxis);
 }
 
+ViewPort.prototype.setFocus = function(){
+  this.focusId = app.response.getFocusId();
+  this.focusLocation.setFromV(app.particles[this.focusId].position);
+}
+
 ViewPort.prototype.restoreDefault = function(){
   this.viewAngle   = 0;
   this.viewPhi     = 0;
   this.shift       = {x: -50, y: 0, z: 0, zoom: 0};
   this.setAxes(this.viewAngle, this.viewPhi);
+  this.setFocus();
 }
 
 ViewPort.prototype.reorient = function(pointerOld, pointerNew){
@@ -115,7 +123,7 @@ ViewPort.prototype.MapPositionToViewPortXY = function(position){
   
   r = new Vector3d(0., 0., 0.);
   r.setFromV(position);
-  r.decrement(app.particles[app.FOLLOW].position);
+  r.decrement(this.focusLocation);
 
   xy   = {x: r.dot(this.xAxis), y:r.dot(this.yAxis)};
   xy.x = (xy.x)*(1+this.shift.zoom) + app.halfWidth  - this.shift.x;
@@ -157,7 +165,7 @@ ViewPort.prototype.drawParticle = function(particle) {
 
 
   if(app.response.MODE === 'ROCKET') {
-    if(particle.id === app.FOLLOW) {
+    if(particle.id === this.focusId) {
       var direction = particle.direction / 180 * Math.PI;
       var heading = app.thrust.heading / 180 * Math.PI;
       app.ctx.lineWidth = 3;
@@ -240,7 +248,7 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));    
     this.appendLine("    FrameRate: " + frameRate);
 
-    var focusParticle = app.particles[app.FOLLOW];
+    var focusParticle = app.particles[this.focusId];
     var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
     this.appendLine("Following: " + focusParticle.name);
     this.appendLine("     Energy: " + focusKE);
@@ -308,7 +316,7 @@ ViewPort.prototype.frameClock = function() {
 };
 
 ViewPort.prototype.showRocketTelemetry = function() {
-    var focusParticle = app.particles[app.FOLLOW];
+    var focusParticle = app.particles[this.focusId];
     var focusKE = Math.round(focusParticle.kineticE()*100000,0) === 0 ? Math.round(focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(focusParticle.kineticE()*100000,0);
     this.appendLine("Following: " + focusParticle.name);
     this.appendLine("     Energy: " + focusKE);
@@ -360,7 +368,7 @@ ViewPort.prototype.setClock = function() {
 };
 
 ViewPort.prototype.setIntegrate = function() {
-  app.viewPort.center = {x: (app.particles[app.FOLLOW].position.x - app.halfWidth), y: (app.particles[app.FOLLOW].position.y - app.halfHeight)};
+  this.setFocus();
   this.setAxes(this.viewAngle, this.viewPhi);
   app.viewPort.drawParticles();
 };
