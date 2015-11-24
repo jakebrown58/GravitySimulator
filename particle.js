@@ -1,11 +1,11 @@
 function Particle(id, x, y, z) {
   this.id = id; 
   this.position = new Vector3d(x,y,z);
-  this.vel = new Vector3d(0., 0., 0.);
-  this.acc = new Vector3d(0., 0., 0.);
-  this.acc_old = new Vector3d(0., 0., 0.);
+  this.vel = new Vector3d(0, 0, 0);
+  this.acc = new Vector3d(0, 0, 0);
+  this.acc_old = new Vector3d(0, 0, 0);
   this.acc_Swap = this.acc; //To flip flop back and forth, re-using the vectors.
-  this.r = new Vector3d(0., 0., 0.); //Vector pointing from self to another.
+  this.r = new Vector3d(0, 0, 0); //Vector pointing from self to another.
   this.dt = app.physics.variables.TIME_STEP_INTEGRATOR;
   this.dt_old = this.dt;
   this.destroyed = false;
@@ -14,25 +14,25 @@ function Particle(id, x, y, z) {
   this.color = {r: 205 + 50 * Math.floor(Math.random() * 3), 
     g:  205 + 50 * Math.floor(Math.random() * 3),
     b:  205 + 50 * Math.floor(Math.random() * 3)};
-};
+}
 
 Particle.prototype.die = function(message){
   this.destroyed = true;
   console.log(message);
-}
+};
 
 
 Particle.prototype.speed_squared = function(){
   return this.vel.sumsq() / (this.dt*this.dt);
-}
+};
 
 Particle.prototype.velocity = function(){
-  return new Vector3d(this.vel.x, this.vel.y, this.vel.z).scale(1./this.dt);
-}
+  return new Vector3d(this.vel.x, this.vel.y, this.vel.z).scale( 1 / this.dt);
+};
 
 Particle.prototype.acceleration = function(){
-  return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2./(dt*dt));
-}
+  return new Vector3d(this.acc.x, this.acc.y, this.acc.z).scale(2 / (dt*dt));
+};
 
 Particle.prototype.updateTimeStep = function(dt_new){
   this.dt_old = this.dt;
@@ -53,7 +53,7 @@ Particle.prototype.updateTimeStep = function(dt_new){
   this.acc_old.x *= f_sq;
   this.acc_old.y *= f_sq;
   this.acc_old.z *= f_sq;
-}
+};
 
 Particle.prototype.dist = function(p1) {
   this.r.x = p1.position.x - this.position.x;
@@ -64,7 +64,7 @@ Particle.prototype.dist = function(p1) {
       this.r.y * this.r.y + 
       this.r.z * this.r.z;
   return Math.sqrt(d2);
-}
+};
 
 
 Particle.prototype.calcAcceleration = function(){
@@ -117,7 +117,7 @@ Particle.prototype.checkPotentialCollision = function(d, curr) {
   if (this.id < curr.id) {
     var lastBucket = -1;
     for (var bucket in app.potentialCollisions) {
-      var num = (new Number(bucket) / 100);
+      var num = Number(bucket) / 100;
       if (lastBucket < d && d < num)
         app.potentialCollisions[(lastBucket * 100).toString()].push([this.id, curr.id]);
 
@@ -148,18 +148,19 @@ Particle.prototype.updateVelocity = function() {
 
 Particle.prototype.kineticE = function(){
   return this.mass * this.speed_squared()/ 2;
-}
+};
 
 Particle.prototype.isBoundTo = function(p2){
   //The expression is equivalent to Mechanical Energy < 0
   var vSq = this.velocity().dist_squared(p2.velocity());
   var d  = this.position.distance(p2.position);
   var GM = app.Physics.GRAVITY_CONSTANT*(this.mass+p2.mass);
-  return (d * (vSq/2.) < GM);
+  var isBound = (d * (vSq / 2) < GM);
+  return isBound;
 };
 
 Particle.prototype.checkClock = function() {
-    return Math.abs((this.oldDirection - this.direction)) > 10;
+  return Math.abs((this.oldDirection - this.direction)) > 10;
 };
 
 Particle.prototype.configure = function(config) {
@@ -215,9 +216,9 @@ Particle.prototype.configure = function(config) {
   particle.vel.scale(app.physics.variables.TIME_STEP_INTEGRATOR);
   
   //Just for safety, initialize to zero.  
-  particle.acc.x = 0.;
-  particle.acc.y = 0.;
-  particle.acc.z = 0.;
+  particle.acc.x = 0;
+  particle.acc.y = 0;
+  particle.acc.z = 0;
 
 
   particle.size = config.drawSize;    

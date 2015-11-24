@@ -29,11 +29,11 @@ Physics.prototype.updateTimeStep = function(newTimeStep) {
   this.variables.TIME_STEP_INTEGRATOR_OLD = this.variables.TIME_STEP_INTEGRATOR;
   this.variables.TIME_STEP = newTimeStep;
   this.variables.TIME_STEP_INTEGRATOR = newTimeStep * this.constants.TIME_STEP_NORMALIZER;
-}
+};
 
 Physics.prototype.reverseTime = function() {
   this.updateTimeStep(this.variables.TIME_STEP * -1);
-}
+};
 
 Physics.prototype.leapFrog = function () {
   dt_this_iteration= this.variables.TIME_STEP_INTEGRATOR;
@@ -83,8 +83,8 @@ Physics.prototype.collide_glom = function(p1, p2) {
 
   var vol = 1.33 * Math.PI * Math.pow(big.radius, 3);
   var newVolume = mass / (big.mass / vol);
-  big.radius = Math.cbrt((newVolume * .75 / Math.PI));
-  big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;;
+  big.radius = Math.cbrt((newVolume * 0.75 / Math.PI));
+  big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;
 
   big.mass = mass;
   
@@ -117,7 +117,9 @@ Physics.prototype.getParticleSpeed = function (particle) {
 
 Physics.prototype.getParticleDirection = function (particle) {
   var followDirection = Math.atan2(particle.vel[1], particle.vel[0]) * 180 / Math.PI;
-  if (followDirection < 0.) followDirection += 360
+  if (followDirection < 0.0) {
+    followDirection += 360;
+  }
   return followDirection;
 };
 
@@ -127,10 +129,10 @@ Physics.prototype.createCollidingParticleList = function() {
     i,
     j;
 
-  for(i = 0; i < p.length; i++) {
-    for(j = i + 1; j < p.length; j++) {
-      if(p[i].id != p[j].id) {
-        if(this.areParticlesVeryClose(p[i], p[j])) {
+  for (i = 0; i < p.length; i++) {
+    for (j = i + 1; j < p.length; j++) {
+      if (p[i].id != p[j].id) {
+        if (this.areParticlesVeryClose(p[i], p[j])) {
           ret.push({big: p[j], little: p[i]});
         }
       }
@@ -142,7 +144,7 @@ Physics.prototype.createCollidingParticleList = function() {
 
 Physics.prototype.handleCollisions = function() {
   var coll = app.potentialCollisions["0"]; //app.flattenPotentialCollisions();
-  if(coll.length) {
+  if (coll.length) {
     for (var pair in coll) {
       var a = app.particles[coll[pair][0]];
       var b = app.particles[coll[pair][1]];
@@ -178,22 +180,18 @@ Physics.prototype.areParticlesVeryClose = function(p1,p2) {
 
 
 Physics.prototype.convertViewPortPixelsToUnits = function(rawSize) {
-    var viewPortSize = rawSize,
-      unit = ' AU';
+  var viewPortSize = rawSize,
+    unit = ' AU';
 
-    if(rawSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
-      viewPortSize = Math.floor(10 * rawSize / app.physics.constants.LIGHTYEAR_PER_AU) / 10;
-      unit = ' LIGHTYEARS';
-    } else if(rawSize < 1) {
-      viewPortSize = Math.floor(rawSize * app.physics.constants.MILES_PER_AU);
-      unit = ' MILES';
-    } else if( rawSize > 4) {
-      viewPortSize = Math.floor(rawSize);
-    }
+  if(rawSize >= app.physics.constants.LIGHTYEAR_PER_AU) {
+    viewPortSize = Math.floor(10 * rawSize / app.physics.constants.LIGHTYEAR_PER_AU) / 10;
+    unit = ' LIGHTYEARS';
+  } else if(rawSize < 1) {
+    viewPortSize = Math.floor(rawSize * app.physics.constants.MILES_PER_AU);
+    unit = ' MILES';
+  } else if( rawSize > 4) {
+    viewPortSize = Math.floor(rawSize);
+  }
 
-    return {size: viewPortSize, unit: unit};
-};
-
-Physics.prototype.convertTicksToEarthTime = function(ticks) {
-
+  return {size: viewPortSize, unit: unit};
 };

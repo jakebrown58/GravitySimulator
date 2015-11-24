@@ -15,7 +15,7 @@ app.init = function () {
   app.closestPair = {x: 0, y: 0, z: 0, d: 0};
   app.eventListener = {};
   app.collisions = 0;
-  app.COLLISION_IMMENENCE_RANGE = .1;
+  app.COLLISION_IMMENENCE_RANGE = 0.1;
   app.potentialCollisions = app.resetPotentialCollisions();
   app.thrust = new Thrust();
 
@@ -32,7 +32,7 @@ app.init = function () {
 
     var console = document.getElementById('console');
     app.console = console;
-    app.console.width = app.width * .2;
+    app.console.width = app.width * 0.2;
     app.console.height = app.height;
     app.console.style.visibility = "hidden";
 
@@ -63,11 +63,11 @@ app.init = function () {
 };
 
 app.toggleConsoleVisibility = function(makeVisible) {
-  var consoleScale = .2;
+  var consoleScale = 0.2;
 
   if (makeVisible) {
     app.console.style.visibility = "visible";
-    app.display.width = app.width * .8;
+    app.display.width = app.width * 0.8;
   } else {
     app.console.style.visibility = "hidden";
     app.display.width = app.width;
@@ -79,14 +79,20 @@ app.resetPotentialCollisions = function() {
 };
 
 app.flattenPotentialCollisions = function() {
-  var flat = [];
+  var flat = [],
+    n,
+    list,
+    pair,
+    big,
+    little;
 
   for (var bucket in app.potentialCollisions) {
-    var list = app.potentialCollisions[(new Number(bucket) / 100)];
+    n = Number(bucket);
+    list = app.potentialCollisions[n / 100];
     if (list && list.length)
-      for (var pair in list) {
-        var big = app.particles[list[pair][0]];
-        var little = app.particles[list[pair][1]];
+      for (pair in list) {
+        big = app.particles[list[pair][0]];
+        little = app.particles[list[pair][1]];
         flat.push({big: big, little: little});
       }
   }
@@ -97,27 +103,4 @@ app.flattenPotentialCollisions = function() {
 app.clockReset = function() {
   app.CLOCK.ticks = 0;
   app.splitTime = new Date();
-};
-
-var mockCtx = function() {
-
-  this.fillText = function() {
-    return 0;
-  }
-
-  this.beginPath = function() {
-    return 0;
-  }
-
-  this.fill = function() {
-    return 0;
-  }
-
-  this.arc = function() {
-    return 0;
-  }
-
-  this.clearRect = function() {
-    return 0;
-  }
 };

@@ -63,7 +63,7 @@ Response.prototype.onClickSplash = function(e){
     app.eventListener.addEventListener('click', app.response.onClick);
     app.response.onClick(e);
   }
-}
+};
 
 
 Response.prototype.onClick = function(e) {
@@ -94,7 +94,7 @@ Response.prototype.onMouseWheel = function(e){
     app.viewPort.adjustZoom('in');
   }
   return false;
-}
+};
 
 Response.prototype.handleCommand = function(e) {
   var action = keyMap[e.keyCode];
@@ -120,11 +120,11 @@ Response.prototype.handleCommand = function(e) {
   if(action === 'follow') { app.response.incrementFollow(); } 
   if(action === 'speedItUp') { app.response.speedUp(); }
   if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }  
-}
+};
 
 Response.prototype.handleConsole = function(e) {
   app.textParser.handleConsole();
-}
+};
 
 Response.prototype.onCommandExit = function() {
   app.response.CommandMode = 'COMMAND';
@@ -132,7 +132,7 @@ Response.prototype.onCommandExit = function() {
   app.eventListener.addEventListener("keydown", app.response.eventHandle);
 
   app.toggleConsoleVisibility(false);
-}
+};
 
 
 Response.prototype.switchCommandMode = function() {
@@ -141,14 +141,14 @@ Response.prototype.switchCommandMode = function() {
 
   app.toggleConsoleVisibility(true);
   shellJs.init(app.console, app.response.onCommandExit, app.response.commands, true, { keyCode: 192, displayText: "~ or `" } );
-}
+};
 
 Response.prototype.changeMode = function() {
-  if(app.response.MODE === 'FOLLOW') {
+  if (app.response.MODE === 'FOLLOW') {
     app.response.MODE = 'ROCKET';
-  } else if( this.MODE === 'ROCKET') {
+  } else if ( this.MODE === 'ROCKET') {
     app.response.MODE = 'PHOTON';
-  } else if( this.MODE === 'PHOTON') {
+  } else if ( this.MODE === 'PHOTON') {
     app.response.MODE = 'DESTROY';
   } else {
     app.response.MODE = 'FOLLOW';
@@ -156,13 +156,13 @@ Response.prototype.changeMode = function() {
 };
 
 Response.prototype.speedUp = function() {
-  if(app.physics.variables.TIME_STEP < 100) {
+  if (app.physics.variables.TIME_STEP < 100) {
     app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
   }
-}
+};
 
 Response.prototype.follow = function(xy){
-    app.FOLLOW = Response.prototype.getNearest(xy);
+  app.FOLLOW = Response.prototype.getNearest(xy);
 };
 
 Response.prototype.input = function() {
@@ -177,7 +177,7 @@ Response.prototype.getNearest = function(clickXY){
   indexClosest = 0, j,
   dSqClosest   = Number.MAX_VALUE, dSq;
   
-  for(j=0; j < app.particles.length; j++){
+  for (j = 0; j < app.particles.length; j++){
     if (! app.particles[j]) {continue;}
     
     jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
@@ -195,15 +195,20 @@ Response.prototype.getNearest = function(clickXY){
 };
 
 Response.prototype.destroy = function(xy){
+  var target;
+
   if (app.particles.length){
-    var target = app.particles[Response.prototype.getNearest(xy)];
-    target.die(target.name + " was destroyed by the creator.")
-    if(app.FOLLOW == target.id) app.FOLLOW = 0;
+    target = app.particles[Response.prototype.getNearest(xy)];
+    target.die(target.name + " was destroyed by the creator.");
+
+    if(app.FOLLOW == target.id) {
+      app.FOLLOW = 0;
+    }
   }
 };
 
 Response.prototype.rocket = function(){
-  var x = new Particles().buildParticle({name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * .08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: .1}),
+  var x = new Particles().buildParticle(  {name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * 0.08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: 0.1}),
     newGuy = app.particles[app.particles.length -1];
 
   if(app.response.MODE === 'PHOTON') {
@@ -213,9 +218,8 @@ Response.prototype.rocket = function(){
     
     newGuy.position.setFromV(app.particles[0].position);
     newGuy.vel.setXYZ(5000 * Math.cos(arc),
-                          5000 * Math.sin(arc), 
-                        0.);
-
+      5000 * Math.sin(arc), 
+      0.0);
   } else {
     newGuy.position.setFromV(app.particles[app.FOLLOW].position);
     newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3));
@@ -226,17 +230,6 @@ Response.prototype.rocket = function(){
   }
   
   app.PARTICLECOUNT = app.particles.length - 1;
-
-    // if(app.particles.PARTICLECOUNT > 30) {
-    //   var tmp = [];
-    //   for(var j = 0; j < app.particles.length; j++) {
-    //     if(j != 13) {
-    //       tmp.push(app.particles[j]);
-    //     }
-    //   }
-
-    //   app.particles = tmp;
-    // }
 };
 
 Response.prototype.reset = function() {
@@ -254,7 +247,7 @@ Response.prototype.reset = function() {
 
   app.resetPotentialCollisions();
   app.FOLLOW = 0;
-}
+};
 
 Response.prototype.pause = function() {
   //app.physics.updateTimeStep(1);
@@ -265,39 +258,40 @@ Response.prototype.pause = function() {
   } else {
     app.GO = false;
   }
-}
+};
 
 Response.prototype.changeView = function() {
   app.viewPort.cycleState();
   app.ctx.font="12px Calibri";
   app.ctx.clearRect(0, 0, app.width, app.height);  
-}
+};
 
 Response.prototype.incrementFollow = function () {
   var oldFollow = app.FOLLOW;
   do{
     app.FOLLOW += 1;
-    if(app.FOLLOW >= app.particles.length) app.FOLLOW = 0;
-  }while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
+    if (app.FOLLOW >= app.particles.length) {
+      app.FOLLOW = 0;
+    }
+  } while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
 
   app.viewPort.shift.x = 0;
-  app.viewPort.shift.y = 0;
-  
-}
+  app.viewPort.shift.y = 0;  
+};
 
 Response.prototype.changeProperty = function(id, propName, newValue) {
   app.particles[id][propName] = newValue;
-}
+};
 
 Response.prototype.addParticle = function(massX, radX, eC, arc, name) {
-  var eccentricity = eC == null ? 1 : eC / 100,
-    radians = arc == null ? Math.random() * 2 * Math.PI : arc,
-    text = name == null ? 'planet-X' : name;
+  var eccentricity = eC === null ? 1 : eC / 100,
+    radians = arc === null ? Math.random() * 2 * Math.PI : arc,
+    text = name === null ? 'planet-X' : name;
   var cfg = {name: text, mass: massX / 100, radius: 1097, 
       orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
   var x = new Particles().buildParticle(cfg);
   return x;
-}
+};
 
 Response.prototype.addCloud = function(cnt, rC, rF) {
   var x = new Particles();
@@ -305,25 +299,25 @@ Response.prototype.addCloud = function(cnt, rC, rF) {
   for(var y = 0; y < cnt; y++) {
     var rad = rC * 5 + (Math.random() * (rF - rC)) * 5;
     var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097, 
-      orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: .1};
+      orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: 0.1};
     x.buildParticle(cfg);
   }
 
   return x;
-}
+};
 
 Response.prototype.destroyAll = function() {
   var me = this;
   app.FOLLOW = 0;
   app.particles.splice(1, app.particles.length - 1);
   app.alwaysIntegrate.splice(1, app.alwaysIntegrate.length - 1);
-}
+};
 
 Response.prototype.resetViewToHome = function() {
   app.FOLLOW = 0;
   app.physics.updateTimeStep(1);
   app.viewPort.restoreDefault();
-}
+};
 
 Response.prototype.getFocusId = function(){
   if (app.particles.length){
@@ -334,10 +328,10 @@ Response.prototype.getFocusId = function(){
     app.response.reset();
   }
   return app.FOLLOW;
-}
+};
 
 function TextParser() { 
 }
 
 TextParser.prototype.handleConsole = function() {
-}
+};
