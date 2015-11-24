@@ -21,7 +21,7 @@ Vector3d.prototype.tests = function(numSamples){
 		if(Math.isClose(vector.magnitude(), expectedLength)){
 			return true;
 		}else{
-			console.log("Expected length "+ expectedLength + " for vector " + vector.toString());
+			console.log("Expected length "+ expectedLength + " for vector " + vector.asString());
 			return false;
 		}
 	}
@@ -32,22 +32,22 @@ Vector3d.prototype.tests = function(numSamples){
 		}else if (testLength(vector, expectedVector.magnitude())){
 			console.log("Correct length, but wrong direction.");
 		}else{
-			console.log("Expected vector: " + expectedVector.toString());
-			console.log("Found vector: " + vector.toString());
+			console.log("Expected vector: " + expectedVector.asString());
+			console.log("Found vector: " + vector.asString());
 		}
 		return false;
 	}
 
 	function testPerpendicular(v1, v2){
 		var v1Dotv2 = v1.dot(v2);
-		var v1Squared = v1.sumSquares();
-		var v2Squared = v2.sumSquares();
+		var v1Squared = v1.getSumSquares();
+		var v2Squared = v2.getSumSquares();
 
 		v1Dotv2 *= v1Dotv2;
 		if(Math.isClose(v1Squared*v2Squared - v1Dotv2, v1Squared*v2Squared)){
 			return true;
 		}else{
-			console.log("Failed perpendicularity: " + v1.toString() + ", " + v2.toString());
+			console.log("Failed perpendicularity: " + v1.asString() + ", " + v2.asString());
 			return false;
 		}
 	}
@@ -70,10 +70,10 @@ Vector3d.prototype.tests = function(numSamples){
 		var v1Dotv2 = v1.dot(v2);
 		v1Dotv2 *= v1Dotv2;
 
-		if(Math.isClose(v1Dotv2, v1.sumSquares()*v2.sumSquares())){
+		if(Math.isClose(v1Dotv2, v1.getSumSquares()*v2.getSumSquares())){
 			return true;
 		}else{
-			console.log("Failed to be parallel or anti-parallel: " + v1.toString() + ", " + v2.toString());
+			console.log("Failed to be parallel or anti-parallel: " + v1.asString() + ", " + v2.asString());
 			console.log("Opening angle: " + Math.acos(cosOpeningAngle));
 			return false;
 		}
@@ -131,9 +131,9 @@ Vector3d.prototype.tests = function(numSamples){
 		passed &= testEquality(tripleVector, new Vector3d(0,0,0));
 		if (!passed){
 			console.log("Triple Vector Product Failed for vectors:");
-			console.log("v1 : " + v1.toString());
-			console.log("v2 : " + v2.toString());
-			console.log("v3 : " + v3.toString());
+			console.log("v1 : " + v1.asString());
+			console.log("v2 : " + v2.asString());
+			console.log("v3 : " + v3.asString());
 		}
 		return passed;
 	}
@@ -146,9 +146,9 @@ Vector3d.prototype.tests = function(numSamples){
 		passed &= Math.isClose(tripleScalar, v3.dot(v1.cross(v2)));
 		if (!passed){
 			console.log("Triple Scalar Product Failed for vectors:");
-			console.log("v1 : " + v1.toString());
-			console.log("v2 : " + v2.toString());
-			console.log("v3 : " + v3.toString());
+			console.log("v1 : " + v1.asString());
+			console.log("v2 : " + v2.asString());
+			console.log("v3 : " + v3.asString());
 		}
 		return passed;
 	}
@@ -189,8 +189,8 @@ Vector3d.prototype.tests = function(numSamples){
 	vectors.push(vZero);
 
 	for(i=0; i < numSamples; i++){
-		unitVectors.push(Vector3d.prototype.unitRandom());
-		vectors.push(Vector3d.prototype.unitRandom());
+		unitVectors.push(Vector3d.prototype.generateRandomUnitVector());
+		vectors.push(Vector3d.prototype.generateRandomUnitVector());
 	}
 
 	for(i=0; i < vectors.length; i++){
@@ -271,8 +271,8 @@ Vector3d.prototype.tests = function(numSamples){
 			v.rotateMe({axis:u, angle:0});
 			if(!testEquality(v, v.original)){
 				console.log("Rotation by zero failed to recover original vector.");
-				console.log("Original: "  + v.original.toString());
-				console.log("Recovered: " + v.toString());
+				console.log("Original: "  + v.original.asString());
+				console.log("Recovered: " + v.asString());
 				passed = false;
 			}
 
@@ -280,15 +280,15 @@ Vector3d.prototype.tests = function(numSamples){
 			v.rotateMe({axis:u, angle:rotationAngle});
 
 			if (! Math.isClose(v.dot(u), v.original.dot(u))){
-				console.log("Rotation failed to preserve opening angle between " + u.toString() + " and " + v.toString());
+				console.log("Rotation failed to preserve opening angle between " + u.asString() + " and " + v.asString());
 				passed = false;
 			}
 
 			v.rotateMe({axis:u, angle:-rotationAngle});
 			if(!testEquality(v, v.original)){
 				console.log("Rotation followed by inverse rotation failed to recover original vector.");
-				console.log("Original: " + v.original.toString());
-				console.log("Recovered: " + v.toString());
+				console.log("Original: " + v.original.asString());
+				console.log("Recovered: " + v.asString());
 				passed = false;
 			}
 
@@ -321,24 +321,22 @@ Vector3d.prototype.tests = function(numSamples){
 	for(i=0; i < vectors.length; i++){
 		if(! vectors[i].isClose(vectors[i].original)){
 			console.log("Unexpected mutation of v.");
-			console.log("v originally was: " + v.original.toString());
-			console.log("found as: " + v.toString());
+			console.log("v originally was: " + v.original.asString());
+			console.log("found as: " + v.asString());
 			passed = false;
 		}
 		var sphericalV = vectors[i].asRThetaPhi();
 		var vNew = Vector3d.prototype.fromRThetaPhi(sphericalV.r, sphericalV.theta, sphericalV.phi);
 		if(! vNew.isClose(vectors[i])){
 			console.log("Vector --> Spherical --> Vector failed.");
-			console.log("Original: " + vectors[i].toString());
+			console.log("Original: " + vectors[i].asString());
 			console.log("Spherical: r:" + sphericalV.r + ", theta: "+sphericalV.theta + ", phi: " + sphericalV.phi);
-			console.log("New: " + vNew.toString());
+			console.log("New: " + vNew.asString());
 			passed = false;
 		}
 	}
 	return passed;
 };
-
-Vector3d.prototype.openingAngle = Vector3d.prototype.openingAngle_LawCosines;
 
 numSamples = 10;
 //numSamples = 10000; This causes the page to become unresponsive, profiling hangs in chrome every time.

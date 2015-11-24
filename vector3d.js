@@ -23,7 +23,11 @@ Vector3d.prototype.asXYZ = function(){
 };
 
 Vector3d.prototype.fromRThetaPhi = function(r, theta, phi){
-	return new Vector3d(r*Math.sin(theta)*Math.cos(phi), r*Math.sin(theta)*Math.sin(phi), r*Math.cos(theta));
+	return new Vector3d(
+		r * Math.sin(theta) * Math.cos(phi), 
+		r * Math.sin(theta) * Math.sin(phi), 
+		r * Math.cos(theta)
+		);
 };
 
 Vector3d.prototype.setRThetaPhi = function (r, theta, phi){
@@ -33,10 +37,10 @@ Vector3d.prototype.setRThetaPhi = function (r, theta, phi){
 };
 
 Vector3d.prototype.asRThetaPhi = function(){
-	return {r:this.magnitude(), theta:this.theta(), phi:Math.atan2(this.y, this.x)};
+	return {r:this.getMagnitude(), theta:this.getTheta(), phi:Math.atan2(this.y, this.x)};
 };
 
-Vector3d.prototype.setFromV = function(v){
+Vector3d.prototype.setVector = function(v){
 	this.x = v.x;
 	this.y = v.y;
 	this.z = v.z;
@@ -48,18 +52,18 @@ Vector3d.prototype.zeroMe = function(){
     this.z = 0;
 };
 
-Vector3d.prototype.sumSquares = function(){
+Vector3d.prototype.getSumSquares = function(){
 	//The cheapest "size" measure of a vector.
 	return  this.x*this.x +
 			this.y*this.y +
 			this.z*this.z;
 };
 
-Vector3d.prototype.magnitude = function(){
-	return Math.sqrt(this.sumSquares());
+Vector3d.prototype.getMagnitude = function(){
+	return Math.sqrt(this.getSumSquares());
 };
 
-Vector3d.prototype.theta = function(){
+Vector3d.prototype.getTheta = function(){
 	//Theta meaured from north pole.
 	// This method avoids a Math.sqrt() call.
 
@@ -68,7 +72,7 @@ Vector3d.prototype.theta = function(){
 	}else{
 		var zPositive = this.z > 0;
 		//Since cos(x)**2 = 1/2 (cos(2 x)+1)
-		var theta = Math.acos(2 * this.z*this.z/this.sumSquares() - 1) / 2;
+		var theta = Math.acos(2 * this.z*this.z/this.getSumSquares() - 1) / 2;
 		if(zPositive){
 			return theta;
 		}else{
@@ -77,7 +81,7 @@ Vector3d.prototype.theta = function(){
 	}
 };
 
-Vector3d.prototype.phi = function(){
+Vector3d.prototype.getPhi = function(){
 	//Azimuthal angle.
 	//Extremely cheap relative to getting both theta and phi.
 	return Math.atan2(this.y, this.x);
@@ -89,7 +93,7 @@ Vector3d.prototype.dot = function(v){
 			this.z*v.z;
 };
 
-Vector3d.prototype.distSquared = function(v){
+Vector3d.prototype.getDistSquared = function(v){
 	var dx, dy, dz;
 	dx = this.x - v.x;
 	dy = this.y - v.y;
@@ -97,23 +101,13 @@ Vector3d.prototype.distSquared = function(v){
 	return dx*dx + dy*dy + dz*dz;
 };
 
-Vector3d.prototype.distance = function(v){
-	return Math.sqrt(this.distSquared(v));
+Vector3d.prototype.getDistance = function(v){
+	return Math.sqrt(this.getDistSquared(v));
 };
 
-Vector3d.prototype.distCubed = function(v){
-	var d = this.distance(v);
+Vector3d.prototype.getDistCubed = function(v){
+	var d = this.getDistance(v);
 	return d*d*d;
-};
-
-Vector3d.prototype.rOverRCubed_in_place = function(){
-	//Takes a vector and _overwrites_ it with r_vector/r^3
-	//This is exactly the gravity vector dependence.
-	var rSq = this.sumSquares();
-	var rCubed = rSq * Math.sqrt(rSq);
-	this.x /= rCubed;
-	this.y /= rCubed;
-	this.z /= rCubed;
 };
 
 Vector3d.prototype.incrementMe = function(v){
@@ -137,7 +131,7 @@ Vector3d.prototype.scaleMe = function(a){
 	return this;
 };
 
-Vector3d.prototype.unitRandom = function(){
+Vector3d.prototype.generateRandomUnitVector = function(){
 	// Randomly directed uniformly over sphere.
 	var costheta = 2 * Math.random() - 1;
 	var sintheta = Math.sqrt(1 - costheta*costheta);
@@ -145,9 +139,9 @@ Vector3d.prototype.unitRandom = function(){
 	return new Vector3d(Math.cos(phi)*sintheta, Math.sin(phi)*sintheta, costheta);
 };
 
-Vector3d.prototype.randomOfMagnitude = function(magnitude){
+Vector3d.prototype.generateRandomVector = function(magnitude){
 	//Randomly directed, but fixed magnitude:
-	var u = Vector3d.prototype.unitRandom();
+	var u = Vector3d.prototype.generateRandomUnitVector();
 	return u.scaleMe(magnitude);
 };
 
@@ -158,61 +152,24 @@ Vector3d.prototype.unitFromAngles = function(theta, phi){
 };
 
 Vector3d.prototype.unitMe = function(){
-	return this.scale(1 / this.magnitude());
+	var magnitude = this.getMagnitude();
+	if (magnitude === 0){
+		return this;
+	}else{
+		return this.scale(1 / magnitude );
+	}
 };
 
 Vector3d.prototype.unitVector = function(){
-	var l = this.magnitude();
-	if (l === 0){
-		return this.copy();
-	}else{
-		return this.copy().scale(1 / l );
-	}
+	return this.copy().unitMe();
 };
 
-Vector3d.prototype.openingAngle_UnitDot = function(v2){
-	var u1 = this.unitVector();
-	var u2 = v2.unitVector();
-
-	return Math.acos(u1.dot(u2));
-};
-
-Vector3d.prototype.openingAngle_UnitLawOfCosines = function(v2){
+Vector3d.prototype.getOpeningAngle = function(v2){
 	var u1 = this.unitVector();
 	var u2 = v2.unitVector();
 	var oppositeSide = u1.decrementMe(u2);
-	return Math.acos(1 - oppositeSide.sumSquares()/2);
+	return Math.acos(1 - oppositeSide.getSumSquares()/2);
 };
-
-Vector3d.prototype.openingAngle_DotOnly = function(v2){
-	//Opening Angle refers to the angle between two vectors placed tail to tail.
-	var v1DotV2 = this.dot(v2);
-	if(v1DotV2 === 0){
-		return Math.PI/2;
-	}else{
-		v1DotV2 /= (v2.magnitude() * this.magnitude());
-		if (Math.abs(v1DotV2) > 1){
-			if(v1DotV2 > 1){
-				return 0;
-			}else{
-				return Math.PI;
-			}
-		}else{
-		  return Math.acos(v1DotV2);
-		}
-	}
-};
-
-Vector3d.prototype.openingAngle_LawCosines = function(v2){
-	//Opening Angle refers to the angle between two vectors placed tail to tail.
-	var oppositeSide = this.copy().decrementMe(v2);
-	var length1 = this.magnitude();
-	var length2 = v2.magnitude();
-	var costheta = (oppositeSide.sumSquares() - this.sumSquares() - v2.sumSquares())/(2*length1*length2);
-	return Math.acos(costheta);
-};
-
-Vector3d.prototype.openingAngle = Vector3d.prototype.openingAngle_UnitLawOfCosines;
 
 Vector3d.prototype.cross = function(v2){
 	v1Xv2 = new Vector3d(this.y*v2.z - this.z*v2.y,
@@ -254,17 +211,22 @@ Vector3d.prototype.projectOntoPlane = function(plane){
 	return projectedV;
 };
 
-Vector3d.prototype.toString = function(){
+Vector3d.prototype.asString = function(){
 	return ("Vector3d(" + this.x.toPrecision(3) + ", " + this.y.toPrecision(3) + ", " + this.z.toPrecision(3) + ")");
 };
 
 //Compatibility with old API:
 Vector3d.prototype.scale = Vector3d.prototype.scaleMe;
-Vector3d.prototype.sumsq = Vector3d.prototype.sumSquares;
+Vector3d.prototype.sumsq = Vector3d.prototype.getSumSquares;
 Vector3d.prototype.zero = Vector3d.prototype.zeroMe;
 Vector3d.prototype.increment = Vector3d.prototype.incrementMe;
 Vector3d.prototype.decrement = Vector3d.prototype.decrementMe;
-Vector3d.prototype.dist_squared = Vector3d.prototype.distSquared;
+Vector3d.prototype.dist_squared = Vector3d.prototype.getDistSquared;
+Vector3d.prototype.phi = Vector3d.prototype.getPhi;
+Vector3d.prototype.theta = Vector3d.prototype.getTheta;
+Vector3d.prototype.magnitude = Vector3d.prototype.getMagnitude;
+Vector3d.prototype.distance = Vector3d.prototype.getDistance;
+Vector3d.prototype.setFromV = Vector3d.prototype.setVector;
 
 Vector3d.prototype.rotateAbout = function(axisOfRotation, angleOfRotation){
 	return this.rotateMe({pivotPoint:new Vector3d(0, 0, 0), axis:axisOfRotation, angle:angleOfRotation});
