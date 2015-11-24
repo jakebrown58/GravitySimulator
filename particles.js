@@ -16,7 +16,7 @@ Particles.prototype.buildInitialParticles = function() {
     //sunGravity = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT * sunMass,
     aU = app.physics.constants.ASTRONOMICAL_UNIT,
     initalObjects = {},
-    jupiterArc = Math.PI + .00000001,
+    jupiterArc = Math.PI + 0.00000001,
     cfg = {};
 
     app.particles = [];
@@ -25,16 +25,16 @@ Particles.prototype.buildInitialParticles = function() {
   if(app.physics.variables.CALC_STYLE === 'real') {
     initialObjects = [
       {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
-      {name: 'Mercury', mass: earthMass * .055, radius: 2439, orbits: [{mass: sunMass, radius: aU * .387098}], drawSize: .5},
-      {name: 'Venus', mass: earthMass * .815, radius: 6051, orbits: [{mass: sunMass, radius: aU * .72}], drawSize: 1},
+      {name: 'Mercury', mass: earthMass * 0.055, radius: 2439, orbits: [{mass: sunMass, radius: aU * 0.387098}], drawSize: 0.5},
+      {name: 'Venus', mass: earthMass * 0.815, radius: 6051, orbits: [{mass: sunMass, radius: aU * 0.72}], drawSize: 1},
       {name: 'Earth', mass: earthMass, radius: 6371, orbits: [{mass: sunMass, radius: aU}], arc: jupiterArc, drawSize: 1, color: {r: 180, g: 200, b: 255}},
-      {name: 'Mars', mass: earthMass * .107, radius: 3376, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: .6, color: {r: 255, g: 160, b: 160}},
+      {name: 'Mars', mass: earthMass * 0.107, radius: 3376, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: 0.6, color: {r: 255, g: 160, b: 160}},
       {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
-      {name: 'Saturn', mass: jupiterMass * .30, radius: 60268,orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
+      {name: 'Saturn', mass: jupiterMass * 0.30, radius: 60268,orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
       {name: 'Neptune', mass: earthMass * 17.147, radius: 24341,orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
       {name: 'Uranus', mass: earthMass * 14.536, radius: 25362,orbits: [{mass: sunMass, radius: aU * 19.5}], drawSize: 1, color: {r: 180, g: 180, b: 215}},
-      {name: 'Ganymede', mass: earthMass * .025, radius: 1234,orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * .014}], arc: jupiterArc, drawSize: .6},
-      {name: 'Moon', mass: earthMass * .0123, radius: 1097,orbits: [{mass: sunMass, radius: aU}, {mass: earthMass, radius: aU * .00257}], arc: jupiterArc, drawSize: .6},
+      {name: 'Ganymede', mass: earthMass * 0.025, radius: 1234,orbits: [{mass: sunMass, radius: aU * 5.2}, {mass: jupiterMass, radius: aU * 0.014}], arc: jupiterArc, drawSize: 0.6},
+      {name: 'Moon', mass: earthMass * 0.0123, radius: 1097,orbits: [{mass: sunMass, radius: aU}, {mass: earthMass, radius: aU * 0.00257}], arc: jupiterArc, drawSize: 0.6},
       {name: 'AlphaCentauri', mass: jupiterMass * 1047 * 3.1, radius: 696342, distance: aU * app.physics.constants.LIGHTYEAR_PER_AU * 4, orbitalVelocity: 0, arc: -Math.PI, drawSize: 3, color: {r: 255, g: 215, b: 230}},
     ];
 
@@ -50,7 +50,7 @@ Particles.prototype.buildInitialParticles = function() {
     var brownDwarfMass = 1000 * jupiterMass + Math.random() * 250;
     this.buildParticle({name: 'Brown Dwarf ' + i, radius: 696342, mass: brownDwarfMass, orbitalVelocity: 0, distance: 0, drawSize: 1});
 
-    this.buildParticle({name: 'Saturn-like ' + i, radius: 69911, mass: jupiterMass * .3, orbits: [{mass: brownDwarfMass + (Math.random() * 50), radius: 1.8 * aU}], drawSize: 1});
+    this.buildParticle({name: 'Saturn-like ' + i, radius: 69911, mass: jupiterMass * 0.3, orbits: [{mass: brownDwarfMass + (Math.random() * 50), radius: 1.8 * aU}], drawSize: 1});
 
     // for (i = 0; i < 40; i++) {
     //   var tmass =  jupiterMass / 80,
@@ -60,8 +60,8 @@ Particles.prototype.buildInitialParticles = function() {
 
     for (i = 0; i < 900; i++) {
       var tmass =  earthMass / 20,
-        tradius = 6371 / .1;
-      this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: brownDwarfMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * .4}], drawSize: .1});
+        tradius = 6371 / 0.1;
+      this.buildParticle({name: 'Asteroid ' + i, radius: tradius, mass: tmass, orbits: [{mass: brownDwarfMass + 1 * (Math.random() / 100), radius: 1.6 * aU + aU * Math.random() * 0.4}], drawSize: 0.1});
     }
 
     // for (i = 0; i < 400; i++) {
@@ -84,11 +84,11 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
-    this.buildParticle({name: 'Asteroid ' + i, radius: 60, mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: .1});
+    this.buildParticle({name: 'Asteroid ' + i, radius: 60, mass: earthMass / (8000 + Math.random() * 25000), orbits: [{mass: sunMass, eccentric: 'little', radius: aU * 1.5 + aU * Math.random() * 3.5}], drawSize: 0.1});
   }
 
   for (i = 0; i < this.objects.COMETS; i++) {
-    this.buildParticle({name: 'COMET' + i, radius: 60, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 1340), orbitalVelocity: -.34 + Math.random() * .62, drawSize: .1});
+    this.buildParticle({name: 'COMET' + i, radius: 60, mass: earthMass / (8000 + Math.random() * 25000),  distance: aU * 16 + aU * (Math.random() * 1340), orbitalVelocity: -0.34 + Math.random() * 0.62, drawSize: 0.1});
   }
 
   if(app.physics.variables.CALC_STYLE === 'real') {
@@ -100,8 +100,8 @@ Particles.prototype.buildInitialParticles = function() {
         mass: earthMass / (8000 + Math.random() * 32000), 
         orbits: [
           {mass: sunMass, radius: aU * 5.2}, 
-          {mass: jupiterMass, eccentric: 'little', radius: aU * .01 + aU * Math.random() * .08}], 
-        drawSize: .03
+          {mass: jupiterMass, eccentric: 'little', radius: aU * 0.01 + aU * Math.random() * 0.08}], 
+        drawSize: 0.03
       });
     }
   }
@@ -112,9 +112,10 @@ Particles.prototype.buildInitialParticles = function() {
 Particles.prototype.finalize = function() {
   //Find momentum of system
   var particles = app.particles,
-    system_momentum = new Vector3d(0., 0., 0.);
+    i,
+    system_momentum = new Vector3d(0, 0, 0);
     
-  for (var i = 0; i < particles.length; i++) {
+  for (i = 0; i < particles.length; i++) {
       var vel = particles[i].vel.asXYZ;
       system.momentum.x += me.mass * vel.x;
       system.momentum.y += me.mass * vel.y;
@@ -129,7 +130,7 @@ Particles.prototype.finalize = function() {
   sun.vel.setXYZ(sunVel.x, sunVel.y, sunVel.z);
 
   //This has to be done once before integration can occur. Prime The Pump!
-  for (var i = 0; i < app.particles.length; i++) {
+  for (i = 0; i < app.particles.length; i++) {
     app.particles[i].calcAcceleration(app.physics.variables.TIME_STEP_INTEGRATOR);
   }
 
@@ -137,24 +138,28 @@ Particles.prototype.finalize = function() {
 };
 
 Particles.prototype.buildParticle = function(cfg) {
-    var tmp = new Particle();
-    tmp.configure(cfg);
-    app.particles.push(tmp);
+  var tmp = new Particle();
+  tmp.configure(cfg);
+  app.particles.push(tmp);
 };
 
 Particles.prototype.freeTheDestroyed = function() {
   var survivors = [];
   var newId = 0;
 
-  for(var j=0; j < app.particles.length; j++){
-    if (app.FOLLOW == j) app.FOLLOW = newId;
-    if (app.particles[j] && app.particles[j].destroyed==false){
+  for (var j = 0; j < app.particles.length; j++) {
+    if (app.FOLLOW == j) { 
+      app.FOLLOW = newId;
+    }
+    if (app.particles[j] && app.particles[j].destroyed === false){
       survivors.push(app.particles[j]);
-      app.particles[j].id = newId ++;
+      app.particles[j].id = newId++;
     }
   }
 
-  if(app.FOLLOW >= survivors.length) app.FOLLOW = 0;
+  if(app.FOLLOW >= survivors.length) {
+    app.FOLLOW = 0;
+  }
 
   app.particles = survivors;
 };

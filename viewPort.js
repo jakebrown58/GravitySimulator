@@ -6,11 +6,11 @@ function ViewPort(){
   this.txtOffset = 25;
   this.lineHeight = 20;
   this.draw = true;
-  this.viewAngle   = Math.PI/3.;
-  this.viewPhi     = 0 ;
+  this.viewAngle   = 0; //Math.PI / 3;
+  this.viewPhi     = 0;
   this.shift   = {x: -50, y: 0, z: 0, zoom: 0};
   this.focusId = 0;
-  this.focusLocation = new Vector3d(0,0,0);
+  this.focusLocation = new Vector3d(0, 0, 0);
   this.viewPortSize = (app.width / (this.shift.zoom + 1)) / app.physics.constants.ASTRONOMICAL_UNIT;
   this.viewPortSizeInKm = app.physics.constants.KM_PER_AU * this.viewPortSize;
   this.colorSorted = false;
@@ -24,13 +24,13 @@ function ViewPort(){
 ViewPort.prototype.cycleState = function(){
   this.drawState++;
   if (this.drawState > this.MAX_DRAW_STATE) this.drawState = 0;
-}
+};
 
 ViewPort.prototype.setAxes = function(theta, phi){
   this.xAxis = Vector3d.prototype.unitFromAngles(Math.PI/2, this.viewPhi);
   this.yAxis = Vector3d.prototype.unitFromAngles(this.viewAngle+Math.PI/2, this.viewPhi + Math.PI/2);
   this.zAxis = this.xAxis.cross(this.yAxis);
-}
+};
 
 ViewPort.prototype.setFocus = function(){
   this.focusId = app.response.getFocusId();
@@ -41,7 +41,7 @@ ViewPort.prototype.setFocus = function(){
   }else{
     return false;
   }
-}
+};
 
 ViewPort.prototype.restoreDefault = function(){
   this.viewAngle   = 0;
@@ -49,7 +49,7 @@ ViewPort.prototype.restoreDefault = function(){
   this.shift       = {x: -50, y: 0, z: 0, zoom: 0};
   this.setAxes(this.viewAngle, this.viewPhi);
   this.setFocus();
-}
+};
 
 ViewPort.prototype.reorient = function(pointerOld, pointerNew){
   var deltaX = pointerNew.x - pointerOld.x;
@@ -58,18 +58,18 @@ ViewPort.prototype.reorient = function(pointerOld, pointerNew){
   this.viewAngle += deltaY * Math.PI/128;
   this.viewPhi   -= deltaX * Math.PI/64;
 
-  if(this.viewAngle < 0) {
+  if (this.viewAngle < 0) {
     this.viewAngle = 0;
-  }else if(this.viewAngle > Math.PI) {
+  } else if (this.viewAngle > Math.PI) {
     this.viewAngle = Math.PI;
   }
 
-  if (this.viewPhi > 2 * Math.PI){
+  if (this.viewPhi > 2 * Math.PI) {
     this.viewPhi -= 2*Math.PI;
-  }else if (this.viewPhi < -2 * Math.PI){
+  } else if (this.viewPhi < -2 * Math.PI) {
     this.viewPhi += 2*Math.PI;
   }
-}
+};
 
 
 ViewPort.prototype.splash = function() {
@@ -81,27 +81,27 @@ ViewPort.prototype.splash = function() {
   this.appendLine("Type '~' to enter console mode, and type help from there to learn about commands.");
   this.appendLine("Also has one-key instant commands in direct mode: ");
   this.appendLine('....Toggle mouse rotation- V');
- this.appendLine('....trace - <space>');
- this.appendLine('....reset - R');
- this.appendLine('....reverseTime - T');
- this.appendLine('....viewShiftUp - W');
- this.appendLine('....viewShiftDown - S');
- this.appendLine('....viewShiftLeft - A');
- this.appendLine('....viewShiftRight - D');
- this.appendLine('....switchClickAction - M');
- this.appendLine('....pause - P');
- this.appendLine('....visualLogging - C');
- this.appendLine('....follow - F');
- this.appendLine('....speedItUp - X');
- this.appendLine('....slowItDown - Z');
+  this.appendLine('....trace - <space>');
+  this.appendLine('....reset - R');
+  this.appendLine('....reverseTime - T');
+  this.appendLine('....viewShiftUp - W');
+  this.appendLine('....viewShiftDown - S');
+  this.appendLine('....viewShiftLeft - A');
+  this.appendLine('....viewShiftRight - D');
+  this.appendLine('....switchClickAction - M');
+  this.appendLine('....pause - P');
+  this.appendLine('....visualLogging - C');
+  this.appendLine('....follow - F');
+  this.appendLine('....speedItUp - X');
+  this.appendLine('....slowItDown - Z');
   this.appendLine('....toggleCommandMode - ~');
   this.appendLine('....zoomOut - <');
   this.appendLine('....zoomIn - >');
   this.appendLine('....zoom - Mousewheel');
- this.appendLine('....switchToDefaultView - H');
- this.appendLine('....rocketEnginesBurnToggle - B');
- this.appendLine('....rocketRotateLeft - LEFT');
- this.appendLine('....rocketIncreaseThrust - UP');
+  this.appendLine('....switchToDefaultView - H');
+  this.appendLine('....rocketEnginesBurnToggle - B');
+  this.appendLine('....rocketRotateLeft - LEFT');
+  this.appendLine('....rocketIncreaseThrust - UP');
 };
 
 
@@ -127,7 +127,7 @@ ViewPort.prototype.MapPositionToViewPortXY = function(position){
   projecting that position onto 2 axes, described by vectors.*/
   var r, xy;
   
-  r = new Vector3d(0., 0., 0.);
+  r = new Vector3d(0, 0, 0);
   r.setFromV(position);
   r.decrement(this.focusLocation);
 
@@ -136,7 +136,7 @@ ViewPort.prototype.MapPositionToViewPortXY = function(position){
   xy.y = (xy.y)*(1+this.shift.zoom) + app.halfHeight - this.shift.y;
 
   return xy;
-}
+};
 
 
 
@@ -152,7 +152,7 @@ ViewPort.prototype.drawParticle = function(particle) {
     drawSize = pctOfViewport * app.width / 2; //app.physics.constants.ASTRONOMICAL_UNIT * pctOfViewport;
     drawSize = drawSize > particle.size ? drawSize : particle.size;
   } else {
-    drawSize = .2;
+    drawSize = 0.2;
   }
 
 
@@ -222,15 +222,14 @@ ViewPort.prototype.frameActions = function() {
   app.viewPort.integrateWrapper();
   app.viewPort.setClock();
   app.viewPort.setIntegrate();
-}
+};
 
 ViewPort.prototype.frameClock = function() {
     this.txtOffset = 25;
 
-  if(app.response.MODE === 'ROCKET') {
+  if (app.response.MODE === 'ROCKET') {
     app.viewPort.showRocketTelemetry();
-  }
-  else if(app.SHOWCLOCK) {
+  } else if (app.SHOWCLOCK) {
     this.appendLine("Started:" + app.realTime);
     this.appendLine("Now:" + Date());
 
@@ -240,10 +239,10 @@ ViewPort.prototype.frameClock = function() {
     var daysPerSecond = frameRate * (hoursPerTick / 24);
     this.appendLine("Simulation Speed: " + app.physics.variables.TIME_STEP);
 
-    if(hoursPerTick > 1) {
+    if (hoursPerTick > 1) {
       this.appendLine("    Hours Per Tick: " + Math.floor(hoursPerTick * 10) / 10);
       this.appendLine("    Days Per Second: " + Math.floor(daysPerSecond));
-    } else if( hoursPerTick > .0166) {
+    } else if ( hoursPerTick > 0.0166) {
       this.appendLine("    Minutes Per Tick: " + Math.floor(60 * hoursPerTick * 10) / 10);
       this.appendLine("    Hours Per Second: " + Math.floor(daysPerSecond * 24));
     } else {
@@ -254,7 +253,7 @@ ViewPort.prototype.frameClock = function() {
     this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));    
     this.appendLine("    FrameRate: " + frameRate);
 
-    if(this.focusParticle){
+    if (this.focusParticle) {
       var focusKE = Math.round(this.focusParticle.kineticE()*100000,0) === 0 ? Math.round(this.focusParticle.kineticE()*1000000000,0) / 10000 : Math.round(this.focusParticle.kineticE()*100000,0);
       this.appendLine("Following: " + this.focusParticle.name);
       this.appendLine("     Energy: " + focusKE);
@@ -287,7 +286,7 @@ ViewPort.prototype.frameClock = function() {
 
     var lastBucket = null;
     for (var bucket in app.potentialCollisions) {
-      var num = (new Number(bucket) / 100);
+      var num = Number(bucket) / 100;
       if (lastBucket) {
         var list = app.potentialCollisions[lastBucket];
         if (list.length) {
@@ -388,10 +387,10 @@ ViewPort.prototype.adjustZoom = function(direction) {
     this.shift.zoom = 0;
 
     if(direction === 'in') {
-      this.shift.zoom = .5;
+      this.shift.zoom = 0.5;
     }
     if(direction === 'out') {
-      this.shift.zoom = -.015625;
+      this.shift.zoom = -0.015625;
     }
 
     return;
@@ -412,15 +411,12 @@ ViewPort.prototype.adjustZoom = function(direction) {
     
   }
 
-  if(this.shift.zoom <= -.99995) {
-    this.shift.zoom = -.99995;
+  if(this.shift.zoom <= -0.99995) {
+    this.shift.zoom = -0.99995;
   } 
 
   if(this.shift.zoom !== -1) {
     app.viewPort.viewPortSize = (app.width / (1 + this.shift.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
     app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
   }
-
-
-
 };
