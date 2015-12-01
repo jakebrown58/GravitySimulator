@@ -1,4 +1,7 @@
-function Particles() {
+var Particle = require('./particle');
+
+function Particles(app) {
+  this.app = app;
   this.objects = {};
   this.objects.COMETS = 20;// Math.floor( Math.random() * 1250);
   this.objects.ASTEROIDS = 5;// Math.floor( Math.random() * 1250);
@@ -7,22 +10,23 @@ function Particles() {
 }
 
 Particles.prototype.buildInitialParticles = function() {
-  var width = app.halfWidth,
-    height = app.halfHeight,
-    particles = app.particles,
+  var app = this.app,
+    width = this.app.halfWidth,
+    height = this.app.halfHeight,
+    particles = this.app.particles,
     jupiterMass = 1,
     earthMass = jupiterMass / 317,
     sunMass = jupiterMass * 1047,
     //sunGravity = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT * sunMass,
-    aU = app.physics.constants.ASTRONOMICAL_UNIT,
+    aU = this.app.physics.constants.ASTRONOMICAL_UNIT,
     initalObjects = {},
     jupiterArc = Math.PI + 0.00000001,
     cfg = {};
 
-    app.particles = [];
-    app.alwaysIntegrate = [];
+    this.app.particles = [];
+    this.app.alwaysIntegrate = [];
 
-  if(app.physics.variables.CALC_STYLE === 'real') {
+  if(this.app.physics.variables.CALC_STYLE === 'real') {
     initialObjects = [
       {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
       {name: 'Mercury', mass: earthMass * 0.055, radius: 2439, orbits: [{mass: sunMass, radius: aU * 0.387098}], drawSize: 0.5},
@@ -80,7 +84,7 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for(i = 0; i < app.particles.length; i++) {   
-    app.alwaysIntegrate.push(i);
+    this.app.alwaysIntegrate.push(i);
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
@@ -131,35 +135,38 @@ Particles.prototype.finalize = function() {
 
   //This has to be done once before integration can occur. Prime The Pump!
   for (i = 0; i < app.particles.length; i++) {
-    app.particles[i].calcAcceleration(app.physics.variables.TIME_STEP_INTEGRATOR);
+    this.app.particles[i].calcAcceleration(this.app.physics.variables.TIME_STEP_INTEGRATOR);
   }
 
-  app.PARTICLECOUNT = app.particles.length -1;
+  this.app.PARTICLECOUNT = this.app.particles.length -1;
 };
 
 Particles.prototype.buildParticle = function(cfg) {
   var tmp = new Particle();
   tmp.configure(cfg);
-  app.particles.push(tmp);
+  this.app.particles.push(tmp);
 };
 
 Particles.prototype.freeTheDestroyed = function() {
   var survivors = [];
   var newId = 0;
 
-  for (var j = 0; j < app.particles.length; j++) {
-    if (app.FOLLOW == j) { 
-      app.FOLLOW = newId;
+  for (var j = 0; j < this.app.particles.length; j++) {
+    if (this.app.FOLLOW == j) { 
+      this.app.FOLLOW = newId;
     }
-    if (app.particles[j] && app.particles[j].destroyed === false){
-      survivors.push(app.particles[j]);
-      app.particles[j].id = newId++;
+    if (this.app.particles[j] && this.app.particles[j].destroyed === false){
+      survivors.push(this.app.particles[j]);
+      this.app.particles[j].id = newId++;
     }
   }
 
   if(app.FOLLOW >= survivors.length) {
-    app.FOLLOW = 0;
+    this.app.FOLLOW = 0;
   }
 
-  app.particles = survivors;
+  this.app.particles = survivors;
 };
+
+
+module.exports = Particles;

@@ -335,3 +335,6 @@ function TextParser() {
 
 TextParser.prototype.handleConsole = function() {
 };
+
+
+module.exports = Response;

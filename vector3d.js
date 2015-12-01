@@ -188,3 +188,6 @@ Vector3d.prototype.projectPlane = function(plane){
 	projectedV.z -= z * plane.z;
 	return projectedV;
 };
+
+
+module.exports = Vector3d;
