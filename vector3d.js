@@ -243,4 +243,4 @@ Vector3d.prototype.rotateAbout = function(axisOfRotation, angleOfRotation){
   return this.rotateMe({pivotPoint:new Vector3d(0, 0, 0), axis:axisOfRotation, angle:angleOfRotation});
 };
 
-
+module.exports = Vector3d;

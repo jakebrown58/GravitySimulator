@@ -1,7 +1,10 @@
 
 /* ******************* VIEWPORT ******************************************************* */
 
-function ViewPort(){
+var Vector3d = require('./vector3d');
+
+function ViewPort(app) {
+  this.app = app;
   this.frameCount = 0;
   this.txtOffset = 25;
   this.lineHeight = 20;
@@ -420,3 +423,6 @@ ViewPort.prototype.adjustZoom = function(direction) {
     app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
   }
 };
+
+
+module.exports = ViewPort;

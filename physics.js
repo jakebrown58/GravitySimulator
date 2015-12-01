@@ -195,3 +195,6 @@ Physics.prototype.convertViewPortPixelsToUnits = function(rawSize) {
 
   return {size: viewPortSize, unit: unit};
 };
+
+
+module.exports = Physics;

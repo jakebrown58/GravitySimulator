@@ -1,5 +1,12 @@
 var app = {};
 
+var Physics = require('./physics');
+var Thrust = require('./thrust');
+var ViewPort = require('./viewport');
+var Reponse = require('./response');
+var Particles = require('./particles');
+
+
 app.init = function () {
   app.physics = new Physics();
   app.particles = [];
@@ -55,10 +62,10 @@ app.init = function () {
 
   app.size = (app.width + app.height) / 2;
 
-  app.viewPort = new ViewPort();
+  app.viewPort = new ViewPort(app);
   app.response = new Response();
 
-  var x = new Particles().buildInitialParticles();
+  var x = new Particles(app).buildInitialParticles();
   requestAnimationFrame(app.viewPort.frame);
 };
 
@@ -104,3 +111,5 @@ app.clockReset = function() {
   app.CLOCK.ticks = 0;
   app.splitTime = new Date();
 };
+
+module.exports = app;

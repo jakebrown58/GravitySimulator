@@ -1,3 +1,6 @@
+
+var Vector3d = require('./vector3d');
+
 function Particle(id, x, y, z) {
   this.id = id; 
   this.position = new Vector3d(x,y,z);
@@ -231,3 +234,5 @@ Particle.prototype.configure = function(config) {
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
 };
+
+module.exports = Particle;

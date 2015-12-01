@@ -46,3 +46,5 @@ Thrust.prototype.toggleBurn = function() {
     this.thrust= 0;
   }
 };
+
+module.exports = Thrust;
