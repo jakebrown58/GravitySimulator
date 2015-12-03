@@ -1,5 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 /* ******************* RESPONSE ******************************************************* */
+var shellJs = require('./lib/shell');
+
 var keyMap = {
   // reference: https://css-tricks.com/snippets/javascript/javascript-keycodes/
   // also, difference between keyCode and charCode:
@@ -331,15 +333,181 @@ Feedback.prototype.getFocusId = function(){
   return app.FOLLOW;
 };
 
-// function TextParser() { 
+module.exports = Feedback;
+},{"./lib/shell":2}],2:[function(require,module,exports){
+var shellJs = {};
+
+shellJs.init = function (display, afterExit, userCommands, noClear, exitShortcut) {
+  shellJs.display = display;
+  shellJs.width = display.width;
+  shellJs.height = display.height;
+  shellJs.halfWidth = shellJs.width * 0.5;
+  shellJs.halfHeight = shellJs.height * 0.5;
+  shellJs.txtOffset = 50;
+  shellJs.lineHeight = 10;
+  shellJs.buffer = "";
+  
+  shellJs.ctx = display.getContext('2d');
+  display.focus();
+  shellJs.eventListener = display;
+  shellJs.eventListener.addEventListener('keydown', shellJs.onKeyDown);
+  shellJs.render();
+  shellJs.afterExit = afterExit;
+  shellJs.shouldRender = true;
+  shellJs.noClear = noClear || false;
+  shellJs.userCommands = userCommands;
+
+  shellJs.commands = shellJs.reservedCommands.slice(0); // start with a copy of the default commands
+  shellJs.exitShortcut = exitShortcut || { keyCode: 27, displayText: "ESC key" };
+  shellJs.commands.push(
+    {command: shellJs.exitShortcut.displayText, description: "immediate exit", fn: shellJs.onExit});
+
+  if(shellJs.userCommands)
+    shellJs.commands = shellJs.commands.concat(shellJs.userCommands);
+};
+
+shellJs.render = function() {
+  shellJs.ctx.clearRect(0, 10, shellJs.width, 60);
+  shellJs.ctx.beginPath();
+  shellJs.ctx.strokeStyle = "#00FF00";
+  shellJs.ctx.fillStyle = shellJs.ctx.strokeStyle;
+  shellJs.ctx.fill();
+  shellJs.appendLine(shellJs.cmdPrompt + shellJs.buffer + "_");
+  shellJs.ctx.stroke();        
+}
+
+shellJs.onKeyDown = function(e) {
+  var prop = true;
+  var code = e.keyCode;
+
+  //console.log(code);
+
+  if (code === 13) {    // enter
+    shellJs.prev.push(shellJs.buffer);
+    shellJs.prevInx = shellJs.prev.length;
+    shellJs.processCommand();
+    shellJs.buffer = "";
+  } else if (code === 16) { // shift
+    // nothing - dump it
+  } else if (code === 38) { // up
+    shellJs.prevInx = shellJs.prevInx === 0 ? 0 : shellJs.prevInx - 1;
+    shellJs.buffer = shellJs.prev[shellJs.prevInx];
+  } else if (code === shellJs.exitShortcut.keyCode) { // ` or ~
+    shellJs.onExit();
+  } else if (code === 8) { // backspace
+    shellJs.buffer = shellJs.buffer.substr(0, shellJs.buffer.length - 1);
+    prop = false;
+  } else {
+    shellJs.buffer += String.fromCharCode(code);
+  }
+
+  if(shellJs.shouldRender) {
+    shellJs.render();
+  }
+
+  if(!prop) {
+    e.preventDefault();
+    return false;
+  }
+}
+
+shellJs.processCommand = function() {
+  var x = 0,
+    found = false,
+    splat = shellJs.buffer.toLowerCase().split(' '),
+    args = splat.length > 0 ? splat.slice(1, splat.length) : null;
+
+  if(!shellJs.noClear) {
+    shellJs.clearScreen();
+  }
+  if(splat.length > 0) {
+    for(x = 0; x < shellJs.commands.length; x++) {
+      if(splat[0] === shellJs.commands[x].command.toLowerCase() ) {
+        shellJs.commands[x].fn.apply(this, args);
+        return;
+      }
+    }
+  }
+
+
+  shellJs.ctx.fillText("Unknown command ... try typing HELP", 10, 100);
+}
+
+shellJs.appendLine = function(txt) {
+  shellJs.ctx.fillText(txt, 10, shellJs.txtOffset);
+};
+
+shellJs.clearScreen = function() {
+  shellJs.ctx.clearRect(0, 10, shellJs.width, shellJs.height);
+}
+
+shellJs.onHelpCommand = function() {
+  var startY = 100,
+    x,
+    txt;
+
+  for(x = 0; x < shellJs.commands.length; x++) {
+    txt = shellJs.commands[x].command.toUpperCase() + " :  " + shellJs.commands[x].description;
+    shellJs.ctx.fillText(txt, 10, startY + x * 10);
+  }
+}
+
+var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+var ARGUMENT_NAMES = /([^\s,]+)/g;
+
+// shellJs.onArgsCommand = function() {
+//   //cmdP.ctx.fillText("HELP", 10, 100);
+//   var startY = 100,
+//     x,
+//     txt;
+
+//   for(x = 0; x < cmdP.commands.length; x++) {
+//     txt = cmdP.commands[x].command.toUpperCase() + " :  " + cmdP.commands[x].description;
+// //+ " ... arguments: " + getParamNames(cmdP.commands[x].fn) + " ... body: " + cmdP.commands[x].fn.toString()          
+//     cmdP.ctx.fillText(txt, 10, startY + x * 10);
+//   }
 // }
 
-// TextParser.prototype.handleConsole = function() {
-// };
+shellJs.getParamNames = function(func) {
+  var fnStr = func.toString().replace(STRIP_COMMENTS, '');
+  var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+  if(result === null)
+     result = [];
+  return result;
+}      
 
 
-module.exports = Feedback;
-},{}],2:[function(require,module,exports){
+shellJs.onClearCommand = function() {
+  shellJs.clearScreen();
+}
+
+shellJs.onExit = function() {
+  shellJs.shouldRender = false;
+  shellJs.buffer = "";
+  shellJs.eventListener.removeEventListener('keydown', shellJs.onKeyDown);
+  if(!shellJs.noClear) {
+    shellJs.clearScreen();
+  }
+  
+  shellJs.afterExit();
+}
+
+
+shellJs.reservedCommands = [
+  {command: "help", description: "find out commands", fn: shellJs.onHelpCommand},
+  {command: "clear", description: "clear the screen", fn: shellJs.onClearCommand},
+  {command: "exit", description: "exit command mode", fn: shellJs.onExit}
+];
+
+shellJs.display;
+shellJs.cmdPrompt = "> ";
+shellJs.prevInx = 0;
+shellJs.prev = [];
+shellJs.buffer = "";
+shellJs.shouldRender = true;
+
+module.exports = shellJs
+},{}],3:[function(require,module,exports){
 //var app = require('./app');
 
 var Physics = require('./physics');
@@ -358,7 +526,7 @@ var deps = {
 
 app.init(deps);
 
-},{"./feedback":1,"./particles":4,"./physics":5,"./thrust":6,"./viewport":8}],3:[function(require,module,exports){
+},{"./feedback":1,"./particles":5,"./physics":6,"./thrust":7,"./viewport":9}],4:[function(require,module,exports){
 
 var Vector3d = require('./vector3d');
 
@@ -590,7 +758,7 @@ Particle.prototype.configure = function(config) {
 };
 
 module.exports = Particle;
-},{"./vector3d":7}],4:[function(require,module,exports){
+},{"./vector3d":8}],5:[function(require,module,exports){
 var Particle = require('./particle');
 
 function Particles() {
@@ -761,7 +929,7 @@ Particles.prototype.freeTheDestroyed = function() {
 
 
 module.exports = Particles;
-},{"./particle":3}],5:[function(require,module,exports){
+},{"./particle":4}],6:[function(require,module,exports){
 function Physics() {
   this.constants = {};
   this.constants.DAMPING = 1;
@@ -962,7 +1130,7 @@ Physics.prototype.convertViewPortPixelsToUnits = function(rawSize) {
 
 
 module.exports = Physics;
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function Thrust() {
   this.heading = 0;
   this.thrust = 0;
@@ -1013,7 +1181,7 @@ Thrust.prototype.toggleBurn = function() {
 };
 
 module.exports = Thrust;
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 function Vector3d(x, y, z){
 	this.x = x;
 	this.y = y;
@@ -1207,7 +1375,7 @@ Vector3d.prototype.projectPlane = function(plane){
 
 
 module.exports = Vector3d;
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 
 /* ******************* VIEWPORT ******************************************************* */
 
@@ -1636,4 +1804,4 @@ ViewPort.prototype.adjustZoom = function(direction) {
 
 
 module.exports = ViewPort;
-},{"./vector3d":7}]},{},[2]);
+},{"./vector3d":8}]},{},[3]);
