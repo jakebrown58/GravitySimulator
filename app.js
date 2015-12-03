@@ -1,13 +1,32 @@
 var app = {};
 
-var Physics = require('./physics');
-var Thrust = require('./thrust');
-var ViewPort = require('./viewport');
-var Feedback = require('./feedback');
-var Particles = require('./particles');
+// var Physics = require('./physics');
+// var Thrust = require('./thrust');
+// var ViewPort = require('./viewport');
+// var Reponse = require('./response');
+// var Particles = require('./particles');
+
+var Physics;
+var Thrust;
+var ViewPort;
+var Feedback;
+var Particles;
 
 
-app.init = function () {
+function TextParser() {
+}
+
+TextParser.prototype.handleConsole = function() {
+};
+
+app.TextParser = TextParser;
+
+app.init = function (deps) {
+  Physics = deps.Physics;
+  Thrust = deps.Thrust;
+  ViewPort = deps.ViewPort;
+  Feedback = deps.Feedback;
+  Particles = deps.Particles;
   app.physics = new Physics();
   app.particles = [];
   app.mouse = { x: app.halfWidth, y: app.halfHeight };
@@ -63,7 +82,7 @@ app.init = function () {
   app.size = (app.width + app.height) / 2;
 
   app.viewPort = new ViewPort(app);
-  app.feedback = new Feedback();
+  app.response = new Feedback(app);
 
   var x = new Particles(app).buildInitialParticles();
   requestAnimationFrame(app.viewPort.frame);
@@ -112,4 +131,4 @@ app.clockReset = function() {
   app.splitTime = new Date();
 };
 
-module.exports = app;
+//module.exports = app;
