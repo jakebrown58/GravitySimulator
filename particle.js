@@ -205,8 +205,8 @@ Particle.prototype.configure = function(config) {
   particle.name = config.name;
   particle.mass = config.mass;
 
-  particle.position.x = app.halfWidth - localRadius * Math.cos(config.arc);
-  particle.position.y = app.halfHeight - localRadius * Math.sin(config.arc);
+  particle.position.x = - localRadius * Math.cos(config.arc);
+  particle.position.y = - localRadius * Math.sin(config.arc);
   particle.position.z = 0.0;
   
   particle.vel.x = localOrbitalVelocity * Math.sin(config.arc);
@@ -220,6 +220,13 @@ Particle.prototype.configure = function(config) {
   particle.acc.y = 0;
   particle.acc.z = 0;
 
+  if (config.inclination === undefined){
+    var axisOfNodes = Vector3d.prototype.unitFromAngles(Math.PI/2, 2 * Math.PI * Math.random());
+    var inclination = (2 * Math.random() - 1) * Math.PI/120;
+    particle.position.rotateAbout(axisOfNodes, inclination);
+    particle.vel.rotateAbout(axisOfNodes, inclination);
+    particle.acc.rotateAbout(axisOfNodes, inclination);
+  }
 
   particle.size = config.drawSize;    
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
