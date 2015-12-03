@@ -27,7 +27,7 @@ var keyMap = {
   38: 'rocketIncreaseThrust', // 'UP'
 };
 
-function Response() {
+function Feedback() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
   app.eventListener.addEventListener('click', this.onClickSplash);
   app.eventListener.addEventListener('keydown', this.onKeyDown);
@@ -45,40 +45,40 @@ function Response() {
     ];
 }
 
-Response.prototype.onKeyDown = function(e, ref) {
-  app.response.eventHandle = this.onKeyDown;
-  if(app.response.CommandMode === 'COMMAND') {
-    app.response.handleCommand(e);
+Feedback.prototype.onKeyDown = function(e, ref) {
+  app.feedback.eventHandle = this.onKeyDown;
+  if(app.feedback.CommandMode === 'COMMAND') {
+    app.feedback.handleCommand(e);
   } else {
-    //app.response.handleConsole(e);
+    //app.feedback.handleConsole(e);
   }
 
   return false;
 };
 
 
-Response.prototype.onClickSplash = function(e){
+Feedback.prototype.onClickSplash = function(e){
   if (app.viewPort.drawState !== app.viewPort.DRAW_STATE_SPLASH){
-    app.eventListener.removeEventListener('click', app.response.onClickSplash);
-    app.eventListener.addEventListener('click', app.response.onClick);
-    app.response.onClick(e);
+    app.eventListener.removeEventListener('click', app.feedback.onClickSplash);
+    app.eventListener.addEventListener('click', app.feedback.onClick);
+    app.feedback.onClick(e);
   }
 };
 
 
-Response.prototype.onClick = function(e) {
+Feedback.prototype.onClick = function(e) {
   var xy = {x: e.clientX, y: e.clientY};
 
-  if(app.response.MODE === 'FOLLOW') {
-    app.response.follow(xy);
-  } else if(app.response.MODE === 'DESTROY') {
-    app.response.destroy(xy);
+  if(app.feedback.MODE === 'FOLLOW') {
+    app.feedback.follow(xy);
+  } else if(app.feedback.MODE === 'DESTROY') {
+    app.feedback.destroy(xy);
   } else {
-    app.response.rocket();
+    app.feedback.rocket();
   }
 };
 
-Response.prototype.onMousemove = function(e) {
+Feedback.prototype.onMousemove = function(e) {
   if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
     app.viewPort.reorient(app.mouse, {x: e.clientX, y: e.clientY});
   }
@@ -86,7 +86,7 @@ Response.prototype.onMousemove = function(e) {
   app.mouse.y = e.clientY;
 };
 
-Response.prototype.onMouseWheel = function(e){
+Feedback.prototype.onMouseWheel = function(e){
   e.preventDefault();
   if (e.deltaY > 0){
     app.viewPort.adjustZoom('out');
@@ -96,90 +96,90 @@ Response.prototype.onMouseWheel = function(e){
   return false;
 };
 
-Response.prototype.handleCommand = function(e) {
+Feedback.prototype.handleCommand = function(e) {
   var action = keyMap[e.keyCode];
-  if(action === 'toggleCommandMode') { app.response.switchCommandMode(); return;}
+  if(action === 'toggleCommandMode') { app.feedback.switchCommandMode(); return;}
   if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
-  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
-  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
+  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }
+  if(action === 'switchToDefaultView')  { app.feedback.resetViewToHome(); }
   if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
   if(action === 'rocketRotateLeft') { app.thrust.act(action); }
   if(action === 'rocketRotateRight') { app.thrust.act(action); }
   if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
-  if(action === 'viewToggle') { app.response.changeView(); }
+  if(action === 'viewToggle') { app.feedback.changeView(); }
   if(action === 'trace') { app.TRACE = !app.TRACE; }
-  if(action === 'reset') { app.response.reset(); }
-  if(action === 'reverseTime') { app.physics.reverseTime(); } 
+  if(action === 'reset') { app.feedback.reset(); }
+  if(action === 'reverseTime') { app.physics.reverseTime(); }
   if(action === 'viewShiftUp') { app.viewPort.shift.y -= 5; }
   if(action === 'viewShiftDown') { app.viewPort.shift.y += 5; }
   if(action === 'viewShiftLeft') { app.viewPort.shift.x -= 5; }
   if(action === 'viewShiftRight') { app.viewPort.shift.x += 5; }
-  if(action === 'switchClickAction') { app.response.changeMode(); }
-  if(action === 'pause') { app.response.pause(); }  
-  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
-  if(action === 'follow') { app.response.incrementFollow(); } 
-  if(action === 'speedItUp') { app.response.speedUp(); }
-  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }  
+  if(action === 'switchClickAction') { app.feedback.changeMode(); }
+  if(action === 'pause') { app.feedback.pause(); }
+  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }
+  if(action === 'follow') { app.feedback.incrementFollow(); }
+  if(action === 'speedItUp') { app.feedback.speedUp(); }
+  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }
 };
 
-Response.prototype.handleConsole = function(e) {
+Feedback.prototype.handleConsole = function(e) {
   app.textParser.handleConsole();
 };
 
-Response.prototype.onCommandExit = function() {
-  app.response.CommandMode = 'COMMAND';
+Feedback.prototype.onCommandExit = function() {
+  app.feedback.CommandMode = 'COMMAND';
   app.display.focus();
-  app.eventListener.addEventListener("keydown", app.response.eventHandle);
+  app.eventListener.addEventListener("keydown", app.feedback.eventHandle);
 
   app.toggleConsoleVisibility(false);
 };
 
 
-Response.prototype.switchCommandMode = function() {
-  app.response.CommandMode = 'shell';
-  app.eventListener.removeEventListener("keydown", app.response.eventHandle);
+Feedback.prototype.switchCommandMode = function() {
+  app.feedback.CommandMode = 'shell';
+  app.eventListener.removeEventListener("keydown", app.feedback.eventHandle);
 
   app.toggleConsoleVisibility(true);
-  shellJs.init(app.console, app.response.onCommandExit, app.response.commands, true, { keyCode: 192, displayText: "~ or `" } );
+  shellJs.init(app.console, app.feedback.onCommandExit, app.feedback.commands, true, { keyCode: 192, displayText: "~ or `" } );
 };
 
-Response.prototype.changeMode = function() {
-  if (app.response.MODE === 'FOLLOW') {
-    app.response.MODE = 'ROCKET';
+Feedback.prototype.changeMode = function() {
+  if (app.feedback.MODE === 'FOLLOW') {
+    app.feedback.MODE = 'ROCKET';
   } else if ( this.MODE === 'ROCKET') {
-    app.response.MODE = 'PHOTON';
+    app.feedback.MODE = 'PHOTON';
   } else if ( this.MODE === 'PHOTON') {
-    app.response.MODE = 'DESTROY';
+    app.feedback.MODE = 'DESTROY';
   } else {
-    app.response.MODE = 'FOLLOW';
+    app.feedback.MODE = 'FOLLOW';
   }
 };
 
-Response.prototype.speedUp = function() {
+Feedback.prototype.speedUp = function() {
   if (app.physics.variables.TIME_STEP < 100) {
     app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
   }
 };
 
-Response.prototype.follow = function(xy){
-  app.FOLLOW = Response.prototype.getNearest(xy);
+Feedback.prototype.follow = function(xy){
+  app.FOLLOW = Feedback.prototype.getNearest(xy);
 };
 
-Response.prototype.input = function() {
-  app.CURSOR = true;  
+Feedback.prototype.input = function() {
+  app.CURSOR = true;
   app.GO = false;
 };
 
-Response.prototype.getNearest = function(clickXY){
+Feedback.prototype.getNearest = function(clickXY){
   //Perform this in viewport coordinates.
   //It's viewport's job to furnish the viewport coordinates of any object of interest.
   var jXY, dx, dy,
   indexClosest = 0, j,
   dSqClosest   = Number.MAX_VALUE, dSq;
-  
+
   for (j = 0; j < app.particles.length; j++){
     if (! app.particles[j]) {continue;}
-    
+
     jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
 
     dx   = jXY.x - clickXY.x + app.ctx.canvas.offsetLeft;
@@ -194,11 +194,11 @@ Response.prototype.getNearest = function(clickXY){
   return indexClosest;
 };
 
-Response.prototype.destroy = function(xy){
+Feedback.prototype.destroy = function(xy){
   var target;
 
   if (app.particles.length){
-    target = app.particles[Response.prototype.getNearest(xy)];
+    target = app.particles[Feedback.prototype.getNearest(xy)];
     target.die(target.name + " was destroyed by the creator.");
 
     if(app.FOLLOW == target.id) {
@@ -207,18 +207,18 @@ Response.prototype.destroy = function(xy){
   }
 };
 
-Response.prototype.rocket = function(){
+Feedback.prototype.rocket = function(){
   var x = new Particles().buildParticle(  {name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * 0.08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: 0.1}),
     newGuy = app.particles[app.particles.length -1];
 
-  if(app.response.MODE === 'PHOTON') {
+  if(app.feedback.MODE === 'PHOTON') {
     newGuy.name = 'PHOTON' + app.particles.length;
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
-    
+
     newGuy.position.setFromV(app.particles[0].position);
     newGuy.vel.setXYZ(5000 * Math.cos(arc),
-      5000 * Math.sin(arc), 
+      5000 * Math.sin(arc),
       0.0);
   } else {
     newGuy.position.setFromV(app.particles[app.FOLLOW].position);
@@ -228,11 +228,11 @@ Response.prototype.rocket = function(){
     newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.0003 * Math.random()));
     app.FOLLOW = app.particles.length - 1;
   }
-  
+
   app.PARTICLECOUNT = app.particles.length - 1;
 };
 
-Response.prototype.reset = function() {
+Feedback.prototype.reset = function() {
   if(app.physics.variables.CALC_STYLE !== 'real') {
     app.physics.variables.CALC_STYLE = 'real';
   } else {
@@ -242,14 +242,14 @@ Response.prototype.reset = function() {
 
   app.ctx.clearRect(0, 0, app.width, app.height);
   var x = new Particles().buildInitialParticles();
-  app.viewPort.colorSorted = false;  
+  app.viewPort.colorSorted = false;
   app.clockReset();
 
   app.resetPotentialCollisions();
   app.FOLLOW = 0;
 };
 
-Response.prototype.pause = function() {
+Feedback.prototype.pause = function() {
   //app.physics.updateTimeStep(1);
   if(app.GO === false) {
     app.GO = true;
@@ -260,13 +260,13 @@ Response.prototype.pause = function() {
   }
 };
 
-Response.prototype.changeView = function() {
+Feedback.prototype.changeView = function() {
   app.viewPort.cycleState();
   app.ctx.font="12px Calibri";
-  app.ctx.clearRect(0, 0, app.width, app.height);  
+  app.ctx.clearRect(0, 0, app.width, app.height);
 };
 
-Response.prototype.incrementFollow = function () {
+Feedback.prototype.incrementFollow = function () {
   var oldFollow = app.FOLLOW;
   do{
     app.FOLLOW += 1;
@@ -276,29 +276,29 @@ Response.prototype.incrementFollow = function () {
   } while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
 
   app.viewPort.shift.x = 0;
-  app.viewPort.shift.y = 0;  
+  app.viewPort.shift.y = 0;
 };
 
-Response.prototype.changeProperty = function(id, propName, newValue) {
+Feedback.prototype.changeProperty = function(id, propName, newValue) {
   app.particles[id][propName] = newValue;
 };
 
-Response.prototype.addParticle = function(massX, radX, eC, arc, name) {
+Feedback.prototype.addParticle = function(massX, radX, eC, arc, name) {
   var eccentricity = eC === null ? 1 : eC / 100,
     radians = arc === null ? Math.random() * 2 * Math.PI : arc,
     text = name === null ? 'planet-X' : name;
-  var cfg = {name: text, mass: massX / 100, radius: 1097, 
+  var cfg = {name: text, mass: massX / 100, radius: 1097,
       orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
   var x = new Particles().buildParticle(cfg);
   return x;
 };
 
-Response.prototype.addCloud = function(cnt, rC, rF) {
+Feedback.prototype.addCloud = function(cnt, rC, rF) {
   var x = new Particles();
 
   for(var y = 0; y < cnt; y++) {
     var rad = rC * 5 + (Math.random() * (rF - rC)) * 5;
-    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097, 
+    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097,
       orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: 0.1};
     x.buildParticle(cfg);
   }
@@ -306,35 +306,35 @@ Response.prototype.addCloud = function(cnt, rC, rF) {
   return x;
 };
 
-Response.prototype.destroyAll = function() {
+Feedback.prototype.destroyAll = function() {
   var me = this;
   app.FOLLOW = 0;
   app.particles.splice(1, app.particles.length - 1);
   app.alwaysIntegrate.splice(1, app.alwaysIntegrate.length - 1);
 };
 
-Response.prototype.resetViewToHome = function() {
+Feedback.prototype.resetViewToHome = function() {
   app.FOLLOW = 0;
   app.physics.updateTimeStep(1);
   app.viewPort.restoreDefault();
 };
 
-Response.prototype.getFocusId = function(){
+Feedback.prototype.getFocusId = function(){
   if (app.particles.length){
     if (!app.particles[app.FOLLOW]){
           app.FOLLOW = 0;
     }
   }else{
-    app.response.reset();
+    app.feedback.reset();
   }
   return app.FOLLOW;
 };
 
-function TextParser() { 
+function TextParser() {
 }
 
 TextParser.prototype.handleConsole = function() {
 };
 
 
-module.exports = Response;
+module.exports = Feedback;

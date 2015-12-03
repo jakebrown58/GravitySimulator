@@ -36,7 +36,7 @@ ViewPort.prototype.setAxes = function(theta, phi){
 };
 
 ViewPort.prototype.setFocus = function(){
-  this.focusId = app.response.getFocusId();
+  this.focusId = app.feedback.getFocusId();
   if (app.particles[this.focusId]){
     this.focusParticle = app.particles[this.focusId];
     this.focusLocation.setFromV(this.focusParticle.position);
@@ -57,7 +57,7 @@ ViewPort.prototype.restoreDefault = function(){
 ViewPort.prototype.reorient = function(pointerOld, pointerNew){
   var deltaX = pointerNew.x - pointerOld.x;
   var deltaY = pointerNew.y - pointerOld.y;
-  
+
   this.viewAngle += deltaY * Math.PI/128;
   this.viewPhi   -= deltaX * Math.PI/64;
 
@@ -125,11 +125,11 @@ ViewPort.prototype.drawParticles = function() {
 
 
 ViewPort.prototype.MapPositionToViewPortXY = function(position){
-  /*Takes the position and maps it to viewport x, y coordinates, by 
+  /*Takes the position and maps it to viewport x, y coordinates, by
   finding it's position relative to the currently followed particle,
   projecting that position onto 2 axes, described by vectors.*/
   var r, xy;
-  
+
   r = new Vector3d(0, 0, 0);
   r.setFromV(position);
   r.decrement(this.focusLocation);
@@ -162,7 +162,7 @@ ViewPort.prototype.drawParticle = function(particle) {
   //app.ctx.strokeStyle = particle.drawColor;
   app.ctx.lineWidth = drawSize;
   app.ctx.beginPath();
-  
+
 
   if(drawSize >= 1) {
     app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);
@@ -173,7 +173,7 @@ ViewPort.prototype.drawParticle = function(particle) {
   }
 
 
-  if(app.response.MODE === 'ROCKET') {
+  if(app.feedback.MODE === 'ROCKET') {
     if(particle.id === this.focusId) {
       var direction = particle.direction / 180 * Math.PI;
       var heading = app.thrust.heading / 180 * Math.PI;
@@ -230,7 +230,7 @@ ViewPort.prototype.frameActions = function() {
 ViewPort.prototype.frameClock = function() {
     this.txtOffset = 25;
 
-  if (app.response.MODE === 'ROCKET') {
+  if (app.feedback.MODE === 'ROCKET') {
     app.viewPort.showRocketTelemetry();
   } else if (app.SHOWCLOCK) {
     this.appendLine("Started:" + app.realTime);
@@ -253,7 +253,7 @@ ViewPort.prototype.frameClock = function() {
       this.appendLine("    Minutes Per Second: " + Math.floor(daysPerSecond * 1440));
     }
     this.appendLine("Ticks: " + app.CLOCK.ticks);
-    this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));    
+    this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));
     this.appendLine("    FrameRate: " + frameRate);
 
     if (this.focusParticle) {
@@ -268,7 +268,7 @@ ViewPort.prototype.frameClock = function() {
 
     var viewPort = app.physics.convertViewPortPixelsToUnits(app.viewPort.viewPortSize);
     this.appendLine("Viewport size: " + viewPort.size + viewPort.unit);
-    this.appendLine("Click Action: " + app.response.MODE);
+    this.appendLine("Click Action: " + app.feedback.MODE);
 
     var totalMass = 0,
       totalEnergy = 0;
@@ -411,16 +411,16 @@ ViewPort.prototype.adjustZoom = function(direction) {
     } else {
       this.shift.zoom = -1 - ((-1 - this.shift.zoom) * 3 / 4);
     }
-    
+
   }
 
   if(this.shift.zoom <= -0.99995) {
     this.shift.zoom = -0.99995;
-  } 
+  }
 
   if(this.shift.zoom !== -1) {
     app.viewPort.viewPortSize = (app.width / (1 + this.shift.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
-    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
+    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
   }
 };
 

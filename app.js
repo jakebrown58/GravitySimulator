@@ -3,7 +3,7 @@ var app = {};
 var Physics = require('./physics');
 var Thrust = require('./thrust');
 var ViewPort = require('./viewport');
-var Reponse = require('./response');
+var Feedback = require('./feedback');
 var Particles = require('./particles');
 
 
@@ -52,18 +52,18 @@ app.init = function () {
     app.halfHeight = app.height * 0.5;
   }
 
-  window.addEventListener("resize", function() { 
+  window.addEventListener("resize", function() {
     app.width = display.width = window.innerWidth - 40;
     app.height = display.height = window.innerHeight - 30;
     app.halfWidth = app.width * 0.5;
     app.halfHeight = app.height * 0.5;
     app.size = (app.width + app.height) / 2;
-  }); 
+  });
 
   app.size = (app.width + app.height) / 2;
 
   app.viewPort = new ViewPort(app);
-  app.response = new Response();
+  app.feedback = new Feedback();
 
   var x = new Particles(app).buildInitialParticles();
   requestAnimationFrame(app.viewPort.frame);

@@ -43,7 +43,7 @@ Physics.prototype.leapFrog = function () {
   if (dt_this_iteration != this.TIME_STEP_INTEGRATOR_OLD){
     for (i = 0; i < ps.length; i++) {
       ps[i].updateTimeStep(dt_this_iteration);
-    }  
+    }
   }
 
   for (i = 0; i < ps.length; i++) {
@@ -56,9 +56,9 @@ Physics.prototype.leapFrog = function () {
 
   for (i = 0; i < ps.length; i++) {
     ps[i].updateVelocity();
-  }  
+  }
 
-  if(app.response.MODE === 'ROCKET') {
+  if(app.feedback.MODE === 'ROCKET') {
     rocketVel = ps[app.FOLLOW].vel.asXYZ();
     rocketVel.x -= app.thrust.getThrustVector().x / 3000;
     rocketVel.y -= app.thrust.getThrustVector().y / 3000;
@@ -87,11 +87,11 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;
 
   big.mass = mass;
-  
+
   big.position.scale(fracB);
   little.position.scale(fracL);
   big.position.increment(little.position);
-  
+
   big.vel.scale(fracB);
   little.vel.scale(fracL);
   big.vel.increment(little.vel);

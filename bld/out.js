@@ -4,7 +4,7 @@ var app = {};
 var Physics = require('./physics');
 var Thrust = require('./thrust');
 var ViewPort = require('./viewport');
-var Reponse = require('./response');
+var Feedback = require('./feedback');
 var Particles = require('./particles');
 
 
@@ -53,18 +53,18 @@ app.init = function () {
     app.halfHeight = app.height * 0.5;
   }
 
-  window.addEventListener("resize", function() { 
+  window.addEventListener("resize", function() {
     app.width = display.width = window.innerWidth - 40;
     app.height = display.height = window.innerHeight - 30;
     app.halfWidth = app.width * 0.5;
     app.halfHeight = app.height * 0.5;
     app.size = (app.width + app.height) / 2;
-  }); 
+  });
 
   app.size = (app.width + app.height) / 2;
 
   app.viewPort = new ViewPort(app);
-  app.response = new Response();
+  app.feedback = new Feedback();
 
   var x = new Particles(app).buildInitialParticles();
   requestAnimationFrame(app.viewPort.frame);
@@ -114,7 +114,7 @@ app.clockReset = function() {
 };
 
 module.exports = app;
-},{"./particles":4,"./physics":5,"./response":6,"./thrust":7,"./viewport":9}],2:[function(require,module,exports){
+},{"./particles":4,"./physics":5,"./feedback":6,"./thrust":7,"./viewport":9}],2:[function(require,module,exports){
 var app = require('./app');
 
 app.init();
@@ -124,7 +124,7 @@ app.init();
 var Vector3d = require('./vector3d');
 
 function Particle(id, x, y, z) {
-  this.id = id; 
+  this.id = id;
   this.position = new Vector3d(x,y,z);
   this.vel = new Vector3d(0, 0, 0);
   this.acc = new Vector3d(0, 0, 0);
@@ -136,7 +136,7 @@ function Particle(id, x, y, z) {
   this.destroyed = false;
 
   this.mass = 2;
-  this.color = {r: 205 + 50 * Math.floor(Math.random() * 3), 
+  this.color = {r: 205 + 50 * Math.floor(Math.random() * 3),
     g:  205 + 50 * Math.floor(Math.random() * 3),
     b:  205 + 50 * Math.floor(Math.random() * 3)};
 }
@@ -185,8 +185,8 @@ Particle.prototype.dist = function(p1) {
   this.r.y = p1.position.y - this.position.y;
   this.r.z = p1.position.z - this.position.z;
 
-  var d2 =  this.r.x * this.r.x + 
-      this.r.y * this.r.y + 
+  var d2 =  this.r.x * this.r.x +
+      this.r.y * this.r.y +
       this.r.z * this.r.z;
   return Math.sqrt(d2);
 };
@@ -210,8 +210,8 @@ Particle.prototype.calcAcceleration = function(){
       this.r.y = curr.position.y - this.position.y;
       this.r.z = curr.position.z - this.position.z;
       //Recommend replacing all tests of d3 with tests against d2.
-      d2 =  this.r.x * this.r.x + 
-            this.r.y * this.r.y + 
+      d2 =  this.r.x * this.r.x +
+            this.r.y * this.r.y +
             this.r.z * this.r.z;
       d  = Math.sqrt(d2);
       d3 = d2 * d;
@@ -333,20 +333,20 @@ Particle.prototype.configure = function(config) {
   particle.position.x = app.halfWidth - localRadius * Math.cos(config.arc);
   particle.position.y = app.halfHeight - localRadius * Math.sin(config.arc);
   particle.position.z = 0.0;
-  
+
   particle.vel.x = localOrbitalVelocity * Math.sin(config.arc);
   particle.vel.y = localOrbitalVelocity * (-Math.cos(config.arc));
   particle.vel.z = 0.0;
 
   particle.vel.scale(app.physics.variables.TIME_STEP_INTEGRATOR);
-  
-  //Just for safety, initialize to zero.  
+
+  //Just for safety, initialize to zero.
   particle.acc.x = 0;
   particle.acc.y = 0;
   particle.acc.z = 0;
 
 
-  particle.size = config.drawSize;    
+  particle.size = config.drawSize;
   particle.drawColor = '#' + this.color.r.toString(16) + this.color.g.toString(16) + this.color.b.toString(16);
 };
 
@@ -360,7 +360,7 @@ function Particles(app) {
   this.objects.COMETS = 20;// Math.floor( Math.random() * 1250);
   this.objects.ASTEROIDS = 5;// Math.floor( Math.random() * 1250);
   this.objects.JUPITERCLOUD = 8; //Math.floor( Math.random() * 1250);
-  this.objects.PARTICLECOUNT = 1;  
+  this.objects.PARTICLECOUNT = 1;
 }
 
 Particles.prototype.buildInitialParticles = function() {
@@ -387,7 +387,7 @@ Particles.prototype.buildInitialParticles = function() {
       {name: 'Venus', mass: earthMass * 0.815, radius: 6051, orbits: [{mass: sunMass, radius: aU * 0.72}], drawSize: 1},
       {name: 'Earth', mass: earthMass, radius: 6371, orbits: [{mass: sunMass, radius: aU}], arc: jupiterArc, drawSize: 1, color: {r: 180, g: 200, b: 255}},
       {name: 'Mars', mass: earthMass * 0.107, radius: 3376, orbits: [{mass: sunMass, radius: aU * 1.38}], drawSize: 0.6, color: {r: 255, g: 160, b: 160}},
-      {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},    
+      {name: 'Jupiter', mass: jupiterMass, radius: 69911, orbits: [{mass: sunMass, radius: aU * 5.2}], arc: jupiterArc, drawSize: 1.4},
       {name: 'Saturn', mass: jupiterMass * 0.30, radius: 60268,orbits: [{mass: sunMass, radius: aU * 9.5}], drawSize: 1.3, color: {r: 255, g: 215, b: 165}},
       {name: 'Neptune', mass: earthMass * 17.147, radius: 24341,orbits: [{mass: sunMass, radius: aU * 30}], drawSize: 1, color: {r: 150, g: 160, b: 215}},
       {name: 'Uranus', mass: earthMass * 14.536, radius: 25362,orbits: [{mass: sunMass, radius: aU * 19.5}], drawSize: 1, color: {r: 180, g: 180, b: 215}},
@@ -437,7 +437,7 @@ Particles.prototype.buildInitialParticles = function() {
     this.buildParticle(initialObjects.shift());
   }
 
-  for(i = 0; i < app.particles.length; i++) {   
+  for(i = 0; i < app.particles.length; i++) {
     this.app.alwaysIntegrate.push(i);
   }
 
@@ -452,13 +452,13 @@ Particles.prototype.buildInitialParticles = function() {
   if(app.physics.variables.CALC_STYLE === 'real') {
     for (i = 0; i < this.objects.JUPITERCLOUD; i++) {
       this.buildParticle({
-        name: 'Jupiter Cloud' + i, 
+        name: 'Jupiter Cloud' + i,
         radius: 60,
-        arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80, 
-        mass: earthMass / (8000 + Math.random() * 32000), 
+        arc: jupiterArc + Math.random() * Math.PI / 160 - Math.random() * Math.PI / 80,
+        mass: earthMass / (8000 + Math.random() * 32000),
         orbits: [
-          {mass: sunMass, radius: aU * 5.2}, 
-          {mass: jupiterMass, eccentric: 'little', radius: aU * 0.01 + aU * Math.random() * 0.08}], 
+          {mass: sunMass, radius: aU * 5.2},
+          {mass: jupiterMass, eccentric: 'little', radius: aU * 0.01 + aU * Math.random() * 0.08}],
         drawSize: 0.03
       });
     }
@@ -472,7 +472,7 @@ Particles.prototype.finalize = function() {
   var particles = app.particles,
     i,
     system_momentum = new Vector3d(0, 0, 0);
-    
+
   for (i = 0; i < particles.length; i++) {
       var vel = particles[i].vel.asXYZ;
       system.momentum.x += me.mass * vel.x;
@@ -506,7 +506,7 @@ Particles.prototype.freeTheDestroyed = function() {
   var newId = 0;
 
   for (var j = 0; j < this.app.particles.length; j++) {
-    if (this.app.FOLLOW == j) { 
+    if (this.app.FOLLOW == j) {
       this.app.FOLLOW = newId;
     }
     if (this.app.particles[j] && this.app.particles[j].destroyed === false){
@@ -570,7 +570,7 @@ Physics.prototype.leapFrog = function () {
   if (dt_this_iteration != this.TIME_STEP_INTEGRATOR_OLD){
     for (i = 0; i < ps.length; i++) {
       ps[i].updateTimeStep(dt_this_iteration);
-    }  
+    }
   }
 
   for (i = 0; i < ps.length; i++) {
@@ -583,9 +583,9 @@ Physics.prototype.leapFrog = function () {
 
   for (i = 0; i < ps.length; i++) {
     ps[i].updateVelocity();
-  }  
+  }
 
-  if(app.response.MODE === 'ROCKET') {
+  if(app.feedback.MODE === 'ROCKET') {
     rocketVel = ps[app.FOLLOW].vel.asXYZ();
     rocketVel.x -= app.thrust.getThrustVector().x / 3000;
     rocketVel.y -= app.thrust.getThrustVector().y / 3000;
@@ -614,11 +614,11 @@ Physics.prototype.collide_glom = function(p1, p2) {
   big.normalizedRadius = app.physics.constants.ASTRONOMICAL_UNIT * big.radius / app.physics.constants.KM_PER_AU;
 
   big.mass = mass;
-  
+
   big.position.scale(fracB);
   little.position.scale(fracL);
   big.position.increment(little.position);
-  
+
   big.vel.scale(fracB);
   little.vel.scale(fracL);
   big.vel.increment(little.vel);
@@ -755,7 +755,7 @@ var keyMap = {
   38: 'rocketIncreaseThrust', // 'UP'
 };
 
-function Response() {
+function Feedback() {
   app.eventListener.addEventListener('mousemove', this.onMousemove);
   app.eventListener.addEventListener('click', this.onClickSplash);
   app.eventListener.addEventListener('keydown', this.onKeyDown);
@@ -773,40 +773,40 @@ function Response() {
     ];
 }
 
-Response.prototype.onKeyDown = function(e, ref) {
-  app.response.eventHandle = this.onKeyDown;
-  if(app.response.CommandMode === 'COMMAND') {
-    app.response.handleCommand(e);
+Feedback.prototype.onKeyDown = function(e, ref) {
+  app.feedback.eventHandle = this.onKeyDown;
+  if(app.feedback.CommandMode === 'COMMAND') {
+    app.feedback.handleCommand(e);
   } else {
-    //app.response.handleConsole(e);
+    //app.feedback.handleConsole(e);
   }
 
   return false;
 };
 
 
-Response.prototype.onClickSplash = function(e){
+Feedback.prototype.onClickSplash = function(e){
   if (app.viewPort.drawState !== app.viewPort.DRAW_STATE_SPLASH){
-    app.eventListener.removeEventListener('click', app.response.onClickSplash);
-    app.eventListener.addEventListener('click', app.response.onClick);
-    app.response.onClick(e);
+    app.eventListener.removeEventListener('click', app.feedback.onClickSplash);
+    app.eventListener.addEventListener('click', app.feedback.onClick);
+    app.feedback.onClick(e);
   }
 };
 
 
-Response.prototype.onClick = function(e) {
+Feedback.prototype.onClick = function(e) {
   var xy = {x: e.clientX, y: e.clientY};
 
-  if(app.response.MODE === 'FOLLOW') {
-    app.response.follow(xy);
-  } else if(app.response.MODE === 'DESTROY') {
-    app.response.destroy(xy);
+  if(app.feedback.MODE === 'FOLLOW') {
+    app.feedback.follow(xy);
+  } else if(app.feedback.MODE === 'DESTROY') {
+    app.feedback.destroy(xy);
   } else {
-    app.response.rocket();
+    app.feedback.rocket();
   }
 };
 
-Response.prototype.onMousemove = function(e) {
+Feedback.prototype.onMousemove = function(e) {
   if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
     app.viewPort.reorient(app.mouse, {x: e.clientX, y: e.clientY});
   }
@@ -814,7 +814,7 @@ Response.prototype.onMousemove = function(e) {
   app.mouse.y = e.clientY;
 };
 
-Response.prototype.onMouseWheel = function(e){
+Feedback.prototype.onMouseWheel = function(e){
   e.preventDefault();
   if (e.deltaY > 0){
     app.viewPort.adjustZoom('out');
@@ -824,90 +824,90 @@ Response.prototype.onMouseWheel = function(e){
   return false;
 };
 
-Response.prototype.handleCommand = function(e) {
+Feedback.prototype.handleCommand = function(e) {
   var action = keyMap[e.keyCode];
-  if(action === 'toggleCommandMode') { app.response.switchCommandMode(); return;}
+  if(action === 'toggleCommandMode') { app.feedback.switchCommandMode(); return;}
   if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
-  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
-  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
+  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }
+  if(action === 'switchToDefaultView')  { app.feedback.resetViewToHome(); }
   if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
   if(action === 'rocketRotateLeft') { app.thrust.act(action); }
   if(action === 'rocketRotateRight') { app.thrust.act(action); }
   if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
-  if(action === 'viewToggle') { app.response.changeView(); }
+  if(action === 'viewToggle') { app.feedback.changeView(); }
   if(action === 'trace') { app.TRACE = !app.TRACE; }
-  if(action === 'reset') { app.response.reset(); }
-  if(action === 'reverseTime') { app.physics.reverseTime(); } 
+  if(action === 'reset') { app.feedback.reset(); }
+  if(action === 'reverseTime') { app.physics.reverseTime(); }
   if(action === 'viewShiftUp') { app.viewPort.shift.y -= 5; }
   if(action === 'viewShiftDown') { app.viewPort.shift.y += 5; }
   if(action === 'viewShiftLeft') { app.viewPort.shift.x -= 5; }
   if(action === 'viewShiftRight') { app.viewPort.shift.x += 5; }
-  if(action === 'switchClickAction') { app.response.changeMode(); }
-  if(action === 'pause') { app.response.pause(); }  
-  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
-  if(action === 'follow') { app.response.incrementFollow(); } 
-  if(action === 'speedItUp') { app.response.speedUp(); }
-  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }  
+  if(action === 'switchClickAction') { app.feedback.changeMode(); }
+  if(action === 'pause') { app.feedback.pause(); }
+  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }
+  if(action === 'follow') { app.feedback.incrementFollow(); }
+  if(action === 'speedItUp') { app.feedback.speedUp(); }
+  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }
 };
 
-Response.prototype.handleConsole = function(e) {
+Feedback.prototype.handleConsole = function(e) {
   app.textParser.handleConsole();
 };
 
-Response.prototype.onCommandExit = function() {
-  app.response.CommandMode = 'COMMAND';
+Feedback.prototype.onCommandExit = function() {
+  app.feedback.CommandMode = 'COMMAND';
   app.display.focus();
-  app.eventListener.addEventListener("keydown", app.response.eventHandle);
+  app.eventListener.addEventListener("keydown", app.feedback.eventHandle);
 
   app.toggleConsoleVisibility(false);
 };
 
 
-Response.prototype.switchCommandMode = function() {
-  app.response.CommandMode = 'shell';
-  app.eventListener.removeEventListener("keydown", app.response.eventHandle);
+Feedback.prototype.switchCommandMode = function() {
+  app.feedback.CommandMode = 'shell';
+  app.eventListener.removeEventListener("keydown", app.feedback.eventHandle);
 
   app.toggleConsoleVisibility(true);
-  shellJs.init(app.console, app.response.onCommandExit, app.response.commands, true, { keyCode: 192, displayText: "~ or `" } );
+  shellJs.init(app.console, app.feedback.onCommandExit, app.feedback.commands, true, { keyCode: 192, displayText: "~ or `" } );
 };
 
-Response.prototype.changeMode = function() {
-  if (app.response.MODE === 'FOLLOW') {
-    app.response.MODE = 'ROCKET';
+Feedback.prototype.changeMode = function() {
+  if (app.feedback.MODE === 'FOLLOW') {
+    app.feedback.MODE = 'ROCKET';
   } else if ( this.MODE === 'ROCKET') {
-    app.response.MODE = 'PHOTON';
+    app.feedback.MODE = 'PHOTON';
   } else if ( this.MODE === 'PHOTON') {
-    app.response.MODE = 'DESTROY';
+    app.feedback.MODE = 'DESTROY';
   } else {
-    app.response.MODE = 'FOLLOW';
+    app.feedback.MODE = 'FOLLOW';
   }
 };
 
-Response.prototype.speedUp = function() {
+Feedback.prototype.speedUp = function() {
   if (app.physics.variables.TIME_STEP < 100) {
     app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
   }
 };
 
-Response.prototype.follow = function(xy){
-  app.FOLLOW = Response.prototype.getNearest(xy);
+Feedback.prototype.follow = function(xy){
+  app.FOLLOW = Feedback.prototype.getNearest(xy);
 };
 
-Response.prototype.input = function() {
-  app.CURSOR = true;  
+Feedback.prototype.input = function() {
+  app.CURSOR = true;
   app.GO = false;
 };
 
-Response.prototype.getNearest = function(clickXY){
+Feedback.prototype.getNearest = function(clickXY){
   //Perform this in viewport coordinates.
   //It's viewport's job to furnish the viewport coordinates of any object of interest.
   var jXY, dx, dy,
   indexClosest = 0, j,
   dSqClosest   = Number.MAX_VALUE, dSq;
-  
+
   for (j = 0; j < app.particles.length; j++){
     if (! app.particles[j]) {continue;}
-    
+
     jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
 
     dx   = jXY.x - clickXY.x + app.ctx.canvas.offsetLeft;
@@ -922,11 +922,11 @@ Response.prototype.getNearest = function(clickXY){
   return indexClosest;
 };
 
-Response.prototype.destroy = function(xy){
+Feedback.prototype.destroy = function(xy){
   var target;
 
   if (app.particles.length){
-    target = app.particles[Response.prototype.getNearest(xy)];
+    target = app.particles[Feedback.prototype.getNearest(xy)];
     target.die(target.name + " was destroyed by the creator.");
 
     if(app.FOLLOW == target.id) {
@@ -935,18 +935,18 @@ Response.prototype.destroy = function(xy){
   }
 };
 
-Response.prototype.rocket = function(){
+Feedback.prototype.rocket = function(){
   var x = new Particles().buildParticle(  {name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * 0.08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: 0.1}),
     newGuy = app.particles[app.particles.length -1];
 
-  if(app.response.MODE === 'PHOTON') {
+  if(app.feedback.MODE === 'PHOTON') {
     newGuy.name = 'PHOTON' + app.particles.length;
     newGuy.mass = 0;
     var arc = 0;//Math.random() * 2 * Math.PI;
-    
+
     newGuy.position.setFromV(app.particles[0].position);
     newGuy.vel.setXYZ(5000 * Math.cos(arc),
-      5000 * Math.sin(arc), 
+      5000 * Math.sin(arc),
       0.0);
   } else {
     newGuy.position.setFromV(app.particles[app.FOLLOW].position);
@@ -956,11 +956,11 @@ Response.prototype.rocket = function(){
     newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.0003 * Math.random()));
     app.FOLLOW = app.particles.length - 1;
   }
-  
+
   app.PARTICLECOUNT = app.particles.length - 1;
 };
 
-Response.prototype.reset = function() {
+Feedback.prototype.reset = function() {
   if(app.physics.variables.CALC_STYLE !== 'real') {
     app.physics.variables.CALC_STYLE = 'real';
   } else {
@@ -970,14 +970,14 @@ Response.prototype.reset = function() {
 
   app.ctx.clearRect(0, 0, app.width, app.height);
   var x = new Particles().buildInitialParticles();
-  app.viewPort.colorSorted = false;  
+  app.viewPort.colorSorted = false;
   app.clockReset();
 
   app.resetPotentialCollisions();
   app.FOLLOW = 0;
 };
 
-Response.prototype.pause = function() {
+Feedback.prototype.pause = function() {
   //app.physics.updateTimeStep(1);
   if(app.GO === false) {
     app.GO = true;
@@ -988,13 +988,13 @@ Response.prototype.pause = function() {
   }
 };
 
-Response.prototype.changeView = function() {
+Feedback.prototype.changeView = function() {
   app.viewPort.cycleState();
   app.ctx.font="12px Calibri";
-  app.ctx.clearRect(0, 0, app.width, app.height);  
+  app.ctx.clearRect(0, 0, app.width, app.height);
 };
 
-Response.prototype.incrementFollow = function () {
+Feedback.prototype.incrementFollow = function () {
   var oldFollow = app.FOLLOW;
   do{
     app.FOLLOW += 1;
@@ -1004,29 +1004,29 @@ Response.prototype.incrementFollow = function () {
   } while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
 
   app.viewPort.shift.x = 0;
-  app.viewPort.shift.y = 0;  
+  app.viewPort.shift.y = 0;
 };
 
-Response.prototype.changeProperty = function(id, propName, newValue) {
+Feedback.prototype.changeProperty = function(id, propName, newValue) {
   app.particles[id][propName] = newValue;
 };
 
-Response.prototype.addParticle = function(massX, radX, eC, arc, name) {
+Feedback.prototype.addParticle = function(massX, radX, eC, arc, name) {
   var eccentricity = eC === null ? 1 : eC / 100,
     radians = arc === null ? Math.random() * 2 * Math.PI : arc,
     text = name === null ? 'planet-X' : name;
-  var cfg = {name: text, mass: massX / 100, radius: 1097, 
+  var cfg = {name: text, mass: massX / 100, radius: 1097,
       orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
   var x = new Particles().buildParticle(cfg);
   return x;
 };
 
-Response.prototype.addCloud = function(cnt, rC, rF) {
+Feedback.prototype.addCloud = function(cnt, rC, rF) {
   var x = new Particles();
 
   for(var y = 0; y < cnt; y++) {
     var rad = rC * 5 + (Math.random() * (rF - rC)) * 5;
-    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097, 
+    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097,
       orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: 0.1};
     x.buildParticle(cfg);
   }
@@ -1034,38 +1034,38 @@ Response.prototype.addCloud = function(cnt, rC, rF) {
   return x;
 };
 
-Response.prototype.destroyAll = function() {
+Feedback.prototype.destroyAll = function() {
   var me = this;
   app.FOLLOW = 0;
   app.particles.splice(1, app.particles.length - 1);
   app.alwaysIntegrate.splice(1, app.alwaysIntegrate.length - 1);
 };
 
-Response.prototype.resetViewToHome = function() {
+Feedback.prototype.resetViewToHome = function() {
   app.FOLLOW = 0;
   app.physics.updateTimeStep(1);
   app.viewPort.restoreDefault();
 };
 
-Response.prototype.getFocusId = function(){
+Feedback.prototype.getFocusId = function(){
   if (app.particles.length){
     if (!app.particles[app.FOLLOW]){
           app.FOLLOW = 0;
     }
   }else{
-    app.response.reset();
+    app.feedback.reset();
   }
   return app.FOLLOW;
 };
 
-function TextParser() { 
+function TextParser() {
 }
 
 TextParser.prototype.handleConsole = function() {
 };
 
 
-module.exports = Response;
+module.exports = Feedback;
 },{}],7:[function(require,module,exports){
 function Thrust() {
   this.heading = 0;
@@ -1097,7 +1097,7 @@ Thrust.prototype.getThrustVector = function() {
     return {x: 0, y:0, z:0};
   }
 
-  return { 
+  return {
     x: this.thrust * Math.cos(Math.PI * this.heading / 180) / 1000,
     y: this.thrust * Math.sin(Math.PI * this.heading / 180) / 1000,
     z: 0.0
@@ -1160,8 +1160,8 @@ Vector3d.prototype.magnitude = function(){
 
 
 Vector3d.prototype.dot = function(v){
-	return  this.x*v.x + 
-			this.y*v.y + 
+	return  this.x*v.x +
+			this.y*v.y +
 			this.z*v.z;
 };
 
@@ -1200,7 +1200,7 @@ Vector3d.prototype.FasterSqrt = function(xsq){
 	var one = new ArrayBuffer(4);
 	var float32_one = new Float32Array(one);
 	var bits_one = new Uint32Array(one);
-    
+
     float32_one[0] = 1.;
 
 	f32View[0] = xsq;
@@ -1280,7 +1280,7 @@ Vector3d.prototype.phi = function(){
 Vector3d.prototype.theta = function(){
 	//Theta meaured from north pole.
 	// This method avoids a Math.sqrt() call.
-	
+
 	if (this.z == 0) {
 		return Math.PI / 2.;
 	}else{
@@ -1350,7 +1350,7 @@ ViewPort.prototype.setAxes = function(theta, phi){
 };
 
 ViewPort.prototype.setFocus = function(){
-  this.focusId = app.response.getFocusId();
+  this.focusId = app.feedback.getFocusId();
   if (app.particles[this.focusId]){
     this.focusParticle = app.particles[this.focusId];
     this.focusLocation.setFromV(this.focusParticle.position);
@@ -1371,7 +1371,7 @@ ViewPort.prototype.restoreDefault = function(){
 ViewPort.prototype.reorient = function(pointerOld, pointerNew){
   var deltaX = pointerNew.x - pointerOld.x;
   var deltaY = pointerNew.y - pointerOld.y;
-  
+
   this.viewAngle += deltaY * Math.PI/128;
   this.viewPhi   -= deltaX * Math.PI/64;
 
@@ -1439,11 +1439,11 @@ ViewPort.prototype.drawParticles = function() {
 
 
 ViewPort.prototype.MapPositionToViewPortXY = function(position){
-  /*Takes the position and maps it to viewport x, y coordinates, by 
+  /*Takes the position and maps it to viewport x, y coordinates, by
   finding it's position relative to the currently followed particle,
   projecting that position onto 2 axes, described by vectors.*/
   var r, xy;
-  
+
   r = new Vector3d(0, 0, 0);
   r.setFromV(position);
   r.decrement(this.focusLocation);
@@ -1476,7 +1476,7 @@ ViewPort.prototype.drawParticle = function(particle) {
   //app.ctx.strokeStyle = particle.drawColor;
   app.ctx.lineWidth = drawSize;
   app.ctx.beginPath();
-  
+
 
   if(drawSize >= 1) {
     app.ctx.arc(obj.x, obj.y, app.ctx.lineWidth, 0, 2 * Math.PI, false);
@@ -1487,7 +1487,7 @@ ViewPort.prototype.drawParticle = function(particle) {
   }
 
 
-  if(app.response.MODE === 'ROCKET') {
+  if(app.feedback.MODE === 'ROCKET') {
     if(particle.id === this.focusId) {
       var direction = particle.direction / 180 * Math.PI;
       var heading = app.thrust.heading / 180 * Math.PI;
@@ -1544,7 +1544,7 @@ ViewPort.prototype.frameActions = function() {
 ViewPort.prototype.frameClock = function() {
     this.txtOffset = 25;
 
-  if (app.response.MODE === 'ROCKET') {
+  if (app.feedback.MODE === 'ROCKET') {
     app.viewPort.showRocketTelemetry();
   } else if (app.SHOWCLOCK) {
     this.appendLine("Started:" + app.realTime);
@@ -1567,7 +1567,7 @@ ViewPort.prototype.frameClock = function() {
       this.appendLine("    Minutes Per Second: " + Math.floor(daysPerSecond * 1440));
     }
     this.appendLine("Ticks: " + app.CLOCK.ticks);
-    this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));    
+    this.appendLine("    Total Days: " + Math.floor((hoursPerTick / 24) * app.CLOCK.ticks));
     this.appendLine("    FrameRate: " + frameRate);
 
     if (this.focusParticle) {
@@ -1582,7 +1582,7 @@ ViewPort.prototype.frameClock = function() {
 
     var viewPort = app.physics.convertViewPortPixelsToUnits(app.viewPort.viewPortSize);
     this.appendLine("Viewport size: " + viewPort.size + viewPort.unit);
-    this.appendLine("Click Action: " + app.response.MODE);
+    this.appendLine("Click Action: " + app.feedback.MODE);
 
     var totalMass = 0,
       totalEnergy = 0;
@@ -1725,16 +1725,16 @@ ViewPort.prototype.adjustZoom = function(direction) {
     } else {
       this.shift.zoom = -1 - ((-1 - this.shift.zoom) * 3 / 4);
     }
-    
+
   }
 
   if(this.shift.zoom <= -0.99995) {
     this.shift.zoom = -0.99995;
-  } 
+  }
 
   if(this.shift.zoom !== -1) {
     app.viewPort.viewPortSize = (app.width / (1 + this.shift.zoom)) / app.physics.constants.ASTRONOMICAL_UNIT;
-    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;  
+    app.viewPort.viewPortSizeInKm = app.physics.constants.KM_PER_AU * app.viewPort.viewPortSize;
   }
 };
 
