@@ -1,125 +1,364 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var app = {};
+/* ******************* RESPONSE ******************************************************* */
+var keyMap = {
+  // reference: https://css-tricks.com/snippets/javascript/javascript-keycodes/
+  // also, difference between keyCode and charCode:
+  // http://stackoverflow.com/questions/1772179/get-character-value-from-keycode-in-javascript-then-trim
+  86: 'viewToggle', // v
+  32: 'trace',  // '<space>'
+  82: 'reset', // 'R'
+  84: 'reverseTime', // 'T'
+  87: 'viewShiftUp', // 'W'
+  83: 'viewShiftDown', // 'S'
+  65: 'viewShiftLeft', // 'A'
+  68: 'viewShiftRight', // 'D'
+  77: 'switchClickAction', // 'M'
+  80: 'pause', // 'P'
+  67: 'visualLogging', // 'C'
+  70: 'follow', // 'F'
+  88: 'speedItUp', // 'X'
+  90: 'slowItDown', // 'Z'
+  192: 'toggleCommandMode', // '` or ~'
+  188: 'zoomOut', // '<'
+  190: 'zoomIn', // '>'
+  72: 'switchToDefaultView', // 'H'
+  66: 'rocketEnginesBurnToggle', // 'B'
+  37: 'rocketRotateLeft', // 'LEFT'
+  39: 'rocketRotateRight', // 'RIGHT'
+  38: 'rocketIncreaseThrust', // 'UP'
+};
+
+function Feedback(app) {
+  app.eventListener.addEventListener('mousemove', this.onMousemove);
+  app.eventListener.addEventListener('click', this.onClickSplash);
+  app.eventListener.addEventListener('keydown', this.onKeyDown);
+  app.eventListener.addEventListener('mousewheel', this.onMouseWheel);
+
+  this.MODE = 'FOLLOW';
+  this.CommandMode = 'COMMAND';
+  app.textParser = new TextParser();
+
+  this.commands = [
+    {command: "cprop", description: "change any property on any object to any value (power tool)", fn: this.changeProperty},
+    {command: "addp", description: "add a single planet", fn: this.addParticle},
+    {command: "addc", description: "add a bunch of planets", fn: this.addCloud},
+    {command: "destall", description: "remove everything", fn: this.destroyAll}
+    ];
+}
+
+Feedback.prototype.onKeyDown = function(e, ref) {
+  app.response.eventHandle = this.onKeyDown;
+  if(app.response.CommandMode === 'COMMAND') {
+    app.response.handleCommand(e);
+  } else {
+    //app.response.handleConsole(e);
+  }
+
+  return false;
+};
+
+
+Feedback.prototype.onClickSplash = function(e){
+  if (app.viewPort.drawState !== app.viewPort.DRAW_STATE_SPLASH){
+    app.eventListener.removeEventListener('click', app.response.onClickSplash);
+    app.eventListener.addEventListener('click', app.response.onClick);
+    app.response.onClick(e);
+  }
+};
+
+
+Feedback.prototype.onClick = function(e) {
+  var xy = {x: e.clientX, y: e.clientY};
+
+  if(app.response.MODE === 'FOLLOW') {
+    app.response.follow(xy);
+  } else if(app.response.MODE === 'DESTROY') {
+    app.response.destroy(xy);
+  } else {
+    app.response.rocket();
+  }
+};
+
+Feedback.prototype.onMousemove = function(e) {
+  if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
+    app.viewPort.reorient(app.mouse, {x: e.clientX, y: e.clientY});
+  }
+  app.mouse.x = e.clientX;
+  app.mouse.y = e.clientY;
+};
+
+Feedback.prototype.onMouseWheel = function(e){
+  e.preventDefault();
+  if (e.deltaY > 0){
+    app.viewPort.adjustZoom('out');
+  }else{
+    app.viewPort.adjustZoom('in');
+  }
+  return false;
+};
+
+Feedback.prototype.handleCommand = function(e) {
+  var action = keyMap[e.keyCode];
+  if(action === 'toggleCommandMode') { app.response.switchCommandMode(); return;}
+  if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
+  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
+  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
+  if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
+  if(action === 'rocketRotateLeft') { app.thrust.act(action); }
+  if(action === 'rocketRotateRight') { app.thrust.act(action); }
+  if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
+  if(action === 'viewToggle') { app.response.changeView(); }
+  if(action === 'trace') { app.TRACE = !app.TRACE; }
+  if(action === 'reset') { app.response.reset(); }
+  if(action === 'reverseTime') { app.physics.reverseTime(); } 
+  if(action === 'viewShiftUp') { app.viewPort.shift.y -= 5; }
+  if(action === 'viewShiftDown') { app.viewPort.shift.y += 5; }
+  if(action === 'viewShiftLeft') { app.viewPort.shift.x -= 5; }
+  if(action === 'viewShiftRight') { app.viewPort.shift.x += 5; }
+  if(action === 'switchClickAction') { app.response.changeMode(); }
+  if(action === 'pause') { app.response.pause(); }  
+  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
+  if(action === 'follow') { app.response.incrementFollow(); } 
+  if(action === 'speedItUp') { app.response.speedUp(); }
+  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }  
+};
+
+Feedback.prototype.handleConsole = function(e) {
+  app.textParser.handleConsole();
+};
+
+Feedback.prototype.onCommandExit = function() {
+  app.response.CommandMode = 'COMMAND';
+  app.display.focus();
+  app.eventListener.addEventListener("keydown", app.response.eventHandle);
+
+  app.toggleConsoleVisibility(false);
+};
+
+
+Feedback.prototype.switchCommandMode = function() {
+  app.response.CommandMode = 'shell';
+  app.eventListener.removeEventListener("keydown", app.response.eventHandle);
+
+  app.toggleConsoleVisibility(true);
+  shellJs.init(app.console, app.response.onCommandExit, app.response.commands, true, { keyCode: 192, displayText: "~ or `" } );
+};
+
+Feedback.prototype.changeMode = function() {
+  if (app.response.MODE === 'FOLLOW') {
+    app.response.MODE = 'ROCKET';
+  } else if ( this.MODE === 'ROCKET') {
+    app.response.MODE = 'PHOTON';
+  } else if ( this.MODE === 'PHOTON') {
+    app.response.MODE = 'DESTROY';
+  } else {
+    app.response.MODE = 'FOLLOW';
+  }
+};
+
+Feedback.prototype.speedUp = function() {
+  if (app.physics.variables.TIME_STEP < 100) {
+    app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
+  }
+};
+
+Feedback.prototype.follow = function(xy){
+  app.FOLLOW = Feedback.prototype.getNearest(xy);
+};
+
+Feedback.prototype.input = function() {
+  app.CURSOR = true;  
+  app.GO = false;
+};
+
+Feedback.prototype.getNearest = function(clickXY){
+  //Perform this in viewport coordinates.
+  //It's viewport's job to furnish the viewport coordinates of any object of interest.
+  var jXY, dx, dy,
+  indexClosest = 0, j,
+  dSqClosest   = Number.MAX_VALUE, dSq;
+  
+  for (j = 0; j < app.particles.length; j++){
+    if (! app.particles[j]) {continue;}
+    
+    jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
+
+    dx   = jXY.x - clickXY.x + app.ctx.canvas.offsetLeft;
+    dy   = jXY.y - clickXY.y + app.ctx.canvas.offsetTop;
+    dSq  = dx * dx + dy * dy;
+
+    if (dSq < dSqClosest){
+      dSqClosest    = dSq;
+      indexClosest  = j;
+    }
+  }
+  return indexClosest;
+};
+
+Feedback.prototype.destroy = function(xy){
+  var target;
+
+  if (app.particles.length){
+    target = app.particles[Feedback.prototype.getNearest(xy)];
+    target.die(target.name + " was destroyed by the creator.");
+
+    if(app.FOLLOW == target.id) {
+      app.FOLLOW = 0;
+    }
+  }
+};
+
+Feedback.prototype.rocket = function(){
+  var x = new Particles().buildParticle(  {name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * 0.08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: 0.1}),
+    newGuy = app.particles[app.particles.length -1];
+
+  if(app.response.MODE === 'PHOTON') {
+    newGuy.name = 'PHOTON' + app.particles.length;
+    newGuy.mass = 0;
+    var arc = 0;//Math.random() * 2 * Math.PI;
+    
+    newGuy.position.setFromV(app.particles[0].position);
+    newGuy.vel.setXYZ(5000 * Math.cos(arc),
+      5000 * Math.sin(arc), 
+      0.0);
+  } else {
+    newGuy.position.setFromV(app.particles[app.FOLLOW].position);
+    newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3));
+
+    newGuy.vel.setFromV(app.particles[app.FOLLOW].vel);
+    newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.0003 * Math.random()));
+    app.FOLLOW = app.particles.length - 1;
+  }
+  
+  app.PARTICLECOUNT = app.particles.length - 1;
+};
+
+Feedback.prototype.reset = function() {
+  if(app.physics.variables.CALC_STYLE !== 'real') {
+    app.physics.variables.CALC_STYLE = 'real';
+  } else {
+    app.physics.variables.CALC_STYLE = 'wacky';
+    //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
+  }
+
+  app.ctx.clearRect(0, 0, app.width, app.height);
+  var x = new Particles().buildInitialParticles();
+  app.viewPort.colorSorted = false;  
+  app.clockReset();
+
+  app.resetPotentialCollisions();
+  app.FOLLOW = 0;
+};
+
+Feedback.prototype.pause = function() {
+  //app.physics.updateTimeStep(1);
+  if(app.GO === false) {
+    app.GO = true;
+    requestAnimationFrame(app.viewPort.frame);
+    app.clockReset();
+  } else {
+    app.GO = false;
+  }
+};
+
+Feedback.prototype.changeView = function() {
+  app.viewPort.cycleState();
+  app.ctx.font="12px Calibri";
+  app.ctx.clearRect(0, 0, app.width, app.height);  
+};
+
+Feedback.prototype.incrementFollow = function () {
+  var oldFollow = app.FOLLOW;
+  do{
+    app.FOLLOW += 1;
+    if (app.FOLLOW >= app.particles.length) {
+      app.FOLLOW = 0;
+    }
+  } while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
+
+  app.viewPort.shift.x = 0;
+  app.viewPort.shift.y = 0;  
+};
+
+Feedback.prototype.changeProperty = function(id, propName, newValue) {
+  app.particles[id][propName] = newValue;
+};
+
+Feedback.prototype.addParticle = function(massX, radX, eC, arc, name) {
+  var eccentricity = eC === null ? 1 : eC / 100,
+    radians = arc === null ? Math.random() * 2 * Math.PI : arc,
+    text = name === null ? 'planet-X' : name;
+  var cfg = {name: text, mass: massX / 100, radius: 1097, 
+      orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
+  var x = new Particles().buildParticle(cfg);
+  return x;
+};
+
+Feedback.prototype.addCloud = function(cnt, rC, rF) {
+  var x = new Particles();
+
+  for(var y = 0; y < cnt; y++) {
+    var rad = rC * 5 + (Math.random() * (rF - rC)) * 5;
+    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097, 
+      orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: 0.1};
+    x.buildParticle(cfg);
+  }
+
+  return x;
+};
+
+Feedback.prototype.destroyAll = function() {
+  var me = this;
+  app.FOLLOW = 0;
+  app.particles.splice(1, app.particles.length - 1);
+  app.alwaysIntegrate.splice(1, app.alwaysIntegrate.length - 1);
+};
+
+Feedback.prototype.resetViewToHome = function() {
+  app.FOLLOW = 0;
+  app.physics.updateTimeStep(1);
+  app.viewPort.restoreDefault();
+};
+
+Feedback.prototype.getFocusId = function(){
+  if (app.particles.length){
+    if (!app.particles[app.FOLLOW]){
+          app.FOLLOW = 0;
+    }
+  }else{
+    app.response.reset();
+  }
+  return app.FOLLOW;
+};
+
+// function TextParser() { 
+// }
+
+// TextParser.prototype.handleConsole = function() {
+// };
+
+
+module.exports = Feedback;
+},{}],2:[function(require,module,exports){
+//var app = require('./app');
 
 var Physics = require('./physics');
 var Thrust = require('./thrust');
 var ViewPort = require('./viewport');
-var Reponse = require('./response');
+var Feedback = require('./feedback');
 var Particles = require('./particles');
 
-
-app.init = function () {
-  app.physics = new Physics();
-  app.particles = [];
-  app.mouse = { x: app.halfWidth, y: app.halfHeight };
-  app.TRACE = false;
-  app.VIEWSHIFT = {x: -50, y: 0, z: 0, zoom: 0};
-  app.GO = true;
-  app.FOLLOW = 0;
-  app.CLOCK = {ticks: 0};
-  app.SHOWCLOCK = false;
-  app.realTime = Date();
-  app.splitTime = Date();
-  app.closestPair = {x: 0, y: 0, z: 0, d: 0};
-  app.eventListener = {};
-  app.collisions = 0;
-  app.COLLISION_IMMENENCE_RANGE = 0.1;
-  app.potentialCollisions = app.resetPotentialCollisions();
-  app.thrust = new Thrust();
-
-  if(document && document.getElementById) {
-    var display = document.getElementById('display');
-    app.display = display;
-    app.width = display.width = window.innerWidth - 40;
-    app.height = display.height = window.innerHeight - 30;
-    app.halfWidth = app.width * 0.5;
-    app.halfHeight = app.height * 0.5;
-    app.ctx = display.getContext('2d');
-    display.focus();
-    app.eventListener = display;
-
-    var console = document.getElementById('console');
-    app.console = console;
-    app.console.width = app.width * 0.2;
-    app.console.height = app.height;
-    app.console.style.visibility = "hidden";
-
-    app.console.ctx = console.getContext('2d');
-  } else {
-    app.ctx = new mockCtx();
-    app.width = 100;
-    app.height = 100;
-    app.halfWidth = app.width * 0.5;
-    app.halfHeight = app.height * 0.5;
-  }
-
-  window.addEventListener("resize", function() { 
-    app.width = display.width = window.innerWidth - 40;
-    app.height = display.height = window.innerHeight - 30;
-    app.halfWidth = app.width * 0.5;
-    app.halfHeight = app.height * 0.5;
-    app.size = (app.width + app.height) / 2;
-  }); 
-
-  app.size = (app.width + app.height) / 2;
-
-  app.viewPort = new ViewPort(app);
-  app.response = new Response();
-
-  var x = new Particles(app).buildInitialParticles();
-  requestAnimationFrame(app.viewPort.frame);
+var deps = {
+	Physics: Physics,
+	Thrust: Thrust,
+	ViewPort: ViewPort,
+	Feedback: Feedback,
+	Particles: Particles
 };
 
-app.toggleConsoleVisibility = function(makeVisible) {
-  var consoleScale = 0.2;
+app.init(deps);
 
-  if (makeVisible) {
-    app.console.style.visibility = "visible";
-    app.display.width = app.width * 0.8;
-  } else {
-    app.console.style.visibility = "hidden";
-    app.display.width = app.width;
-  }
-};
-
-app.resetPotentialCollisions = function() {
-  app.potentialCollisions = { "0": [], "1": [], "5": [], "10": [], "50": [], "100": [] };
-};
-
-app.flattenPotentialCollisions = function() {
-  var flat = [],
-    n,
-    list,
-    pair,
-    big,
-    little;
-
-  for (var bucket in app.potentialCollisions) {
-    n = Number(bucket);
-    list = app.potentialCollisions[n / 100];
-    if (list && list.length)
-      for (pair in list) {
-        big = app.particles[list[pair][0]];
-        little = app.particles[list[pair][1]];
-        flat.push({big: big, little: little});
-      }
-  }
-
-  return flat;
-};
-
-app.clockReset = function() {
-  app.CLOCK.ticks = 0;
-  app.splitTime = new Date();
-};
-
-module.exports = app;
-},{"./particles":4,"./physics":5,"./response":6,"./thrust":7,"./viewport":9}],2:[function(require,module,exports){
-var app = require('./app');
-
-app.init();
-
-},{"./app":1}],3:[function(require,module,exports){
+},{"./feedback":1,"./particles":4,"./physics":5,"./thrust":6,"./viewport":8}],3:[function(require,module,exports){
 
 var Vector3d = require('./vector3d');
 
@@ -351,11 +590,10 @@ Particle.prototype.configure = function(config) {
 };
 
 module.exports = Particle;
-},{"./vector3d":8}],4:[function(require,module,exports){
+},{"./vector3d":7}],4:[function(require,module,exports){
 var Particle = require('./particle');
 
-function Particles(app) {
-  this.app = app;
+function Particles() {
   this.objects = {};
   this.objects.COMETS = 20;// Math.floor( Math.random() * 1250);
   this.objects.ASTEROIDS = 5;// Math.floor( Math.random() * 1250);
@@ -364,23 +602,22 @@ function Particles(app) {
 }
 
 Particles.prototype.buildInitialParticles = function() {
-  var app = this.app,
-    width = this.app.halfWidth,
-    height = this.app.halfHeight,
-    particles = this.app.particles,
+  var width = app.halfWidth,
+    height = app.halfHeight,
+    particles = app.particles,
     jupiterMass = 1,
     earthMass = jupiterMass / 317,
     sunMass = jupiterMass * 1047,
     //sunGravity = app.physics.constants.ORIGINAL_GRAVITY_CONSTANT * sunMass,
-    aU = this.app.physics.constants.ASTRONOMICAL_UNIT,
+    aU = app.physics.constants.ASTRONOMICAL_UNIT,
     initalObjects = {},
     jupiterArc = Math.PI + 0.00000001,
     cfg = {};
 
-    this.app.particles = [];
-    this.app.alwaysIntegrate = [];
+    app.particles = [];
+    app.alwaysIntegrate = [];
 
-  if(this.app.physics.variables.CALC_STYLE === 'real') {
+  if(app.physics.variables.CALC_STYLE === 'real') {
     initialObjects = [
       {name: 'Sun', mass: jupiterMass * 1047, radius: 696342, orbitalVelocity: 0, drawSize: 3, color: {r: 255, g: 255, b: 220}},
       {name: 'Mercury', mass: earthMass * 0.055, radius: 2439, orbits: [{mass: sunMass, radius: aU * 0.387098}], drawSize: 0.5},
@@ -438,7 +675,7 @@ Particles.prototype.buildInitialParticles = function() {
   }
 
   for(i = 0; i < app.particles.length; i++) {   
-    this.app.alwaysIntegrate.push(i);
+    app.alwaysIntegrate.push(i);
   }
 
   for (i = 0; i < this.objects.ASTEROIDS; i++) {
@@ -489,37 +726,37 @@ Particles.prototype.finalize = function() {
 
   //This has to be done once before integration can occur. Prime The Pump!
   for (i = 0; i < app.particles.length; i++) {
-    this.app.particles[i].calcAcceleration(this.app.physics.variables.TIME_STEP_INTEGRATOR);
+    app.particles[i].calcAcceleration(app.physics.variables.TIME_STEP_INTEGRATOR);
   }
 
-  this.app.PARTICLECOUNT = this.app.particles.length -1;
+  app.PARTICLECOUNT = app.particles.length -1;
 };
 
 Particles.prototype.buildParticle = function(cfg) {
   var tmp = new Particle();
   tmp.configure(cfg);
-  this.app.particles.push(tmp);
+  app.particles.push(tmp);
 };
 
 Particles.prototype.freeTheDestroyed = function() {
   var survivors = [];
   var newId = 0;
 
-  for (var j = 0; j < this.app.particles.length; j++) {
-    if (this.app.FOLLOW == j) { 
-      this.app.FOLLOW = newId;
+  for (var j = 0; j < app.particles.length; j++) {
+    if (app.FOLLOW == j) { 
+      app.FOLLOW = newId;
     }
-    if (this.app.particles[j] && this.app.particles[j].destroyed === false){
-      survivors.push(this.app.particles[j]);
-      this.app.particles[j].id = newId++;
+    if (app.particles[j] && app.particles[j].destroyed === false){
+      survivors.push(app.particles[j]);
+      app.particles[j].id = newId++;
     }
   }
 
   if(app.FOLLOW >= survivors.length) {
-    this.app.FOLLOW = 0;
+    app.FOLLOW = 0;
   }
 
-  this.app.particles = survivors;
+  app.particles = survivors;
 };
 
 
@@ -726,347 +963,6 @@ Physics.prototype.convertViewPortPixelsToUnits = function(rawSize) {
 
 module.exports = Physics;
 },{}],6:[function(require,module,exports){
-/* ******************* RESPONSE ******************************************************* */
-var keyMap = {
-  // reference: https://css-tricks.com/snippets/javascript/javascript-keycodes/
-  // also, difference between keyCode and charCode:
-  // http://stackoverflow.com/questions/1772179/get-character-value-from-keycode-in-javascript-then-trim
-  86: 'viewToggle', // v
-  32: 'trace',  // '<space>'
-  82: 'reset', // 'R'
-  84: 'reverseTime', // 'T'
-  87: 'viewShiftUp', // 'W'
-  83: 'viewShiftDown', // 'S'
-  65: 'viewShiftLeft', // 'A'
-  68: 'viewShiftRight', // 'D'
-  77: 'switchClickAction', // 'M'
-  80: 'pause', // 'P'
-  67: 'visualLogging', // 'C'
-  70: 'follow', // 'F'
-  88: 'speedItUp', // 'X'
-  90: 'slowItDown', // 'Z'
-  192: 'toggleCommandMode', // '` or ~'
-  188: 'zoomOut', // '<'
-  190: 'zoomIn', // '>'
-  72: 'switchToDefaultView', // 'H'
-  66: 'rocketEnginesBurnToggle', // 'B'
-  37: 'rocketRotateLeft', // 'LEFT'
-  39: 'rocketRotateRight', // 'RIGHT'
-  38: 'rocketIncreaseThrust', // 'UP'
-};
-
-function Response() {
-  app.eventListener.addEventListener('mousemove', this.onMousemove);
-  app.eventListener.addEventListener('click', this.onClickSplash);
-  app.eventListener.addEventListener('keydown', this.onKeyDown);
-  app.eventListener.addEventListener('mousewheel', this.onMouseWheel);
-
-  this.MODE = 'FOLLOW';
-  this.CommandMode = 'COMMAND';
-  app.textParser = new TextParser();
-
-  this.commands = [
-    {command: "cprop", description: "change any property on any object to any value (power tool)", fn: this.changeProperty},
-    {command: "addp", description: "add a single planet", fn: this.addParticle},
-    {command: "addc", description: "add a bunch of planets", fn: this.addCloud},
-    {command: "destall", description: "remove everything", fn: this.destroyAll}
-    ];
-}
-
-Response.prototype.onKeyDown = function(e, ref) {
-  app.response.eventHandle = this.onKeyDown;
-  if(app.response.CommandMode === 'COMMAND') {
-    app.response.handleCommand(e);
-  } else {
-    //app.response.handleConsole(e);
-  }
-
-  return false;
-};
-
-
-Response.prototype.onClickSplash = function(e){
-  if (app.viewPort.drawState !== app.viewPort.DRAW_STATE_SPLASH){
-    app.eventListener.removeEventListener('click', app.response.onClickSplash);
-    app.eventListener.addEventListener('click', app.response.onClick);
-    app.response.onClick(e);
-  }
-};
-
-
-Response.prototype.onClick = function(e) {
-  var xy = {x: e.clientX, y: e.clientY};
-
-  if(app.response.MODE === 'FOLLOW') {
-    app.response.follow(xy);
-  } else if(app.response.MODE === 'DESTROY') {
-    app.response.destroy(xy);
-  } else {
-    app.response.rocket();
-  }
-};
-
-Response.prototype.onMousemove = function(e) {
-  if (app.viewPort.drawState == app.viewPort.DRAW_STATE_ROTATE){
-    app.viewPort.reorient(app.mouse, {x: e.clientX, y: e.clientY});
-  }
-  app.mouse.x = e.clientX;
-  app.mouse.y = e.clientY;
-};
-
-Response.prototype.onMouseWheel = function(e){
-  e.preventDefault();
-  if (e.deltaY > 0){
-    app.viewPort.adjustZoom('out');
-  }else{
-    app.viewPort.adjustZoom('in');
-  }
-  return false;
-};
-
-Response.prototype.handleCommand = function(e) {
-  var action = keyMap[e.keyCode];
-  if(action === 'toggleCommandMode') { app.response.switchCommandMode(); return;}
-  if(action === 'zoomOut') { app.viewPort.adjustZoom('out'); }
-  if(action === 'zoomIn') { app.viewPort.adjustZoom('in'); }  
-  if(action === 'switchToDefaultView')  { app.response.resetViewToHome(); }
-  if(action === 'rocketEnginesBurnToggle') { app.thrust.act(action); }
-  if(action === 'rocketRotateLeft') { app.thrust.act(action); }
-  if(action === 'rocketRotateRight') { app.thrust.act(action); }
-  if(action === 'rocketIncreaseThrust') { app.thrust.act(action); }
-  if(action === 'viewToggle') { app.response.changeView(); }
-  if(action === 'trace') { app.TRACE = !app.TRACE; }
-  if(action === 'reset') { app.response.reset(); }
-  if(action === 'reverseTime') { app.physics.reverseTime(); } 
-  if(action === 'viewShiftUp') { app.viewPort.shift.y -= 5; }
-  if(action === 'viewShiftDown') { app.viewPort.shift.y += 5; }
-  if(action === 'viewShiftLeft') { app.viewPort.shift.x -= 5; }
-  if(action === 'viewShiftRight') { app.viewPort.shift.x += 5; }
-  if(action === 'switchClickAction') { app.response.changeMode(); }
-  if(action === 'pause') { app.response.pause(); }  
-  if(action === 'visualLogging') { app.SHOWCLOCK = !app.SHOWCLOCK; }        
-  if(action === 'follow') { app.response.incrementFollow(); } 
-  if(action === 'speedItUp') { app.response.speedUp(); }
-  if(action === 'slowItDown') { app.physics.updateTimeStep(app.physics.variables.TIME_STEP / 2); }  
-};
-
-Response.prototype.handleConsole = function(e) {
-  app.textParser.handleConsole();
-};
-
-Response.prototype.onCommandExit = function() {
-  app.response.CommandMode = 'COMMAND';
-  app.display.focus();
-  app.eventListener.addEventListener("keydown", app.response.eventHandle);
-
-  app.toggleConsoleVisibility(false);
-};
-
-
-Response.prototype.switchCommandMode = function() {
-  app.response.CommandMode = 'shell';
-  app.eventListener.removeEventListener("keydown", app.response.eventHandle);
-
-  app.toggleConsoleVisibility(true);
-  shellJs.init(app.console, app.response.onCommandExit, app.response.commands, true, { keyCode: 192, displayText: "~ or `" } );
-};
-
-Response.prototype.changeMode = function() {
-  if (app.response.MODE === 'FOLLOW') {
-    app.response.MODE = 'ROCKET';
-  } else if ( this.MODE === 'ROCKET') {
-    app.response.MODE = 'PHOTON';
-  } else if ( this.MODE === 'PHOTON') {
-    app.response.MODE = 'DESTROY';
-  } else {
-    app.response.MODE = 'FOLLOW';
-  }
-};
-
-Response.prototype.speedUp = function() {
-  if (app.physics.variables.TIME_STEP < 100) {
-    app.physics.updateTimeStep(app.physics.variables.TIME_STEP * 2);
-  }
-};
-
-Response.prototype.follow = function(xy){
-  app.FOLLOW = Response.prototype.getNearest(xy);
-};
-
-Response.prototype.input = function() {
-  app.CURSOR = true;  
-  app.GO = false;
-};
-
-Response.prototype.getNearest = function(clickXY){
-  //Perform this in viewport coordinates.
-  //It's viewport's job to furnish the viewport coordinates of any object of interest.
-  var jXY, dx, dy,
-  indexClosest = 0, j,
-  dSqClosest   = Number.MAX_VALUE, dSq;
-  
-  for (j = 0; j < app.particles.length; j++){
-    if (! app.particles[j]) {continue;}
-    
-    jXY = app.viewPort.MapPositionToViewPortXY(app.particles[j].position);
-
-    dx   = jXY.x - clickXY.x + app.ctx.canvas.offsetLeft;
-    dy   = jXY.y - clickXY.y + app.ctx.canvas.offsetTop;
-    dSq  = dx * dx + dy * dy;
-
-    if (dSq < dSqClosest){
-      dSqClosest    = dSq;
-      indexClosest  = j;
-    }
-  }
-  return indexClosest;
-};
-
-Response.prototype.destroy = function(xy){
-  var target;
-
-  if (app.particles.length){
-    target = app.particles[Response.prototype.getNearest(xy)];
-    target.die(target.name + " was destroyed by the creator.");
-
-    if(app.FOLLOW == target.id) {
-      app.FOLLOW = 0;
-    }
-  }
-};
-
-Response.prototype.rocket = function(){
-  var x = new Particles().buildParticle(  {name: 'ROCKET!! ' + app.particles.length, mass: 1/ 1500000000, radius: 10, orbitalVelocity: 0.08 - Math.random() * 0.08, arc: Math.PI / 2, distance: app.physics.constants.ASTRONOMICAL_UNIT * 2, drawSize: 0.1}),
-    newGuy = app.particles[app.particles.length -1];
-
-  if(app.response.MODE === 'PHOTON') {
-    newGuy.name = 'PHOTON' + app.particles.length;
-    newGuy.mass = 0;
-    var arc = 0;//Math.random() * 2 * Math.PI;
-    
-    newGuy.position.setFromV(app.particles[0].position);
-    newGuy.vel.setXYZ(5000 * Math.cos(arc),
-      5000 * Math.sin(arc), 
-      0.0);
-  } else {
-    newGuy.position.setFromV(app.particles[app.FOLLOW].position);
-    newGuy.position.increment(Vector3d.prototype.randomOfMagnitude(0.3));
-
-    newGuy.vel.setFromV(app.particles[app.FOLLOW].vel);
-    newGuy.vel.increment(Vector3d.prototype.randomOfMagnitude(0.0003 * Math.random()));
-    app.FOLLOW = app.particles.length - 1;
-  }
-  
-  app.PARTICLECOUNT = app.particles.length - 1;
-};
-
-Response.prototype.reset = function() {
-  if(app.physics.variables.CALC_STYLE !== 'real') {
-    app.physics.variables.CALC_STYLE = 'real';
-  } else {
-    app.physics.variables.CALC_STYLE = 'wacky';
-    //app.physics.variables.CALC_STYLE_VELOCITY_MOD = Math.floor(Math.random() * 10) + 1;
-  }
-
-  app.ctx.clearRect(0, 0, app.width, app.height);
-  var x = new Particles().buildInitialParticles();
-  app.viewPort.colorSorted = false;  
-  app.clockReset();
-
-  app.resetPotentialCollisions();
-  app.FOLLOW = 0;
-};
-
-Response.prototype.pause = function() {
-  //app.physics.updateTimeStep(1);
-  if(app.GO === false) {
-    app.GO = true;
-    requestAnimationFrame(app.viewPort.frame);
-    app.clockReset();
-  } else {
-    app.GO = false;
-  }
-};
-
-Response.prototype.changeView = function() {
-  app.viewPort.cycleState();
-  app.ctx.font="12px Calibri";
-  app.ctx.clearRect(0, 0, app.width, app.height);  
-};
-
-Response.prototype.incrementFollow = function () {
-  var oldFollow = app.FOLLOW;
-  do{
-    app.FOLLOW += 1;
-    if (app.FOLLOW >= app.particles.length) {
-      app.FOLLOW = 0;
-    }
-  } while(app.particles[app.FOLLOW].destroyed && app.FOLLOW != oldFollow);
-
-  app.viewPort.shift.x = 0;
-  app.viewPort.shift.y = 0;  
-};
-
-Response.prototype.changeProperty = function(id, propName, newValue) {
-  app.particles[id][propName] = newValue;
-};
-
-Response.prototype.addParticle = function(massX, radX, eC, arc, name) {
-  var eccentricity = eC === null ? 1 : eC / 100,
-    radians = arc === null ? Math.random() * 2 * Math.PI : arc,
-    text = name === null ? 'planet-X' : name;
-  var cfg = {name: text, mass: massX / 100, radius: 1097, 
-      orbits: [{mass: 1047 * eccentricity, radius: radX * 5}], arc: radians, drawSize: 1};
-  var x = new Particles().buildParticle(cfg);
-  return x;
-};
-
-Response.prototype.addCloud = function(cnt, rC, rF) {
-  var x = new Particles();
-
-  for(var y = 0; y < cnt; y++) {
-    var rad = rC * 5 + (Math.random() * (rF - rC)) * 5;
-    var cfg = {name: 'cloud-' + y, mass: 1 / 10000, radius: 1097, 
-      orbits: [{mass: 1047 +  Math.random() * 100, radius: rad}], arc: Math.random() * 2 * Math.PI, drawSize: 0.1};
-    x.buildParticle(cfg);
-  }
-
-  return x;
-};
-
-Response.prototype.destroyAll = function() {
-  var me = this;
-  app.FOLLOW = 0;
-  app.particles.splice(1, app.particles.length - 1);
-  app.alwaysIntegrate.splice(1, app.alwaysIntegrate.length - 1);
-};
-
-Response.prototype.resetViewToHome = function() {
-  app.FOLLOW = 0;
-  app.physics.updateTimeStep(1);
-  app.viewPort.restoreDefault();
-};
-
-Response.prototype.getFocusId = function(){
-  if (app.particles.length){
-    if (!app.particles[app.FOLLOW]){
-          app.FOLLOW = 0;
-    }
-  }else{
-    app.response.reset();
-  }
-  return app.FOLLOW;
-};
-
-function TextParser() { 
-}
-
-TextParser.prototype.handleConsole = function() {
-};
-
-
-module.exports = Response;
-},{}],7:[function(require,module,exports){
 function Thrust() {
   this.heading = 0;
   this.thrust = 0;
@@ -1117,7 +1013,7 @@ Thrust.prototype.toggleBurn = function() {
 };
 
 module.exports = Thrust;
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 function Vector3d(x, y, z){
 	this.x = x;
 	this.y = y;
@@ -1311,7 +1207,7 @@ Vector3d.prototype.projectPlane = function(plane){
 
 
 module.exports = Vector3d;
-},{}],9:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 
 /* ******************* VIEWPORT ******************************************************* */
 
@@ -1740,4 +1636,4 @@ ViewPort.prototype.adjustZoom = function(direction) {
 
 
 module.exports = ViewPort;
-},{"./vector3d":8}]},{},[2]);
+},{"./vector3d":7}]},{},[2]);
