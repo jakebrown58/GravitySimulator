@@ -45,13 +45,13 @@ app.init = function () {
     app.halfHeight = app.height * 0.5;
   }
 
-  window.addEventListener("resize", function() { 
+  window.addEventListener("resize", function() {
     app.width = display.width = window.innerWidth - 40;
     app.height = display.height = window.innerHeight - 30;
     app.halfWidth = app.width * 0.5;
     app.halfHeight = app.height * 0.5;
     app.size = (app.width + app.height) / 2;
-  }); 
+  });
 
   app.size = (app.width + app.height) / 2;
 
@@ -104,3 +104,9 @@ app.clockReset = function() {
   app.CLOCK.ticks = 0;
   app.splitTime = new Date();
 };
+
+Math.cbrt = Math.cbrt || function(x) {
+  var y = Math.pow(Math.abs(x), 1/3);
+  return x < 0 ? -y : y;
+};
+
